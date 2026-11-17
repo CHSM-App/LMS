@@ -1,25 +1,48 @@
 const { maskMobile } = require('../../utils/mobile');
 
-// WhatsApp sender. 'console' (dev) logs and records messages; 'meta' uses the WhatsApp Cloud API
-// (WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID). Real sending is completed in Phase 7/10.
+// WhatsApp sender, switched by WHATSAPP_PROVIDER:
+//   console - dev/test: logs and records messages
+//   meta    - WhatsApp Cloud API (WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID). Business-initiated messages
+//             must use approved templates; each template's name can be overridden with
+//             WHATSAPP_TEMPLATE_<KEY> (e.g. WHATSAPP_TEMPLATE_LIVE_CLASS=lms_live_class_v2).
 const sent = [];
+
+// Body parameters ({{1}}, {{2}}, ...) of each approved template, in order. Keep in sync with docs/BACKEND_NEEDS.md.
+const TEMPLATE_PARAMS = {
+  demo_scheduled: ['name', 'course', 'date', 'time', 'link'],
+  live_class: ['topic', 'course', 'date', 'time', 'link'],
+  enrollment_approved: ['course', 'batch'],
+  subscription_reminder: ['name', 'end'],
+};
+const LANGS = { en: 'en', mr: 'mr', hi: 'hi' };
 
 const consoleProvider = {
   name: 'console',
   async send(mobile, text, meta = {}) {
-    sent.push({ mobile, text, ...meta });
+    const { vars, ...rest } = meta;
+    sent.push({ mobile, text, ...rest });
     if (process.env.NODE_ENV === 'development') console.log(`[whatsapp] to ${maskMobile(mobile)}: ${text}`);
     return { ok: true };
   },
 };
 
+function templateBody(template, lang, vars = {}) {
+  const name = process.env[`WHATSAPP_TEMPLATE_${template.toUpperCase()}`] || template;
+  const params = (TEMPLATE_PARAMS[template] || []).map((k) => ({ type: 'text', text: String(vars[k] ?? '') }));
+  return { name, language: { code: LANGS[lang] || 'en' }, components: [{ type: 'body', parameters: params }] };
+}
+
 const metaProvider = {
   name: 'meta',
-  async send(mobile, text) {
+  async send(mobile, text, { template, lang, vars } = {}) {
+    const to = mobile.replace(/\D/g, '');
+    const payload = template
+      ? { messaging_product: 'whatsapp', to, type: 'template', template: templateBody(template, lang, vars) }
+      : { messaging_product: 'whatsapp', to, type: 'text', text: { body: text } };
     const res = await fetch(`https://graph.facebook.com/v20.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messaging_product: 'whatsapp', to: mobile.replace('+', ''), type: 'text', text: { body: text } }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(`WhatsApp API responded ${res.status}`);
     return { ok: true };
@@ -40,4 +63,5 @@ module.exports = {
   fallbackUrl,
   sentMessages: () => sent,
   clearSent: () => sent.splice(0, sent.length),
+  TEMPLATE_PARAMS,
 };

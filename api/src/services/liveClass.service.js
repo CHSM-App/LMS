@@ -1,9 +1,7 @@
 const { query, one, T } = require('../db/query');
 const { withTransaction } = require('../db/tx');
 const meet = require('../providers/meet');
-const whatsapp = require('../providers/whatsapp');
 const { notifyMany } = require('./notification.service');
-const { msg } = require('../i18n/messages');
 const { owned } = require('./ownership');
 const { clock } = require('../utils/clock');
 const { text } = require('../utils/validate');
@@ -77,7 +75,13 @@ async function create(teacherId, body) {
     );
     const { date, time } = istParts(f.startsAt);
     const students = await targetStudents(f.courseId, f.batchId, tx);
-    await notifyMany(students.map((s) => s.user_id), { key: 'liveClass.new', vars: { topic: f.topic, date, time }, link: '/student/live-classes' }, tx);
+    const course = await one('SELECT title FROM dbo.courses WHERE course_id = @c', { c: T.int(f.courseId) }, tx);
+    await notifyMany(students.map((s) => s.user_id), {
+      key: 'liveClass.new',
+      vars: { topic: f.topic, date, time },
+      link: '/student/live-classes',
+      whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: f.topic, course: course.title, date, time, link: f.meetLink } },
+    }, tx);
     return row.live_class_id;
   });
   return out(await get(id));
@@ -159,10 +163,12 @@ async function runLiveClassReminders() {
     if (!claimed.length) continue;
     const { date, time } = istParts(lc.starts_at);
     const students = await targetStudents(lc.course_id, lc.batch_id);
-    await notifyMany(students.map((s) => s.user_id), { key: 'liveClass.reminder', vars: { topic: lc.topic, time }, link: '/student/live-classes' });
-    for (const s of students.filter((x) => x.whatsapp_opt_in)) {
-      await whatsapp.send(s.mobile, msg(s.preferred_lang, 'wa.liveClass', { topic: lc.topic, course: lc.course_title, date, time, link: lc.meet_link }), { template: 'live_class' }).catch(() => null);
-    }
+    await notifyMany(students.map((s) => s.user_id), {
+      key: 'liveClass.reminder',
+      vars: { topic: lc.topic, time },
+      link: '/student/live-classes',
+      whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: lc.topic, course: lc.course_title, date, time, link: lc.meet_link } },
+    });
   }
   return due.length;
 }

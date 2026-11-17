@@ -48,13 +48,13 @@ docs/DEPLOY.md, docs/BACKEND_NEEDS.md (final)
 
 **Interfaces:** Extend `notify(userId, { title, message, link, channels:['in_app','whatsapp'?] })`. `in_app` is always written. WhatsApp is skipped for blocked users and only sent where the spec says (Meet links). The real providers are switched on by `OTP_PROVIDER`, `WHATSAPP_PROVIDER` and `MEET_PROVIDER`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - An event matrix (teacher request created, accepted/rejected, blocked, subscription set, **subscription expiring in 7 days**, demo scheduled, enrollment approved/rejected, **batch changed**, live class created + reminder **(batch-targeted)**, doubt answered, exam published, **mobile changed**) → the right recipients get the right i18n message in their `preferred_lang`.
   - WhatsApp is sent only when `whatsapp_opt_in = 1`.
   - When the OTP provider throws → 503 with that message, and the OTP row is marked unsent so it doesn't count toward the resend limit.
   - A blocked user gets in-app only.
   - The real providers are tested with mocked HTTP (nock): the right URL, auth header and template id.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat: notification channels and real providers`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat: notification channels and real providers`.
 
 ### Task 2: Flutter app (scope per DECISIONS.md)
 

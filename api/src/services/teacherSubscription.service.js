@@ -3,8 +3,6 @@ const { withTransaction } = require('../db/tx');
 const { audit } = require('./audit.service');
 const { notify, notifyAdmins } = require('./notification.service');
 const studentCount = require('./studentCount.service');
-const whatsapp = require('../providers/whatsapp');
-const { msg } = require('../i18n/messages');
 const { clock, todayIST } = require('../utils/clock');
 const { badRequest, conflict, notFound } = require('../utils/APIError');
 
@@ -166,12 +164,9 @@ async function runSubscriptionReminders() {
         tx,
       );
       if (!claimed.length) return;
-      await notify(r.user_id, { key: 'subscription.expiring', vars, link: '/teacher' }, tx);
+      await notify(r.user_id, { key: 'subscription.expiring', vars, link: '/teacher', whatsapp: { key: 'wa.subscriptionReminder', template: 'subscription_reminder' } }, tx);
       await notifyAdmins({ key: 'subscription.expiring', vars, link: '/admin/subscriptions' }, tx);
     });
-    if (r.whatsapp_opt_in) {
-      await whatsapp.send(r.mobile, msg(r.preferred_lang, 'wa.subscriptionReminder', vars), { template: 'subscription_reminder' }).catch(() => null);
-    }
   }
   return due.length;
 }

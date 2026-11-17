@@ -4,11 +4,15 @@ const { sql, getPool } = require('./pool');
 async function withTransaction(fn) {
   const pool = await getPool();
   const tx = new sql.Transaction(pool);
+  const after = [];
+  // Side effects (WhatsApp, emails) registered here run only once the commit succeeds.
+  tx.afterCommit = (cb) => after.push(cb);
   await tx.begin();
   try {
     await new sql.Request(tx).batch('SET XACT_ABORT ON');
     const result = await fn(tx);
     await tx.commit();
+    for (const cb of after) await Promise.resolve().then(cb).catch(() => null);
     return result;
   } catch (err) {
     try {

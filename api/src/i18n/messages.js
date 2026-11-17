@@ -35,7 +35,8 @@ const M = {
     'exam.published.body': '{exam} is now available in {course}.',
     'wa.demo_scheduled': 'Hello {name}, your live demo for {course} is on {date} at {time}. Join: {link}',
     'wa.liveClass': 'Live class {topic} for {course} is on {date} at {time}. Join: {link}',
-    'wa.subscriptionReminder': 'Your teacher subscription ends on {end}. Contact the admin to renew.',
+    'wa.subscriptionReminder': 'Hello {name}, your teacher subscription ends on {end}. Contact the admin to renew.',
+    'wa.enrollmentApproved': 'You are enrolled in {course} ({batch}). Open the app to start learning.',
   },
   mr: {
     'teacherRequest.new.title': 'नवीन शिक्षक विनंती',
@@ -72,7 +73,8 @@ const M = {
     'exam.published.body': '{course} मध्ये {exam} आता उपलब्ध आहे.',
     'wa.demo_scheduled': 'नमस्कार {name}, {course} चा थेट डेमो {date} रोजी {time} वाजता आहे. सामील व्हा: {link}',
     'wa.liveClass': '{course} चा थेट वर्ग {topic} {date} रोजी {time} वाजता. सामील व्हा: {link}',
-    'wa.subscriptionReminder': 'तुमची शिक्षक सदस्यता {end} रोजी संपते. नूतनीकरणासाठी प्रशासकाशी संपर्क साधा.',
+    'wa.subscriptionReminder': 'नमस्कार {name}, तुमची शिक्षक सदस्यता {end} रोजी संपते. नूतनीकरणासाठी प्रशासकाशी संपर्क साधा.',
+    'wa.enrollmentApproved': '{course} ({batch}) मध्ये तुमचा प्रवेश झाला. शिकायला सुरुवात करण्यासाठी ॲप उघडा.',
   },
   hi: {
     'teacherRequest.new.title': 'नया शिक्षक अनुरोध',
@@ -109,7 +111,8 @@ const M = {
     'exam.published.body': '{course} में {exam} अब उपलब्ध है।',
     'wa.demo_scheduled': 'नमस्ते {name}, {course} का लाइव डेमो {date} को {time} बजे है। जुड़ें: {link}',
     'wa.liveClass': '{course} की लाइव क्लास {topic} {date} को {time} बजे। जुड़ें: {link}',
-    'wa.subscriptionReminder': 'आपकी शिक्षक सदस्यता {end} को समाप्त होगी। नवीनीकरण के लिए एडमिन से संपर्क करें।',
+    'wa.subscriptionReminder': 'नमस्ते {name}, आपकी शिक्षक सदस्यता {end} को समाप्त होगी। नवीनीकरण के लिए एडमिन से संपर्क करें।',
+    'wa.enrollmentApproved': 'आपका {course} ({batch}) में नामांकन हो गया। पढ़ाई शुरू करने के लिए ऐप खोलें।',
   },
 };
 

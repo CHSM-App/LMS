@@ -92,7 +92,12 @@ async function approve(id, teacherId, body) {
     await query('INSERT INTO dbo.student_subscriptions (enrollment_id, start_date, end_date) VALUES (@e, @s, @x)', {
       e: T.int(e.enrollment_id), s: T.date(startDate), x: T.date(endDate),
     }, tx);
-    await notify(e.student_id, { key: 'enrollment.approved', vars: { course: e.course_title, batch: b.name }, link: '/student' }, tx);
+    await notify(e.student_id, {
+      key: 'enrollment.approved',
+      vars: { course: e.course_title, batch: b.name },
+      link: '/student',
+      whatsapp: { key: 'wa.enrollmentApproved', template: 'enrollment_approved' },
+    }, tx);
     return e.enrollment_id;
   });
   return out(await owned(result, teacherId));

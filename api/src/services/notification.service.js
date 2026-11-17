@@ -1,22 +1,45 @@
 const { query, one, T } = require('../db/query');
 const { msg } = require('../i18n/messages');
+const whatsapp = require('../providers/whatsapp');
+const logger = require('../utils/logger');
 
-// notify(userId, { key, vars, link }) renders the message in the user's language.
-// Plain { title, message } is also accepted.
-async function notify(userId, { key, vars, title, message, link }, tx) {
-  let t = title;
-  let m = message;
-  if (key) {
-    const u = await one('SELECT preferred_lang FROM dbo.users WHERE user_id = @id', { id: T.int(userId) }, tx);
-    const lang = (u && u.preferred_lang) || 'en';
-    t = msg(lang, `${key}.title`, vars);
-    m = msg(lang, `${key}.body`, vars);
-  }
+// notify(userId, { key, vars, link, whatsapp? }, tx?)
+// - The in-app message is always written, in the user's preferred language.
+// - WhatsApp ({ key, vars?, template }) is sent only to users who opted in and are not blocked or deleted.
+//   Inside a transaction it is sent after the commit, so a rolled-back change never messages anyone.
+// Returns { whatsapp: 'sent' | 'skipped' | 'failed' | 'queued' }.
+async function notify(userId, { key, vars, title, message, link, whatsapp: wa }, tx) {
+  const u = await one(
+    'SELECT preferred_lang, mobile, whatsapp_opt_in, status, deleted_at FROM dbo.users WHERE user_id = @id',
+    { id: T.int(userId) },
+    tx,
+  );
+  const lang = (u && u.preferred_lang) || 'en';
+  const t = key ? msg(lang, `${key}.title`, vars) : title;
+  const m = key ? msg(lang, `${key}.body`, vars) : message;
   await query(
     'INSERT INTO dbo.notifications (user_id, title, message, link) VALUES (@u, @t, @m, @l)',
     { u: T.int(userId), t: T.nvarchar(t.slice(0, 160), 160), m: T.nvarchar(m.slice(0, 1000), 1000), l: T.varchar(link || null, 300) },
     tx,
   );
+
+  if (!wa) return { whatsapp: 'skipped' };
+  if (!u || !u.whatsapp_opt_in || u.status === 'blocked' || u.deleted_at) return { whatsapp: 'skipped' };
+  const waVars = wa.vars || vars || {};
+  const send = async () => {
+    try {
+      await whatsapp.send(u.mobile, msg(lang, wa.key, waVars), { template: wa.template, lang, vars: waVars });
+      return { whatsapp: 'sent' };
+    } catch (err) {
+      logger.warn({ event: 'whatsapp_failed', template: wa.template, err: err.message });
+      return { whatsapp: 'failed' };
+    }
+  };
+  if (tx && tx.afterCommit) {
+    tx.afterCommit(send);
+    return { whatsapp: 'queued' };
+  }
+  return send();
 }
 
 async function notifyMany(userIds, payload, tx) {
