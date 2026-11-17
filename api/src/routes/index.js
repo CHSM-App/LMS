@@ -8,5 +8,7 @@ router.use(require('./public.routes'));
 router.use(require('./notification.routes'));
 router.use(require('./admin.routes'));
 router.use(require('./teacher.routes'));
+router.use(require('./uploads.routes'));
+router.use(require('./files.routes'));
 
 module.exports = router;

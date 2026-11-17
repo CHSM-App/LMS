@@ -1,0 +1,45 @@
+    VideoInput:
+      type: object
+      properties:
+        source: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        url: { type: string, maxLength: 500 }
+        fileKey: { type: string, maxLength: 200 }
+    CourseInput:
+      type: object
+      required: [title, description, subject, language]
+      properties:
+        title: { type: string, maxLength: 200 }
+        description: { type: string }
+        subject: { type: string, maxLength: 120 }
+        language: { type: string }
+        thumbnailKey: { type: string, nullable: true }
+        durationText: { type: string, nullable: true }
+        feeDisplay: { type: string, nullable: true, description: Display only. No payments. }
+        demoVideo1: { type: object, nullable: true }
+        demoVideo2: { type: object, nullable: true }
+    NamedInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+    ContentInput:
+      type: object
+      required: [title, type]
+      properties:
+        title: { type: string, maxLength: 200 }
+        type: { type: string }
+        videoSource: { type: string, nullable: true }
+        fileKey: { type: string, nullable: true }
+        url: { type: string, nullable: true }
+        isFreePreview: { type: boolean }
+    BatchInput:
+      type: object
+      required: [name, startDate]
+      properties:
+        name: { type: string, maxLength: 80 }
+        startDate: { type: string }
+        endDate: { type: string, nullable: true }
+        timingText: { type: string, nullable: true }
+        maxStudents: { type: integer, minimum: 1, nullable: true }
+        status: { type: string, enum: [active, closed] }

@@ -8,6 +8,11 @@ const jobs = [
     run: () => require('../services/teacherSubscription.service').runSubscriptionReminders(),
   },
   {
+    name: 'upload-cleanup',
+    schedule: '45 * * * *',
+    run: () => require('../services/upload.service').cleanupExpired(),
+  },
+  {
     name: 'otp-cleanup',
     schedule: '15 * * * *',
     run: () => require('../db/query').query("DELETE FROM dbo.otp_codes WHERE created_at < DATEADD(DAY, -2, SYSUTCDATETIME())"),

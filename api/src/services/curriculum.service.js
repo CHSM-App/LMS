@@ -1,0 +1,181 @@
+const { query, one, T } = require('../db/query');
+const { withTransaction } = require('../db/tx');
+const uploads = require('./upload.service');
+const storage = require('../providers/storage');
+const { validateVideoLink, validateHttpUrl } = require('../utils/videoLinks');
+const { text, bool } = require('../utils/validate');
+const { badRequest, conflict } = require('../utils/APIError');
+
+// ---------- Subjects ----------
+const subjectOut = (s) => ({ id: s.subject_id, name: s.name, description: s.description, sortOrder: s.sort_order });
+
+async function createSubject(courseId, b) {
+  const row = await one(
+    `INSERT INTO dbo.subjects (course_id, name, description, sort_order)
+     OUTPUT INSERTED.* VALUES (@c, @n, @d, (SELECT ISNULL(MAX(sort_order), 0) + 1 FROM dbo.subjects WHERE course_id = @c))`,
+    { c: T.int(courseId), n: T.nvarchar(text(b.name, 'name', { max: 120 }), 120), d: T.nvarchar(text(b.description, 'description', { required: false, max: 1000 }), 1000) },
+  );
+  return subjectOut(row);
+}
+
+async function updateSubject(id, b) {
+  const row = await one(
+    'UPDATE dbo.subjects SET name = @n, description = @d OUTPUT INSERTED.* WHERE subject_id = @id',
+    { id: T.int(id), n: T.nvarchar(text(b.name, 'name', { max: 120 }), 120), d: T.nvarchar(text(b.description, 'description', { required: false, max: 1000 }), 1000) },
+  );
+  return subjectOut(row);
+}
+
+async function deleteSubject(id) {
+  const has = await one('SELECT TOP 1 1 AS y FROM dbo.modules WHERE subject_id = @id', { id: T.int(id) });
+  if (has) throw conflict('Remove or move its modules first', 'SUBJECT_HAS_MODULES');
+  await query('DELETE FROM dbo.subjects WHERE subject_id = @id', { id: T.int(id) });
+  return { deleted: true };
+}
+
+// ---------- Ordering ----------
+// Rewrites sort_order to 1..n in one transaction. The list must be exactly the current children.
+async function reorder({ table, idCol, parentCol, parentId, ids }) {
+  if (!Array.isArray(ids) || !ids.every((x) => Number.isInteger(x))) throw badRequest('Send the full list of ids in the new order');
+  return withTransaction(async (tx) => {
+    const rows = await query(`SELECT ${idCol} AS id FROM dbo.${table} WITH (UPDLOCK, HOLDLOCK) WHERE ${parentCol} = @p`, { p: T.int(parentId) }, tx);
+    const current = rows.map((r) => r.id).sort((a, b) => a - b);
+    const given = [...ids].sort((a, b) => a - b);
+    if (current.length !== given.length || current.some((v, i) => v !== given[i])) throw badRequest('Send the full list of ids in the new order');
+    await query(`UPDATE dbo.${table} SET sort_order = sort_order + 100000 WHERE ${parentCol} = @p`, { p: T.int(parentId) }, tx);
+    for (let i = 0; i < ids.length; i += 1) {
+      await query(`UPDATE dbo.${table} SET sort_order = @o WHERE ${idCol} = @id`, { o: T.int(i + 1), id: T.int(ids[i]) }, tx);
+    }
+    return { ids };
+  });
+}
+
+// ---------- Modules ----------
+const moduleOut = (m) => ({ id: m.module_id, name: m.name, sortOrder: m.sort_order, subjectId: m.subject_id });
+
+async function createModule(subject, b) {
+  return withTransaction(async (tx) => {
+    const next = await one('SELECT ISNULL(MAX(sort_order), 0) + 1 AS n FROM dbo.modules WITH (UPDLOCK, HOLDLOCK) WHERE subject_id = @s', { s: T.int(subject.id) }, tx);
+    const row = await one(
+      'INSERT INTO dbo.modules (subject_id, course_id, name, sort_order) OUTPUT INSERTED.* VALUES (@s, @c, @n, @o)',
+      { s: T.int(subject.id), c: T.int(subject.course_id), n: T.nvarchar(text(b.name, 'name', { max: 160 }), 160), o: T.int(next.n) },
+      tx,
+    );
+    return moduleOut(row);
+  });
+}
+
+async function updateModule(id, b) {
+  const row = await one('UPDATE dbo.modules SET name = @n OUTPUT INSERTED.* WHERE module_id = @id', { id: T.int(id), n: T.nvarchar(text(b.name, 'name', { max: 160 }), 160) });
+  return moduleOut(row);
+}
+
+async function deleteModule(id) {
+  const has = await one('SELECT TOP 1 1 AS y FROM dbo.contents WHERE module_id = @id', { id: T.int(id) });
+  if (has) throw conflict('Remove or move its content first', 'MODULE_HAS_CONTENT');
+  const questions = await one("SELECT OBJECT_ID('dbo.questions') AS t");
+  if (questions.t) {
+    const q = await one('SELECT TOP 1 1 AS y FROM dbo.questions WHERE module_id = @id', { id: T.int(id) });
+    if (q) throw conflict('This module has questions in its question bank. Move or archive them first.', 'MODULE_HAS_QUESTIONS');
+  }
+  await query('DELETE FROM dbo.modules WHERE module_id = @id', { id: T.int(id) });
+  return { deleted: true };
+}
+
+// ---------- Contents ----------
+async function parseContent(teacherId, b) {
+  const type = b.type;
+  if (!['video', 'pdf', 'link'].includes(type)) throw badRequest('type: choose video, pdf or link');
+  const out = { title: text(b.title, 'title', { max: 200 }), type, videoSource: null, fileKey: null, url: null, isFreePreview: bool(b.isFreePreview) };
+  if (type === 'link') out.url = validateHttpUrl(b.url);
+  if (type === 'pdf') {
+    if (!b.fileKey) throw badRequest('fileKey: upload the PDF first');
+    out.fileKey = await uploads.assertOwnedKey(teacherId, b.fileKey, ['pdf']);
+  }
+  if (type === 'video') {
+    out.videoSource = b.videoSource;
+    if (b.videoSource === 'upload') {
+      if (!b.fileKey) throw badRequest('fileKey: upload the video first');
+      out.fileKey = await uploads.assertOwnedKey(teacherId, b.fileKey, ['video', 'demo_video']);
+    } else {
+      out.url = validateVideoLink(b.videoSource, b.url);
+    }
+  }
+  return out;
+}
+
+const contentParams = (c) => ({
+  title: T.nvarchar(c.title, 200),
+  type: T.varchar(c.type, 5),
+  vs: T.varchar(c.videoSource, 8),
+  key: T.varchar(c.fileKey, 200),
+  url: T.varchar(c.url, 500),
+  free: T.bit(c.isFreePreview),
+});
+
+// Teacher view: their own files get short-lived signed URLs.
+function contentOut(x) {
+  const fileUrl = x.file_key ? storage.signedUrl(x.file_key) : null;
+  return {
+    id: x.content_id,
+    title: x.title,
+    type: x.type,
+    videoSource: x.video_source,
+    fileKey: x.file_key,
+    url: x.url || fileUrl,
+    isFreePreview: x.is_free_preview,
+    sortOrder: x.sort_order,
+  };
+}
+
+async function createContent(teacherId, mod, b) {
+  const c = await parseContent(teacherId, b);
+  return withTransaction(async (tx) => {
+    const next = await one('SELECT ISNULL(MAX(sort_order), 0) + 1 AS n FROM dbo.contents WITH (UPDLOCK, HOLDLOCK) WHERE module_id = @m', { m: T.int(mod.id) }, tx);
+    const row = await one(
+      `INSERT INTO dbo.contents (module_id, course_id, title, type, video_source, file_key, url, sort_order, is_free_preview)
+       OUTPUT INSERTED.* VALUES (@m, @c, @title, @type, @vs, @key, @url, @o, @free)`,
+      { ...contentParams(c), m: T.int(mod.id), c: T.int(mod.course_id), o: T.int(next.n) },
+      tx,
+    );
+    return contentOut(row);
+  });
+}
+
+async function updateContent(teacherId, id, b) {
+  const c = await parseContent(teacherId, b);
+  const row = await one(
+    `UPDATE dbo.contents SET title = @title, type = @type, video_source = @vs, file_key = @key, url = @url, is_free_preview = @free
+     OUTPUT INSERTED.* WHERE content_id = @id`,
+    { ...contentParams(c), id: T.int(id) },
+  );
+  return contentOut(row);
+}
+
+async function deleteContent(id) {
+  const progress = await one("SELECT OBJECT_ID('dbo.content_progress') AS t");
+  if (progress.t) await query('DELETE FROM dbo.content_progress WHERE content_id = @id', { id: T.int(id) });
+  await query('DELETE FROM dbo.contents WHERE content_id = @id', { id: T.int(id) });
+  return { deleted: true };
+}
+
+// ---------- Full tree ----------
+async function curriculum(courseId) {
+  const p = { c: T.int(courseId) };
+  const subjects = await query('SELECT * FROM dbo.subjects WHERE course_id = @c ORDER BY sort_order', p);
+  const modules = await query('SELECT * FROM dbo.modules WHERE course_id = @c ORDER BY sort_order', p);
+  const contents = await query('SELECT * FROM dbo.contents WHERE course_id = @c ORDER BY sort_order', p);
+  return {
+    subjects: subjects.map((s) => ({
+      ...subjectOut(s),
+      modules: modules
+        .filter((m) => m.subject_id === s.subject_id)
+        .map((m) => ({ ...moduleOut(m), contents: contents.filter((x) => x.module_id === m.module_id).map(contentOut) })),
+    })),
+  };
+}
+
+module.exports = {
+  createSubject, updateSubject, deleteSubject, createModule, updateModule, deleteModule,
+  createContent, updateContent, deleteContent, curriculum, reorder,
+};

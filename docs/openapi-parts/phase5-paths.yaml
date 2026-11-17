@@ -1,0 +1,290 @@
+  /teacher/courses:
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: "The teacher's own courses" }
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      summary: Create a draft course. Thumbnail and the 2 demo videos can be added later; publishing needs them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseInput' }
+      responses:
+        '201': { description: Draft created }
+  /teacher/courses/{courseId}:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Course + readiness { ready, missing[] }' }
+        '404': { description: "Not found or not the teacher's" }
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted (drafts only) }
+        '409': { description: Published or has students }
+  /teacher/courses/{courseId}/status:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [status], properties: { status: { type: string } } }
+      responses:
+        '200': { description: Status changed }
+        '403': { description: Teacher subscription expired (limited mode) }
+        '422': { description: 'Not ready; details.missing lists what to finish' }
+  /teacher/courses/{courseId}/curriculum:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Subjects, modules and contents (own files as signed URLs)' }
+  /teacher/courses/{courseId}/subjects:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '201': { description: Subject created }
+  /teacher/courses/{courseId}/subjects/order:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [subjectIds], properties: { subjectIds: { type: array, items: { type: integer } } } }
+      responses:
+        '200': { description: Reordered }
+  /teacher/subjects/{subjectId}:
+    parameters: [{ name: subjectId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+        '409': { description: Has modules }
+  /teacher/subjects/{subjectId}/modules:
+    parameters: [{ name: subjectId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '201': { description: Module created with the next order number }
+  /teacher/subjects/{subjectId}/modules/order:
+    parameters: [{ name: subjectId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [moduleIds], properties: { moduleIds: { type: array, items: { type: integer } } } }
+      responses:
+        '200': { description: Reordered }
+        '400': { description: "The list is not exactly the subject's modules" }
+  /teacher/modules/{moduleId}:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+        '409': { description: Has content or questions }
+  /teacher/modules/{moduleId}/contents:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContentInput' }
+      responses:
+        '201': { description: Content created }
+  /teacher/modules/{moduleId}/contents/order:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [contentIds], properties: { contentIds: { type: array, items: { type: integer } } } }
+      responses:
+        '200': { description: Reordered }
+  /teacher/contents/{contentId}:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContentInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+  /teacher/courses/{courseId}/batches:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Batches of the course with student counts }
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BatchInput' }
+      responses:
+        '201': { description: Batch created }
+        '409': { description: Name already used in this course }
+  /teacher/batches/{batchId}:
+    parameters: [{ name: batchId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BatchInput' }
+      responses:
+        '200': { description: Updated (status active or closed) }
+  /uploads:
+    post:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: 'Small files (thumbnail, photo, pdf). Type is checked by content. Multipart fields: kind, file.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [kind, file]
+              properties:
+                kind: { type: string, enum: [thumbnail, photo, pdf] }
+                file: { type: string, format: binary }
+      responses:
+        '201': { description: '{ key, url }' }
+  /uploads/sessions:
+    post:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: Start a resumable video upload (up to 500 MB, 5 MB chunks)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, fileName, totalBytes]
+              properties:
+                kind: { type: string, enum: [video, demo_video] }
+                fileName: { type: string }
+                totalBytes: { type: integer }
+      responses:
+        '201': { description: '{ uploadId, chunkSize, receivedBytes }' }
+        '413': { description: Too large }
+  /uploads/sessions/{uploadId}:
+    parameters: [{ name: uploadId, in: path, required: true, schema: { type: string, format: uuid } }]
+    get:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: Where to resume
+      responses:
+        '200': { description: '{ receivedBytes, totalBytes, status }' }
+    put:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: 'Append a chunk: application/octet-stream body plus Content-Range bytes start-end/total'
+      responses:
+        '200': { description: '{ receivedBytes }' }
+        '409': { description: 'Wrong offset; details.receivedBytes says where to resume' }
+  /uploads/sessions/{uploadId}/complete:
+    parameters: [{ name: uploadId, in: path, required: true, schema: { type: string, format: uuid } }]
+    post:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ key, url }' }
+        '400': { description: File type not allowed }
+  /files/{kind}/{file}:
+    get:
+      tags: [files]
+      summary: 'Serve a stored file. thumbnail, photo and demo_video are public; others need exp and sig (10-minute signed URL). Supports Range.'
+      parameters:
+        - { name: kind, in: path, required: true, schema: { type: string } }
+        - { name: file, in: path, required: true, schema: { type: string } }
+        - { name: exp, in: query, schema: { type: integer } }
+        - { name: sig, in: query, schema: { type: string } }
+      responses:
+        '200': { description: File }
+        '206': { description: Partial content }
+        '403': { description: Missing or expired signature }
