@@ -10,9 +10,15 @@ export const ADMIN_NAV = [
 
 export const TEACHER_NAV = [
   { to: '/teacher', label: 'common.dashboard', end: true },
+  { to: '/teacher/requests', label: 'nav.requests' },
+  { to: '/teacher/students', label: 'nav.students' },
+  { to: '/teacher/live-classes', label: 'nav.liveClasses' },
+  { to: '/teacher/doubts', label: 'nav.doubts' },
   { to: '/teacher/courses', label: 'nav.courses' },
   { to: '/teacher/question-bank', label: 'nav.questionBank' },
   { to: '/teacher/exams', label: 'nav.exams' },
+  { to: '/teacher/programs', label: 'nav.programs' },
+  { to: '/teacher/profile', label: 'nav.profile' },
   { to: '/notifications', label: 'nav.notifications' },
 ];
 

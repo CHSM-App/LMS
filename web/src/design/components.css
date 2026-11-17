@@ -164,3 +164,10 @@
 .curriculum__contents { list-style: none; padding: 0; margin: var(--space-2) 0; display: flex; flex-direction: column; gap: var(--space-1); }
 .curriculum__contents li { padding: var(--space-2); border-radius: var(--radius-sm); }
 .curriculum__contents li:hover { background: var(--color-hover-bg); }
+
+/* ---------- Teacher operations ---------- */
+.attendance { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.attendance li { padding: var(--space-2) var(--space-3); border: 1px solid var(--color-divider); border-radius: var(--radius-sm); }
+.attendance .checkbox { margin-bottom: 0; }
+.reply { margin: var(--space-2) 0; padding: var(--space-3); border-left: 4px solid var(--color-success); background: var(--color-bg-section); border-radius: var(--radius-sm); }
+.avatar-lg { width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius-pill); margin-bottom: var(--space-3); }

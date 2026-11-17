@@ -24,6 +24,13 @@ const QuestionBankPage = lazy(() => import('../features/teacher/exams/QuestionBa
 const ExamsPage = lazy(() => import('../features/teacher/exams/ExamsPage'));
 const ExamBuilderPage = lazy(() => import('../features/teacher/exams/ExamBuilderPage'));
 const ExamResultsPage = lazy(() => import('../features/teacher/exams/ExamResultsPage'));
+const TeacherDashboard = lazy(() => import('../features/teacher/ops/TeacherDashboard'));
+const RequestsPage = lazy(() => import('../features/teacher/ops/RequestsPage'));
+const StudentsPage = lazy(() => import('../features/teacher/ops/StudentsPage'));
+const LiveClassesPage = lazy(() => import('../features/teacher/ops/LiveClassesPage'));
+const DoubtsPage = lazy(() => import('../features/teacher/ops/DoubtsProgramsProfile').then((m) => ({ default: m.DoubtsPage })));
+const ProgramsPage = lazy(() => import('../features/teacher/ops/DoubtsProgramsProfile').then((m) => ({ default: m.ProgramsPage })));
+const ProfilePage = lazy(() => import('../features/teacher/ops/DoubtsProgramsProfile').then((m) => ({ default: m.ProfilePage })));
 const ComingSoon = lazy(() => import('./ComingSoon'));
 const StyleGuide = lazy(() => import('./StyleGuide'));
 
@@ -63,7 +70,13 @@ export default function App() {
                 </Route>
 
                 <Route path="teacher" element={<RoleShell roles={['teacher']} />}>
-                  <Route index element={<ComingSoon title="common.dashboard" />} />
+                  <Route index element={<TeacherDashboard />} />
+                  <Route path="requests" element={<RequestsPage />} />
+                  <Route path="students" element={<StudentsPage />} />
+                  <Route path="live-classes" element={<LiveClassesPage />} />
+                  <Route path="doubts" element={<DoubtsPage />} />
+                  <Route path="programs" element={<ProgramsPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
                   <Route path="courses" element={<CoursesPage />} />
                   <Route path="courses/:courseId" element={<CourseEditorPage />} />
                   <Route path="question-bank" element={<QuestionBankPage />} />
