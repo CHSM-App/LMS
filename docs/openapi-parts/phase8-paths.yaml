@@ -1,0 +1,58 @@
+  /public/courses:
+    get:
+      tags: [public]
+      summary: Published courses of active teachers (no login)
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: language, in: query, schema: { type: string } }
+        - { name: subject, in: query, schema: { type: string } }
+        - { name: teacher, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: Course cards }
+  /public/filters:
+    get:
+      tags: [public]
+      responses:
+        '200': { description: Languages and subjects that have published courses }
+  /public/courses/{slug}:
+    parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [public]
+      summary: Course details with 2 demo videos; lesson titles only, preview links only for free lessons
+      responses:
+        '200': { description: Course details }
+        '404': { description: Not found or not published }
+  /public/teachers/{slug}:
+    parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [public]
+      responses:
+        '200': { description: Teacher public profile with published courses }
+        '404': { description: Not found }
+  /public/demo-requests:
+    post:
+      tags: [public]
+      summary: Book a live demo (OTP purpose demo_request)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [courseSlug, name, mobile, otp, education, acceptTerms]
+              properties:
+                courseSlug: { type: string }
+                name: { type: string }
+                mobile: { type: string }
+                otp: { type: string }
+                education: { type: string }
+                classStandard: { type: string, nullable: true }
+                preferredTime: { type: string, nullable: true }
+                message: { type: string, nullable: true }
+                acceptTerms: { type: boolean }
+                whatsappOptIn: { type: boolean }
+      responses:
+        '201': { description: Request sent to the teacher }
+        '409': { description: A pending request already exists }
