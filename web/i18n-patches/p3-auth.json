@@ -1,0 +1,134 @@
+{
+  "en": {
+    "shell": { "skip": "Skip to content", "navigation": "Main navigation" },
+    "nav": {
+      "account": "Account", "teacherRequests": "Teacher requests", "teachers": "Teachers", "subscriptions": "Subscriptions",
+      "auditLog": "Audit log", "courses": "Courses", "home": "Home", "myCourses": "My courses", "browse": "Browse courses",
+      "becomeTeacher": "Become a Teacher", "login": "Log in"
+    },
+    "notifications": { "bell": "Notifications, {{count}} unread", "title": "Notifications", "markAll": "Mark all as read", "markRead": "Mark as read", "empty": "You're all caught up", "unread": "Unread only" },
+    "validation": { "required": "This field is required", "years": "Enter years from 0 to 60", "email": "Enter a valid email address", "minReason": "Write at least 5 characters" },
+    "auth": {
+      "loginTitle": "Log in", "loginIntro": "Use your mobile number. We'll send you a one-time password.",
+      "mobileHint": "10-digit mobile number", "invalidMobile": "Enter a valid 10-digit mobile number",
+      "sendOtp": "Send OTP", "otpSentTo": "OTP sent to {{mobile}}.", "changeNumber": "Change number",
+      "verifyLogin": "Verify and log in", "resendIn": "Resend OTP in {{s}}s", "resend": "Resend OTP",
+      "newHere": "New here?", "studentRegister": "Register as a student", "becomeTeacher": "Become a Teacher",
+      "applyAgain": "Apply again", "goToLogin": "Go to login"
+    },
+    "consent": {
+      "agreePrefix": "I agree to the", "terms": "Terms of Use", "and": "and", "privacy": "Privacy Policy",
+      "whatsapp": "Send me class updates and Meet links on WhatsApp", "required": "Accept the Terms and Privacy Policy to continue"
+    },
+    "teacherReg": {
+      "title": "Become a Teacher", "intro": "Tell us about your teaching. The admin reviews every request and you'll be able to log in once it's accepted.",
+      "course": "Course you teach", "courseHint": "For example: Class 10 Maths (SSC)", "subject": "Subject", "experience": "Experience in years",
+      "qualification": "Qualification", "photo": "Your photo", "idDocument": "ID or certificate", "continue": "Verify mobile number",
+      "editDetails": "Edit details", "send": "Send request", "sentTitle": "Request sent", "sentBody": "The admin will review your request. Log in with your mobile number to check its status."
+    },
+    "teacherRequests": {
+      "title": "Teacher requests", "subtitle": "Review new teachers before they can log in.", "course": "Course", "subject": "Subject",
+      "experience": "Experience", "years": "{{n}} years", "requested": "Requested", "accept": "Accept", "reject": "Reject",
+      "rejectTitle": "Reject request from {{name}}", "rejectHint": "The teacher sees this reason when they try to log in.",
+      "confirmReject": "Reject request", "accepted": "Request accepted. {{name}} can now log in.", "rejected": "Request rejected",
+      "empty": "No requests here", "details": "Details", "documents": "Documents", "photo": "Photo", "idDocument": "ID / certificate"
+    },
+    "account": {
+      "title": "Account", "changeMobile": "Change mobile number", "changeMobileIntro": "We'll send an OTP to the new number.",
+      "newMobile": "New mobile number", "sendOtp": "Send OTP to new number", "confirmChange": "Change number",
+      "changed": "Mobile number changed", "deleteTitle": "Delete account",
+      "deleteIntro": "This removes your name, mobile number, email and photo. Your teacher keeps exam and attendance records as \"Deleted user\". This can't be undone.",
+      "deleteButton": "Delete my account", "deleteConfirm": "Enter the OTP sent to {{mobile}} to delete your account.",
+      "sendDeleteOtp": "Send OTP", "deleted": "Your account was deleted", "privacy": "Privacy Policy", "terms": "Terms of Use", "language": "App language"
+    },
+    "legal": { "version": "Version {{v}}" }
+  },
+  "mr": {
+    "shell": { "skip": "मुख्य मजकुराकडे जा", "navigation": "मुख्य नेव्हिगेशन" },
+    "nav": {
+      "account": "खाते", "teacherRequests": "शिक्षक विनंत्या", "teachers": "शिक्षक", "subscriptions": "सदस्यता",
+      "auditLog": "ऑडिट लॉग", "courses": "अभ्यासक्रम", "home": "मुख्यपृष्ठ", "myCourses": "माझे अभ्यासक्रम", "browse": "अभ्यासक्रम पहा",
+      "becomeTeacher": "शिक्षक व्हा", "login": "लॉग इन"
+    },
+    "notifications": { "bell": "सूचना, {{count}} न वाचलेल्या", "title": "सूचना", "markAll": "सर्व वाचल्या म्हणून चिन्हांकित करा", "markRead": "वाचले", "empty": "नवीन काहीही नाही", "unread": "फक्त न वाचलेल्या" },
+    "validation": { "required": "हे क्षेत्र आवश्यक आहे", "years": "0 ते 60 वर्षे लिहा", "email": "योग्य ईमेल पत्ता लिहा", "minReason": "किमान 5 अक्षरे लिहा" },
+    "auth": {
+      "loginTitle": "लॉग इन", "loginIntro": "तुमचा मोबाईल नंबर वापरा. आम्ही एक-वेळ पासवर्ड पाठवू.",
+      "mobileHint": "10 अंकी मोबाईल नंबर", "invalidMobile": "योग्य 10 अंकी मोबाईल नंबर लिहा",
+      "sendOtp": "OTP पाठवा", "otpSentTo": "{{mobile}} वर OTP पाठवला.", "changeNumber": "नंबर बदला",
+      "verifyLogin": "पडताळा आणि लॉग इन करा", "resendIn": "{{s}} सेकंदात OTP पुन्हा पाठवा", "resend": "OTP पुन्हा पाठवा",
+      "newHere": "नवीन आहात?", "studentRegister": "विद्यार्थी म्हणून नोंदणी करा", "becomeTeacher": "शिक्षक व्हा",
+      "applyAgain": "पुन्हा अर्ज करा", "goToLogin": "लॉग इन करा"
+    },
+    "consent": {
+      "agreePrefix": "मला मान्य आहे:", "terms": "वापराच्या अटी", "and": "आणि", "privacy": "गोपनीयता धोरण",
+      "whatsapp": "वर्गाच्या सूचना आणि Meet लिंक WhatsApp वर पाठवा", "required": "पुढे जाण्यासाठी अटी आणि गोपनीयता धोरण स्वीकारा"
+    },
+    "teacherReg": {
+      "title": "शिक्षक व्हा", "intro": "तुमच्या अध्यापनाबद्दल सांगा. प्रशासक प्रत्येक विनंती तपासतात; स्वीकारल्यानंतर तुम्ही लॉग इन करू शकाल.",
+      "course": "तुम्ही शिकवत असलेला अभ्यासक्रम", "courseHint": "उदा.: इयत्ता 10 गणित (SSC)", "subject": "विषय", "experience": "अनुभव (वर्षे)",
+      "qualification": "शैक्षणिक पात्रता", "photo": "तुमचा फोटो", "idDocument": "ओळखपत्र किंवा प्रमाणपत्र", "continue": "मोबाईल नंबर पडताळा",
+      "editDetails": "माहिती बदला", "send": "विनंती पाठवा", "sentTitle": "विनंती पाठवली", "sentBody": "प्रशासक तुमची विनंती तपासतील. स्थिती पाहण्यासाठी मोबाईल नंबरने लॉग इन करा."
+    },
+    "teacherRequests": {
+      "title": "शिक्षक विनंत्या", "subtitle": "लॉग इन करण्यापूर्वी नवीन शिक्षक तपासा.", "course": "अभ्यासक्रम", "subject": "विषय",
+      "experience": "अनुभव", "years": "{{n}} वर्षे", "requested": "विनंतीची तारीख", "accept": "स्वीकारा", "reject": "नाकारा",
+      "rejectTitle": "{{name}} यांची विनंती नाकारा", "rejectHint": "लॉग इन करताना शिक्षकाला हे कारण दिसेल.",
+      "confirmReject": "विनंती नाकारा", "accepted": "विनंती स्वीकारली. {{name}} आता लॉग इन करू शकतात.", "rejected": "विनंती नाकारली",
+      "empty": "येथे विनंत्या नाहीत", "details": "तपशील", "documents": "कागदपत्रे", "photo": "फोटो", "idDocument": "ओळखपत्र / प्रमाणपत्र"
+    },
+    "account": {
+      "title": "खाते", "changeMobile": "मोबाईल नंबर बदला", "changeMobileIntro": "नवीन नंबरवर OTP पाठवला जाईल.",
+      "newMobile": "नवीन मोबाईल नंबर", "sendOtp": "नवीन नंबरवर OTP पाठवा", "confirmChange": "नंबर बदला",
+      "changed": "मोबाईल नंबर बदलला", "deleteTitle": "खाते हटवा",
+      "deleteIntro": "यामुळे तुमचे नाव, मोबाईल नंबर, ईमेल आणि फोटो काढले जातील. परीक्षा आणि उपस्थितीच्या नोंदी शिक्षकाकडे \"हटवलेला वापरकर्ता\" म्हणून राहतील. हे परत करता येणार नाही.",
+      "deleteButton": "माझे खाते हटवा", "deleteConfirm": "खाते हटवण्यासाठी {{mobile}} वर आलेला OTP लिहा.",
+      "sendDeleteOtp": "OTP पाठवा", "deleted": "तुमचे खाते हटवले", "privacy": "गोपनीयता धोरण", "terms": "वापराच्या अटी", "language": "ॲपची भाषा"
+    },
+    "legal": { "version": "आवृत्ती {{v}}" }
+  },
+  "hi": {
+    "shell": { "skip": "मुख्य सामग्री पर जाएँ", "navigation": "मुख्य नेविगेशन" },
+    "nav": {
+      "account": "खाता", "teacherRequests": "शिक्षक अनुरोध", "teachers": "शिक्षक", "subscriptions": "सदस्यता",
+      "auditLog": "ऑडिट लॉग", "courses": "कोर्स", "home": "होम", "myCourses": "मेरे कोर्स", "browse": "कोर्स देखें",
+      "becomeTeacher": "शिक्षक बनें", "login": "लॉग इन"
+    },
+    "notifications": { "bell": "सूचनाएँ, {{count}} अपठित", "title": "सूचनाएँ", "markAll": "सभी को पढ़ा हुआ करें", "markRead": "पढ़ा हुआ करें", "empty": "कोई नई सूचना नहीं", "unread": "केवल अपठित" },
+    "validation": { "required": "यह फ़ील्ड ज़रूरी है", "years": "0 से 60 वर्ष लिखें", "email": "सही ईमेल पता लिखें", "minReason": "कम से कम 5 अक्षर लिखें" },
+    "auth": {
+      "loginTitle": "लॉग इन", "loginIntro": "अपना मोबाइल नंबर डालें। हम एक वन-टाइम पासवर्ड भेजेंगे।",
+      "mobileHint": "10 अंकों का मोबाइल नंबर", "invalidMobile": "सही 10 अंकों का मोबाइल नंबर लिखें",
+      "sendOtp": "OTP भेजें", "otpSentTo": "{{mobile}} पर OTP भेजा गया।", "changeNumber": "नंबर बदलें",
+      "verifyLogin": "जाँचें और लॉग इन करें", "resendIn": "{{s}} सेकंड में OTP फिर भेजें", "resend": "OTP फिर भेजें",
+      "newHere": "नए हैं?", "studentRegister": "छात्र के रूप में पंजीकरण करें", "becomeTeacher": "शिक्षक बनें",
+      "applyAgain": "फिर से आवेदन करें", "goToLogin": "लॉग इन पर जाएँ"
+    },
+    "consent": {
+      "agreePrefix": "मैं सहमत हूँ:", "terms": "उपयोग की शर्तें", "and": "और", "privacy": "गोपनीयता नीति",
+      "whatsapp": "क्लास अपडेट और Meet लिंक WhatsApp पर भेजें", "required": "आगे बढ़ने के लिए शर्तें और गोपनीयता नीति स्वीकार करें"
+    },
+    "teacherReg": {
+      "title": "शिक्षक बनें", "intro": "अपने पढ़ाने के बारे में बताएँ। एडमिन हर अनुरोध देखते हैं; स्वीकार होने पर आप लॉग इन कर पाएँगे।",
+      "course": "आप जो कोर्स पढ़ाते हैं", "courseHint": "उदाहरण: कक्षा 10 गणित (SSC)", "subject": "विषय", "experience": "अनुभव (वर्ष)",
+      "qualification": "योग्यता", "photo": "आपकी फ़ोटो", "idDocument": "पहचान पत्र या प्रमाणपत्र", "continue": "मोबाइल नंबर जाँचें",
+      "editDetails": "जानकारी बदलें", "send": "अनुरोध भेजें", "sentTitle": "अनुरोध भेजा गया", "sentBody": "एडमिन आपका अनुरोध देखेंगे। स्थिति देखने के लिए मोबाइल नंबर से लॉग इन करें।"
+    },
+    "teacherRequests": {
+      "title": "शिक्षक अनुरोध", "subtitle": "लॉग इन से पहले नए शिक्षकों की जाँच करें।", "course": "कोर्स", "subject": "विषय",
+      "experience": "अनुभव", "years": "{{n}} वर्ष", "requested": "अनुरोध की तारीख", "accept": "स्वीकार करें", "reject": "अस्वीकार करें",
+      "rejectTitle": "{{name}} का अनुरोध अस्वीकार करें", "rejectHint": "लॉग इन करते समय शिक्षक को यह कारण दिखेगा।",
+      "confirmReject": "अनुरोध अस्वीकार करें", "accepted": "अनुरोध स्वीकार हुआ। {{name}} अब लॉग इन कर सकते हैं।", "rejected": "अनुरोध अस्वीकार किया गया",
+      "empty": "यहाँ कोई अनुरोध नहीं", "details": "विवरण", "documents": "दस्तावेज़", "photo": "फ़ोटो", "idDocument": "पहचान पत्र / प्रमाणपत्र"
+    },
+    "account": {
+      "title": "खाता", "changeMobile": "मोबाइल नंबर बदलें", "changeMobileIntro": "नए नंबर पर OTP भेजा जाएगा।",
+      "newMobile": "नया मोबाइल नंबर", "sendOtp": "नए नंबर पर OTP भेजें", "confirmChange": "नंबर बदलें",
+      "changed": "मोबाइल नंबर बदल गया", "deleteTitle": "खाता हटाएँ",
+      "deleteIntro": "इससे आपका नाम, मोबाइल नंबर, ईमेल और फ़ोटो हट जाएँगे। परीक्षा और उपस्थिति के रिकॉर्ड शिक्षक के पास \"हटाया गया उपयोगकर्ता\" के रूप में रहेंगे। इसे वापस नहीं किया जा सकता।",
+      "deleteButton": "मेरा खाता हटाएँ", "deleteConfirm": "खाता हटाने के लिए {{mobile}} पर आया OTP लिखें।",
+      "sendDeleteOtp": "OTP भेजें", "deleted": "आपका खाता हटा दिया गया", "privacy": "गोपनीयता नीति", "terms": "उपयोग की शर्तें", "language": "ऐप की भाषा"
+    },
+    "legal": { "version": "संस्करण {{v}}" }
+  }
+}

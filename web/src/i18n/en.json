@@ -1,5 +1,8 @@
 {
-  "app": { "name": "LMS", "tagline": "Learn from teachers you trust" },
+  "app": {
+    "name": "LMS",
+    "tagline": "Learn from teachers you trust"
+  },
   "common": {
     "loading": "Loading…",
     "retry": "Try again",
@@ -64,9 +67,123 @@
     "present": "Present",
     "absent": "Absent"
   },
-  "upload": { "failed": "Upload failed" },
+  "upload": {
+    "failed": "Upload failed"
+  },
   "auth": {
     "otpLabel": "One-time password",
-    "otpDigit": "Digit {{n}}"
+    "otpDigit": "Digit {{n}}",
+    "loginTitle": "Log in",
+    "loginIntro": "Use your mobile number. We'll send you a one-time password.",
+    "mobileHint": "10-digit mobile number",
+    "invalidMobile": "Enter a valid 10-digit mobile number",
+    "sendOtp": "Send OTP",
+    "otpSentTo": "OTP sent to {{mobile}}.",
+    "changeNumber": "Change number",
+    "verifyLogin": "Verify and log in",
+    "resendIn": "Resend OTP in {{s}}s",
+    "resend": "Resend OTP",
+    "newHere": "New here?",
+    "studentRegister": "Register as a student",
+    "becomeTeacher": "Become a Teacher",
+    "applyAgain": "Apply again",
+    "goToLogin": "Go to login"
+  },
+  "shell": {
+    "skip": "Skip to content",
+    "navigation": "Main navigation"
+  },
+  "nav": {
+    "account": "Account",
+    "teacherRequests": "Teacher requests",
+    "teachers": "Teachers",
+    "subscriptions": "Subscriptions",
+    "auditLog": "Audit log",
+    "courses": "Courses",
+    "home": "Home",
+    "myCourses": "My courses",
+    "browse": "Browse courses",
+    "becomeTeacher": "Become a Teacher",
+    "login": "Log in"
+  },
+  "notifications": {
+    "bell": "Notifications, {{count}} unread",
+    "title": "Notifications",
+    "markAll": "Mark all as read",
+    "markRead": "Mark as read",
+    "empty": "You're all caught up",
+    "unread": "Unread only"
+  },
+  "validation": {
+    "required": "This field is required",
+    "years": "Enter years from 0 to 60",
+    "email": "Enter a valid email address",
+    "minReason": "Write at least 5 characters"
+  },
+  "consent": {
+    "agreePrefix": "I agree to the",
+    "terms": "Terms of Use",
+    "and": "and",
+    "privacy": "Privacy Policy",
+    "whatsapp": "Send me class updates and Meet links on WhatsApp",
+    "required": "Accept the Terms and Privacy Policy to continue"
+  },
+  "teacherReg": {
+    "title": "Become a Teacher",
+    "intro": "Tell us about your teaching. The admin reviews every request and you'll be able to log in once it's accepted.",
+    "course": "Course you teach",
+    "courseHint": "For example: Class 10 Maths (SSC)",
+    "subject": "Subject",
+    "experience": "Experience in years",
+    "qualification": "Qualification",
+    "photo": "Your photo",
+    "idDocument": "ID or certificate",
+    "continue": "Verify mobile number",
+    "editDetails": "Edit details",
+    "send": "Send request",
+    "sentTitle": "Request sent",
+    "sentBody": "The admin will review your request. Log in with your mobile number to check its status."
+  },
+  "teacherRequests": {
+    "title": "Teacher requests",
+    "subtitle": "Review new teachers before they can log in.",
+    "course": "Course",
+    "subject": "Subject",
+    "experience": "Experience",
+    "years": "{{n}} years",
+    "requested": "Requested",
+    "accept": "Accept",
+    "reject": "Reject",
+    "rejectTitle": "Reject request from {{name}}",
+    "rejectHint": "The teacher sees this reason when they try to log in.",
+    "confirmReject": "Reject request",
+    "accepted": "Request accepted. {{name}} can now log in.",
+    "rejected": "Request rejected",
+    "empty": "No requests here",
+    "details": "Details",
+    "documents": "Documents",
+    "photo": "Photo",
+    "idDocument": "ID / certificate"
+  },
+  "account": {
+    "title": "Account",
+    "changeMobile": "Change mobile number",
+    "changeMobileIntro": "We'll send an OTP to the new number.",
+    "newMobile": "New mobile number",
+    "sendOtp": "Send OTP to new number",
+    "confirmChange": "Change number",
+    "changed": "Mobile number changed",
+    "deleteTitle": "Delete account",
+    "deleteIntro": "This removes your name, mobile number, email and photo. Your teacher keeps exam and attendance records as \"Deleted user\". This can't be undone.",
+    "deleteButton": "Delete my account",
+    "deleteConfirm": "Enter the OTP sent to {{mobile}} to delete your account.",
+    "sendDeleteOtp": "Send OTP",
+    "deleted": "Your account was deleted",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "language": "App language"
+  },
+  "legal": {
+    "version": "Version {{v}}"
   }
 }
