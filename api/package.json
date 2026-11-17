@@ -27,12 +27,13 @@
     "jsdom": "^31.0.1",
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.12.1",
-    "mssql": "^12.7.14",
+    "mssql": "^11.0.2",
     "multer": "^2.5.0",
     "node-cron": "^4.6.0"
   },
   "devDependencies": {
-    "@apidevtools/swagger-parser": "^13.1.0",
+    "@apidevtools/swagger-parser": "^10.1.0",
+    "express-list-endpoints": "^7.1.1",
     "jest": "^30.5.2",
     "nock": "^15.0.6",
     "supertest": "^7.3.2"
@@ -44,5 +45,10 @@
       "<rootDir>/tests/setup/env.js"
     ],
     "testTimeout": 30000
+  },
+  "overrides": {
+    "https-proxy-agent": "7.0.6",
+    "http-proxy-agent": "7.0.2",
+    "agent-base": "7.1.3"
   }
 }
