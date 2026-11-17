@@ -18,14 +18,30 @@ async function resetTestDb() {
   await migrate({ quiet: true });
 }
 
-// Deletes all rows (keeps schema) — fast reset between test files.
+let deleteOrder;
+
+// Children before parents, computed once from sys.foreign_keys.
+async function computeDeleteOrder(pool) {
+  const tables = (await pool.request().query("SELECT name FROM sys.tables WHERE name <> 'schema_migrations'")).recordset.map((r) => r.name);
+  const fks = (await pool.request().query(`
+    SELECT OBJECT_NAME(parent_object_id) AS child, OBJECT_NAME(referenced_object_id) AS parent
+    FROM sys.foreign_keys WHERE parent_object_id <> referenced_object_id`)).recordset;
+  const order = [];
+  const remaining = new Set(tables);
+  while (remaining.size) {
+    const leaf = [...remaining].find((t) => !fks.some((f) => f.parent === t && remaining.has(f.child)));
+    if (!leaf) throw new Error('FK cycle; cannot compute delete order');
+    order.push(leaf);
+    remaining.delete(leaf);
+  }
+  return order;
+}
+
+// Deletes all rows (keeps schema) — fast reset between tests.
 async function truncateAll() {
   const pool = await getPool();
-  await pool.request().batch(`
-    EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL';
-    EXEC sp_MSforeachtable 'IF OBJECT_ID(''?'') <> OBJECT_ID(''dbo.schema_migrations'') DELETE FROM ?';
-    EXEC sp_MSforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL';
-  `);
+  if (!deleteOrder) deleteOrder = await computeDeleteOrder(pool);
+  await pool.request().batch(deleteOrder.map((t) => `DELETE FROM dbo.[${t}];`).join('\n'));
 }
 
 async function closeAll() {

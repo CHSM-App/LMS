@@ -44,7 +44,9 @@
     "setupFiles": [
       "<rootDir>/tests/setup/env.js"
     ],
-    "testTimeout": 30000
+    "testTimeout": 30000,
+    "globalSetup": "<rootDir>/tests/setup/global.js",
+    "maxWorkers": 1
   },
   "overrides": {
     "https-proxy-agent": "7.0.6",

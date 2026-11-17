@@ -42,3 +42,187 @@ paths:
       responses:
         '200': { description: OK }
         '503': { description: Database unavailable }
+  /auth/otp/send:
+    post:
+      tags: [auth]
+      summary: Send a one-time password (same response for known and unknown numbers)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mobile, purpose]
+              properties:
+                mobile: { $ref: '#/components/schemas/Mobile' }
+                purpose: { type: string, enum: [login, teacher_register, student_register, demo_request, delete_account] }
+      responses:
+        '200': { description: '{ sent, resendAfterSec }' }
+        '429': { description: Too many OTP requests }
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Log in with mobile + OTP. Web gets an HttpOnly refresh cookie; X-Client mobile gets refreshToken in the body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mobile, otp]
+              properties:
+                mobile: { $ref: '#/components/schemas/Mobile' }
+                otp: { $ref: '#/components/schemas/Otp' }
+                deviceId: { type: string, maxLength: 64 }
+      responses:
+        '200': { description: '{ accessToken, user, refreshToken? }' }
+        '403': { description: Blocked / request pending / request rejected }
+        '404': { description: No account for this mobile }
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Rotate the refresh token (HttpOnly cookie, or JSON body { refreshToken } from the mobile app). Reuse of a rotated token logs out every session.
+      responses:
+        '200': { description: '{ accessToken, refreshToken? }' }
+        '401': { description: Session ended }
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Revoke the session (cookie, or JSON body { refreshToken } from the mobile app)
+      responses:
+        '200': { description: Logged out }
+  /auth/me:
+    get:
+      tags: [auth]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The signed-in user and their profile }
+  /teacher-requests:
+    post:
+      tags: [public]
+      summary: Become a Teacher (multipart; validated in the route)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name, mobile, otp, courseName, subject, experienceYears, acceptTerms]
+              properties:
+                name: { type: string, maxLength: 120 }
+                mobile: { type: string }
+                otp: { type: string }
+                courseName: { type: string, maxLength: 200 }
+                subject: { type: string, maxLength: 120 }
+                experienceYears: { type: integer, minimum: 0, maximum: 60 }
+                email: { type: string }
+                city: { type: string }
+                qualification: { type: string }
+                acceptTerms: { type: boolean }
+                whatsappOptIn: { type: boolean }
+                photo: { type: string, format: binary }
+                idDocument: { type: string, format: binary }
+      responses:
+        '201': { description: '{ requestId, status: pending }' }
+        '409': { description: Already pending / already registered }
+  /account/change-mobile/start:
+    post:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [newMobile], properties: { newMobile: { $ref: '#/components/schemas/Mobile' } } }
+      responses:
+        '200': { description: OTP sent to the new number }
+        '409': { description: Number already registered }
+  /account/change-mobile/confirm:
+    post:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newMobile, otp]
+              properties:
+                newMobile: { $ref: '#/components/schemas/Mobile' }
+                otp: { $ref: '#/components/schemas/Otp' }
+                refreshToken: { type: string }
+      responses:
+        '200': { description: Mobile changed; other sessions revoked }
+  /account/delete:
+    post:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [otp], properties: { otp: { $ref: '#/components/schemas/Otp' } } }
+      responses:
+        '200': { description: Account anonymised and closed }
+        '409': { description: Teacher with students / admin account }
+  /public/legal/{doc}:
+    get:
+      tags: [public]
+      parameters:
+        - { name: doc, in: path, required: true, schema: { type: string } }
+        - { name: lang, in: query, schema: { type: string, enum: [en, mr, hi] } }
+      responses:
+        '200': { description: '{ doc, version, markdown, support }' }
+  /public/config:
+    get:
+      tags: [public]
+      responses:
+        '200': { description: '{ supportContact, policyVersion }' }
+  /admin/teacher-requests:
+    get:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: Paginated teacher requests }
+  /admin/teacher-requests/{id}/accept:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Accepted; teacher account created }
+        '409': { description: Not pending }
+  /admin/teacher-requests/{id}/reject:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string } } }
+      responses:
+        '200': { description: Rejected }
+  /admin/users/{publicId}/change-mobile:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: publicId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newMobile]
+              properties:
+                newMobile: { $ref: '#/components/schemas/Mobile' }
+                reason: { type: string }
+      responses:
+        '200': { description: Mobile changed (audited) }

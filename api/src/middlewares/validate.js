@@ -10,7 +10,8 @@ const validator = OpenApiValidator.middleware({
   validateRequests: { allowUnknownQueryParameters: false, removeAdditional: false },
   validateResponses: false,
   ignoreUndocumented: true,
-  ignorePaths: /\/(uploads|files)\b/,
+  // Multipart and binary routes are validated inside the route (body isn't parsed yet here).
+  ignorePaths: /\/api\/v1\/(uploads|files|teacher-requests$|student\/doubts$|teacher\/modules\/\d+\/questions\/import$)/,
   fileUploader: false,
   validateSecurity: false,
 });
