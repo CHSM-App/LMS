@@ -9,7 +9,7 @@ test.beforeAll(async ({ request }) => {
   w = await hook(request, 'POST', '/world');
 });
 
-const publicRoutes = () => ['/', '/courses', `/courses/${w.slug}`, '/login', '/become-teacher', '/register', '/terms', '/privacy', `/enroll/${w.slug}`, '/no/such/page'];
+const publicRoutes = () => ['/', '/courses', `/courses/${w.slug}`, '/login', '/become-teacher', '/register', '/terms', '/privacy', '/account/delete-info', `/enroll/${w.slug}`, '/no/such/page'];
 
 test('public deep links load and survive a refresh', async ({ page }) => {
   for (const route of publicRoutes()) {

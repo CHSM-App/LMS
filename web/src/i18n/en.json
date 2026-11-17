@@ -763,5 +763,22 @@
   },
   "register": {
     "create": "Create account"
+  },
+  "deleteInfo": {
+    "title": "Delete your account",
+    "intro": "You can delete your account yourself at any time, from the app or the website.",
+    "howTitle": "How to delete",
+    "inApp": "In the app: open More → Account → Delete account.",
+    "onWeb": "On the website: log in, open Account → Delete account.",
+    "otp": "We send an OTP to your mobile number to confirm it's you.",
+    "whatTitle": "What happens",
+    "deleted": "Name, mobile number, email, photo and profile details are deleted right away.",
+    "sessions": "You are logged out on every device.",
+    "downloads": "Downloaded videos are removed from your phone and their offline licences are cancelled.",
+    "kept": "Exam scores and attendance stay with your teacher as \"Deleted user\", with no personal details.",
+    "when": "Deletion happens immediately and can't be undone.",
+    "helpTitle": "Need help?",
+    "help": "Can't log in? Contact {{contact}} from your registered mobile number and we'll delete the account for you.",
+    "helpNoContact": "Can't log in? Contact your teacher or the school office from your registered mobile number."
   }
 }

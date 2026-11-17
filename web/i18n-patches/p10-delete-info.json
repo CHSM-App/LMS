@@ -1,0 +1,59 @@
+{
+  "en": {
+    "deleteInfo": {
+      "title": "Delete your account",
+      "intro": "You can delete your account yourself at any time, from the app or the website.",
+      "howTitle": "How to delete",
+      "inApp": "In the app: open More → Account → Delete account.",
+      "onWeb": "On the website: log in, open Account → Delete account.",
+      "otp": "We send an OTP to your mobile number to confirm it's you.",
+      "whatTitle": "What happens",
+      "deleted": "Name, mobile number, email, photo and profile details are deleted right away.",
+      "sessions": "You are logged out on every device.",
+      "downloads": "Downloaded videos are removed from your phone and their offline licences are cancelled.",
+      "kept": "Exam scores and attendance stay with your teacher as \"Deleted user\", with no personal details.",
+      "when": "Deletion happens immediately and can't be undone.",
+      "helpTitle": "Need help?",
+      "help": "Can't log in? Contact {{contact}} from your registered mobile number and we'll delete the account for you.",
+      "helpNoContact": "Can't log in? Contact your teacher or the school office from your registered mobile number."
+    }
+  },
+  "mr": {
+    "deleteInfo": {
+      "title": "तुमचे खाते हटवा",
+      "intro": "तुम्ही ॲप किंवा वेबसाइटवरून कधीही स्वतः खाते हटवू शकता.",
+      "howTitle": "कसे हटवावे",
+      "inApp": "ॲपमध्ये: अधिक → खाते → खाते हटवा उघडा.",
+      "onWeb": "वेबसाइटवर: लॉग इन करा, खाते → खाते हटवा उघडा.",
+      "otp": "ते तुम्हीच आहात याची खात्री करण्यासाठी आम्ही तुमच्या मोबाईलवर OTP पाठवतो.",
+      "whatTitle": "काय होते",
+      "deleted": "नाव, मोबाईल नंबर, ईमेल, फोटो आणि प्रोफाइल माहिती लगेच हटवली जाते.",
+      "sessions": "तुम्ही सर्व उपकरणांवरून लॉग आउट होता.",
+      "downloads": "डाउनलोड केलेले व्हिडिओ तुमच्या फोनवरून काढले जातात आणि त्यांचे ऑफलाइन परवाने रद्द होतात.",
+      "kept": "परीक्षेचे गुण आणि उपस्थिती \"Deleted user\" म्हणून, वैयक्तिक माहितीशिवाय, शिक्षकांकडे राहते.",
+      "when": "खाते लगेच हटवले जाते आणि ते परत आणता येत नाही.",
+      "helpTitle": "मदत हवी आहे?",
+      "help": "लॉग इन करता येत नाही? नोंदणीकृत मोबाईल नंबरवरून {{contact}} शी संपर्क साधा, आम्ही खाते हटवू.",
+      "helpNoContact": "लॉग इन करता येत नाही? नोंदणीकृत मोबाईल नंबरवरून तुमच्या शिक्षकांशी किंवा कार्यालयाशी संपर्क साधा."
+    }
+  },
+  "hi": {
+    "deleteInfo": {
+      "title": "अपना खाता हटाएँ",
+      "intro": "आप ऐप या वेबसाइट से कभी भी खुद अपना खाता हटा सकते हैं।",
+      "howTitle": "कैसे हटाएँ",
+      "inApp": "ऐप में: और → खाता → खाता हटाएँ खोलें।",
+      "onWeb": "वेबसाइट पर: लॉग इन करें, खाता → खाता हटाएँ खोलें।",
+      "otp": "यह आप ही हैं, इसकी पुष्टि के लिए हम आपके मोबाइल पर OTP भेजते हैं।",
+      "whatTitle": "क्या होता है",
+      "deleted": "नाम, मोबाइल नंबर, ईमेल, फ़ोटो और प्रोफ़ाइल जानकारी तुरंत हटा दी जाती है।",
+      "sessions": "आप सभी डिवाइस से लॉग आउट हो जाते हैं।",
+      "downloads": "डाउनलोड किए गए वीडियो आपके फ़ोन से हटा दिए जाते हैं और उनके ऑफ़लाइन लाइसेंस रद्द हो जाते हैं।",
+      "kept": "परीक्षा के अंक और उपस्थिति \"Deleted user\" के रूप में, बिना निजी जानकारी के, शिक्षक के पास रहते हैं।",
+      "when": "खाता तुरंत हटाया जाता है और इसे वापस नहीं लाया जा सकता।",
+      "helpTitle": "मदद चाहिए?",
+      "help": "लॉग इन नहीं हो पा रहा? अपने पंजीकृत मोबाइल नंबर से {{contact}} से संपर्क करें, हम खाता हटा देंगे।",
+      "helpNoContact": "लॉग इन नहीं हो पा रहा? अपने पंजीकृत मोबाइल नंबर से अपने शिक्षक या कार्यालय से संपर्क करें।"
+    }
+  }
+}

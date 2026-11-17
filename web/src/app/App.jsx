@@ -10,6 +10,7 @@ import { ToastProvider, Spinner } from '../components';
 const LoginPage = lazy(() => import('../features/auth/LoginPage'));
 const BecomeTeacherPage = lazy(() => import('../features/auth/BecomeTeacherPage'));
 const LegalPage = lazy(() => import('../features/public/LegalPage'));
+const DeleteInfoPage = lazy(() => import('../features/public/DeleteInfoPage'));
 const AccountPage = lazy(() => import('../features/account/AccountPage'));
 const NotificationsPage = lazy(() => import('../features/notifications/NotificationsPage'));
 const AdminDashboard = lazy(() => import('../features/admin/AdminDashboard'));
@@ -77,6 +78,7 @@ export default function App() {
                   <Route path="enroll/:slug" element={<EnrollPage />} />
                   <Route path="terms" element={<LegalPage doc="terms" />} />
                   <Route path="privacy" element={<LegalPage doc="privacy" />} />
+                  <Route path="account/delete-info" element={<DeleteInfoPage />} />
                   {import.meta.env.DEV && <Route path="_styleguide" element={<StyleGuide />} />}
                 </Route>
 
