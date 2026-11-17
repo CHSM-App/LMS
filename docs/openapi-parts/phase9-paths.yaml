@@ -1,0 +1,244 @@
+  /auth/register-student:
+    post:
+      tags: [auth]
+      summary: Student registration with OTP (purpose student_register); logs the student in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, mobile, otp, education, acceptTerms]
+              properties:
+                name: { type: string }
+                mobile: { type: string }
+                otp: { type: string }
+                education: { type: string }
+                classStandard: { type: string, nullable: true }
+                city: { type: string, nullable: true }
+                email: { type: string, nullable: true }
+                preferredLang: { type: string, nullable: true }
+                acceptTerms: { type: boolean }
+                whatsappOptIn: { type: boolean }
+                deviceId: { type: string, nullable: true }
+      responses:
+        '201': { description: Registered and logged in }
+        '409': { description: Number already registered or is a teacher }
+  /student/dashboard:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'myCourses (progress, end date, batch, readOnly), upcomingLiveClasses, requests' }
+  /student/enrollments:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Enrollment requests sent }
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [courseSlug], properties: { courseSlug: { type: string }, message: { type: string, nullable: true } } }
+      responses:
+        '201': { description: Request sent to the teacher }
+        '409': { description: Already pending or enrolled }
+  /student/courses/{courseId}:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Curriculum with completion and lock flags }
+        '403': { description: Not enrolled or access ended or paused }
+  /student/contents/{contentId}:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Lesson with signed URL and last position }
+  /student/contents/{contentId}/progress:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { positionSec: { type: integer }, completed: { type: boolean } } }
+      responses:
+        '200': { description: Saved }
+  /student/progress/sync:
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: Offline progress batch from the app; completion is never undone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items: { type: array, items: { type: object, properties: { contentId: { type: integer }, positionSec: { type: integer }, completedAt: { type: string } } } }
+      responses:
+        '200': { description: Applied count }
+  /student/live-classes:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Upcoming classes for my courses and batch }
+  /student/progress:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Per course lessons, attendance percent and exam performance }
+  /student/courses/{courseId}/exams:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Exams for my batch with locked, attemptsLeft and best result }
+  /student/exams/{examId}/attempts:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: Start a new attempt or resume the open one (server deadline)
+      responses:
+        '201': { description: Started }
+        '200': { description: Resumed }
+        '403': { description: Locked or closed or no attempts left }
+  /student/attempts/{attemptId}/answers/{questionId}:
+    parameters:
+      - { name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: questionId, in: path, required: true, schema: { type: integer } }
+    put:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: 'Autosave. Body: { optionId } or { optionIds } or { text }. Practice returns correctness.'
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: Saved }
+        '409': { description: Time is up or already submitted }
+  /student/attempts/{attemptId}/submit:
+    parameters: [{ name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }]
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Score and pass or fail }
+  /student/attempts/{attemptId}/result:
+    parameters: [{ name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Marks and rank with per-question review }
+        '403': { description: Not submitted yet }
+  /student/courses/{courseId}/final-result:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Weighted final result }
+  /student/doubts:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: My doubts with teacher replies }
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: 'Multipart or JSON: courseId, question, optional attachment (image or pdf up to 5 MB)'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                courseId: { type: integer }
+                question: { type: string }
+                attachment: { type: string, format: binary }
+      responses:
+        '201': { description: Doubt sent }
+  /student/profile:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: My profile }
+    put:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [name], properties: { name: { type: string } } }
+      responses:
+        '200': { description: Saved }
+  /student/devices:
+    get:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Registered devices (max 2) }
+    post:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [deviceId], properties: { deviceId: { type: string }, deviceName: { type: string }, platform: { type: string } } }
+      responses:
+        '201': { description: Registered }
+        '409': { description: DEVICE_LIMIT }
+  /student/devices/{deviceId}:
+    parameters: [{ name: deviceId, in: path, required: true, schema: { type: string } }]
+    delete:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Removed; its downloads are revoked }
+  /student/contents/{contentId}/download:
+    parameters:
+      - { name: contentId, in: path, required: true, schema: { type: integer } }
+      - { name: X-Device-Id, in: header, required: true, schema: { type: string } }
+    post:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'downloadUrl (10 min), keyId, key (base64), licenseExpiresAt, sizeBytes' }
+        '409': { description: Linked video (online only) }
+  /student/downloads/renew:
+    post:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId, contentIds]
+              properties:
+                deviceId: { type: string }
+                contentIds: { type: array, items: { type: integer } }
+      responses:
+        '200': { description: 'Per lesson: new licenseExpiresAt, or revoked with reason' }

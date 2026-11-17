@@ -13,6 +13,11 @@ const jobs = [
     run: () => require('../services/liveClass.service').runLiveClassReminders(),
   },
   {
+    name: 'exam-auto-submit',
+    schedule: '* * * * *',
+    run: () => require('../services/attempt.service').runAutoSubmit(),
+  },
+  {
     name: 'upload-cleanup',
     schedule: '45 * * * *',
     run: () => require('../services/upload.service').cleanupExpired(),

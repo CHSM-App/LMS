@@ -93,8 +93,13 @@ async function revokeAllForUser(userId, tx, { exceptTokenHash } = {}) {
   );
 }
 
+async function ownerOf(refreshToken) {
+  const r = await one('SELECT user_id FROM dbo.refresh_tokens WHERE token_hash = @h', { h: T.varbinary(sha256(refreshToken)) });
+  return r ? r.user_id : null;
+}
+
 function verifyAccess(token) {
   return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 }
 
-module.exports = { issue, rotate, revokeByToken, revokeAllForUser, verifyAccess, sha256, ACCESS_TTL_SEC, REFRESH_TTL_MS };
+module.exports = { issue, rotate, revokeByToken, revokeAllForUser, verifyAccess, ownerOf, sha256, ACCESS_TTL_SEC, REFRESH_TTL_MS };

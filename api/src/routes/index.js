@@ -10,6 +10,7 @@ router.use(require('./admin.routes'));
 router.use(require('./teacher.routes'));
 router.use(require('./teacherExams.routes'));
 router.use(require('./teacherOps.routes'));
+router.use(require('./student.routes'));
 router.use(require('./uploads.routes'));
 router.use(require('./files.routes'));
 
