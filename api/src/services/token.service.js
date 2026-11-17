@@ -7,6 +7,8 @@ const { APIError } = require('../utils/APIError');
 
 const ACCESS_TTL_SEC = 15 * 60;
 const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+// A rotated token presented again this soon, while its replacement is unused, is a lost response, not theft.
+const REUSE_GRACE_MS = 20 * 1000;
 
 const sha256 = (s) => crypto.createHash('sha256').update(s).digest();
 const unauthorized = (msg = 'Your session has ended. Log in again.', code = 'SESSION_ENDED') => new APIError(401, msg, code);
@@ -45,7 +47,7 @@ async function rotate(refreshToken) {
   if (!refreshToken || typeof refreshToken !== 'string') throw unauthorized();
   const outcome = await withTransaction(async (tx) => {
     const row = await one(
-      `SELECT t.token_id, t.user_id, t.family_id, t.device_id, t.expires_at, t.revoked_at,
+      `SELECT t.token_id, t.user_id, t.family_id, t.device_id, t.expires_at, t.revoked_at, t.replaced_by,
               u.role, u.status, u.public_id, u.deleted_at
        FROM dbo.refresh_tokens t WITH (UPDLOCK) JOIN dbo.users u ON u.user_id = t.user_id
        WHERE t.token_hash = @h`,
@@ -54,8 +56,24 @@ async function rotate(refreshToken) {
     );
     if (!row) return { error: unauthorized() };
     if (row.revoked_at) {
-      await revokeAllForUser(row.user_id, tx);
-      return { error: unauthorized('This session was used somewhere else. Log in again.', 'TOKEN_REUSED') };
+      // Lost response: the browser reloaded (or the network dropped) while a refresh was in flight, so the
+      // client never stored the replacement. Within a short window, and only while that replacement is still
+      // unused, issue a new token in the same family instead of treating it as theft.
+      const successor = row.replaced_by
+        ? await one('SELECT token_id, revoked_at FROM dbo.refresh_tokens WITH (UPDLOCK) WHERE token_id = @id', { id: T.int(row.replaced_by) }, tx)
+        : null;
+      const withinGrace = clock.now() - new Date(row.revoked_at) <= REUSE_GRACE_MS;
+      if (!successor || successor.revoked_at || !withinGrace || row.deleted_at || row.status !== 'approved') {
+        await revokeAllForUser(row.user_id, tx);
+        return { error: unauthorized('This session was used somewhere else. Log in again.', 'TOKEN_REUSED') };
+      }
+      const next = await insertRefresh(row.user_id, row.family_id, row.device_id, tx);
+      // The undelivered successor is retired, and the presented token now points at the new one, so a further
+      // lost response (rapid reloads) is still recognised — while a successor that was really used is not.
+      await query('UPDATE dbo.refresh_tokens SET revoked_at = @now, replaced_by = @n WHERE token_id = @id', { id: T.int(successor.token_id), n: T.int(next.tokenId), now: T.datetime(clock.now()) }, tx);
+      await query('UPDATE dbo.refresh_tokens SET replaced_by = @n WHERE token_id = @id', { id: T.int(row.token_id), n: T.int(next.tokenId) }, tx);
+      const user = { user_id: row.user_id, role: row.role, public_id: row.public_id };
+      return { accessToken: signAccess(user), refreshToken: next.token, userId: row.user_id };
     }
     if (new Date(row.expires_at) <= clock.now() || row.deleted_at || row.status !== 'approved') {
       await query('UPDATE dbo.refresh_tokens SET revoked_at = @now WHERE token_id = @id', { id: T.int(row.token_id), now: T.datetime(clock.now()) }, tx);

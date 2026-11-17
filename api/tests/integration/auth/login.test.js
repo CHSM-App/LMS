@@ -1,4 +1,4 @@
-const { app, request, one, T, reset, closeAll, createUser, sendOtp, asUser, query } = require('../../setup/helpers');
+const { app, request, one, T, reset, closeAll, createUser, sendOtp, asUser, query, clock } = require('../../setup/helpers');
 const { clearAuthCache } = require('../../../src/middlewares/authenticate');
 
 beforeEach(reset);
@@ -65,11 +65,55 @@ test('refresh rotates the cookie and revokes the old token', async () => {
   expect(r2.body.data.accessToken).toBeTruthy();
   const c2 = cookieOf(r2).split(';')[0];
   expect(c2).not.toBe(c1);
-  // reusing the old token logs out every session
+  // reusing the old token (after the 20 s grace window) logs out every session
+  clock.advance(21000);
   const reuse = await request(app).post('/api/v1/auth/refresh').set('Cookie', c1);
   expect(reuse.status).toBe(401);
+  expect(reuse.body.code).toBe('TOKEN_REUSED');
   const after = await request(app).post('/api/v1/auth/refresh').set('Cookie', c2);
   expect(after.status).toBe(401);
+});
+
+test('a refresh whose response was lost (page reloaded mid-request) gets a new token within 20 s instead of logging out', async () => {
+  await createUser({ mobile: '+919811111118' });
+  const first = await login('+919811111118');
+  const c1 = cookieOf(first).split(';')[0];
+  const lost = await request(app).post('/api/v1/auth/refresh').set('Cookie', c1); // the browser never stored this response
+  expect(lost.status).toBe(200);
+  clock.advance(3000);
+  const retry = await request(app).post('/api/v1/auth/refresh').set('Cookie', c1);
+  expect(retry.status).toBe(200);
+  const c3 = cookieOf(retry).split(';')[0];
+  expect(c3).not.toBe(c1);
+  expect((await request(app).post('/api/v1/auth/refresh').set('Cookie', c3)).status).toBe(200);
+});
+
+test('several refreshes lost in a row (rapid reloads) still keep the session', async () => {
+  await createUser({ mobile: '+919811111120' });
+  const first = await login('+919811111120');
+  const c1 = cookieOf(first).split(';')[0];
+  let last;
+  for (let i = 0; i < 4; i += 1) {
+    last = await request(app).post('/api/v1/auth/refresh').set('Cookie', c1); // every response lost except the last
+    expect(last.status).toBe(200);
+  }
+  const tip = cookieOf(last).split(';')[0];
+  expect((await request(app).post('/api/v1/auth/refresh').set('Cookie', tip)).status).toBe(200);
+});
+
+test('grace does not apply once the replacement token was used: reuse still ends every session', async () => {
+  await createUser({ mobile: '+919811111119' });
+  const first = await login('+919811111119');
+  const c1 = cookieOf(first).split(';')[0];
+  const r2 = await request(app).post('/api/v1/auth/refresh').set('Cookie', c1);
+  const c2 = cookieOf(r2).split(';')[0];
+  const r3 = await request(app).post('/api/v1/auth/refresh').set('Cookie', c2); // the real client moved on
+  expect(r3.status).toBe(200);
+  const stolen = await request(app).post('/api/v1/auth/refresh').set('Cookie', c1);
+  expect(stolen.status).toBe(401);
+  expect(stolen.body.code).toBe('TOKEN_REUSED');
+  const c3 = cookieOf(r3).split(';')[0];
+  expect((await request(app).post('/api/v1/auth/refresh').set('Cookie', c3)).status).toBe(401);
 });
 
 test('logout clears the cookie and refresh then fails', async () => {
