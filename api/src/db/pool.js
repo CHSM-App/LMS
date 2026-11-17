@@ -12,7 +12,9 @@ function getPool() {
       database: c.database,
       user: c.user,
       password: c.password,
-      options: { encrypt: c.encrypt, trustServerCertificate: !c.encrypt },
+      // trustServerCertificate only for a known server with a self-signed certificate (DB_TRUST_SERVER_CERT=true).
+      // Production should use a real certificate and leave it off.
+      options: { encrypt: c.encrypt, trustServerCertificate: !c.encrypt || c.trustServerCertificate },
       pool: { max: 10, min: 0, idleTimeoutMillis: 30000 },
     });
     poolPromise = pool.connect().catch((err) => {

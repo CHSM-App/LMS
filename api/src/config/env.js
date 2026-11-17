@@ -17,6 +17,7 @@ function loadConfig(env = process.env) {
       user: env.DB_USER,
       password: env.DB_PASSWORD,
       encrypt: env.DB_ENCRYPT === 'true',
+      trustServerCertificate: env.DB_TRUST_SERVER_CERT === 'true',
     },
     jwt: {
       accessSecret: env.JWT_ACCESS_SECRET,
