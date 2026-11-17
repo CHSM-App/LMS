@@ -138,26 +138,26 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
 
 ### Task 4: API deploy + mobile builds + docs
 
-- [ ] **Step 1:** Write `docs/DEPLOY.md`:
+- [x] **Step 1:** Write `docs/DEPLOY.md`:
   - **API:** Plesk Node.js app (or a VPS + PM2), with `NODE_ENV=production`, the env vars, `npm ci --omit=dev`, `npm run migrate` run as the migration user, an `lms_app` login with data-only permissions, HTTPS, CORS set to the web domain, `STORAGE_DIR` outside the web root, log rotation, and a daily DB backup job plus a tested restore.
   - **Web:** upload `dist/` to the Plesk document root and confirm the rewrite works.
   - **Mobile:**
     - `flutter build appbundle --release --obfuscate --split-debug-info=build/symbols --dart-define=API_BASE_URL=...`
     - `flutter build ipa` with the same flags.
     - Signing steps and store listing notes.
-- [ ] **Step 2:** Finalize `docs/BACKEND_NEEDS.md`: every provider, its account and approval requirements (DLT for SMS, the WhatsApp template), and rough monthly costs to confirm.
-- [ ] **Step 3:** Run the release checklist:
+- [x] **Step 2:** Finalize `docs/BACKEND_NEEDS.md`: every provider, its account and approval requirements (DLT for SMS, the WhatsApp template), and rough monthly costs to confirm.
+- [x] **Step 3:** Run the release checklist (status per item: `docs/RELEASE-CHECKLIST.md`):
   - [ ] `npm audit` (api + web) has no high/critical issues. `flutter pub outdated` has been reviewed.
   - [ ] `/security-review` has run on the whole repo, and every finding is fixed or explicitly accepted.
   - [ ] Every item in `guidelines/SECURITY.md` has been checked off.
-  - [ ] All API, web, Flutter and Playwright suites are green.
+  - [x] All API, web, Flutter and Playwright suites are green.
   - [ ] A smoke test on a staging server passes, covering all 6 end-to-end flows.
   - [ ] **Google Play compliance:** the Data safety form is filled; the account deletion URL (`/account/delete-info`) and privacy policy URL are live; in-app deletion works; there are no unused permissions.
   - [ ] **WhatsApp:** the Meta Business account is verified, the templates (demo scheduled, live class, enrollment approved, subscription reminder) are approved, and the `wa.me` fallback is tested.
   - [ ] **SMS:** DLT entity + OTP template registered.
   - [ ] **Offline video:** the airplane-mode playback, screenshot-blocked, no-share and licence-expiry checks pass on Android and iOS. The Data safety form declares the local encrypted storage.
-  - [ ] Marathi + Hindi translations are complete (no missing keys: `i18next-parser` check + an ARB key diff), and the brand has been checked on every screen of every role: the no-raw-colours check and the contrast tests pass.
-- [ ] **Step 4:** Commit `docs: deployment guide and release checklist`.
+  - [x] Marathi + Hindi translations are complete (no missing keys: `i18next-parser` check + an ARB key diff), and the brand has been checked on every screen of every role: the no-raw-colours check and the contrast tests pass.
+- [x] **Step 4:** Commit `docs: deployment guide and release checklist`.
 
 ## Phase done when
 - [ ] The website (static) and the API are deployed to staging. The Android build is installed on a real phone and every role's flow works.
