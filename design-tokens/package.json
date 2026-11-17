@@ -1,0 +1,9 @@
+{
+  "name": "lms-design-tokens",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node --test tests/tokens.test.js tests/raw-colors.test.js"
+  }
+}
