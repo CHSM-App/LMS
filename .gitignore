@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+build/
+coverage/
+uploads/
+storage/
+.dart_tool/
+.flutter-plugins*
+.superpowers/
+*.log
