@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_tokens.g.dart';
 import '../../l10n/gen/app_localizations.dart';
@@ -63,6 +64,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           requiredField: true,
                         ),
                         AppButton(label: l.sendOtp, loading: state.loading, expand: true, onPressed: () => vm.sendOtp(_mobile.text)),
+                        const SizedBox(height: AppTokens.spaceS3),
+                        TextButton(onPressed: () => context.push('/register'), child: Text(l.pNewHere)),
+                        TextButton(onPressed: () => context.push('/courses'), child: Text(l.sBrowse)),
                       ] else ...[
                         Text(l.otpSentTo(state.mobile)),
                         TextButton(onPressed: vm.changeNumber, child: Text(l.changeNumber)),

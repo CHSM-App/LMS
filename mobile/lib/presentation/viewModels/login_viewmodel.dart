@@ -42,6 +42,12 @@ bool isValidIndianMobile(String input) {
   return RegExp(r'^[6-9]\d{9}$').hasMatch(d);
 }
 
+/// "+91XXXXXXXXXX" (the stored format) from what the user typed; assumes [isValidIndianMobile].
+String normalizeIndianMobile(String input) {
+  final d = input.replaceAll(RegExp(r'\D'), '');
+  return '+91${d.substring(d.length - 10)}';
+}
+
 class LoginViewModel extends StateNotifier<LoginState> {
   LoginViewModel(this._repo, {this.purpose = 'login'}) : super(const LoginState());
 

@@ -668,4 +668,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pOpenVideo => 'Play video';
+
+  @override
+  String get pCreate => 'Create account';
+
+  @override
+  String get sWatchOffline => 'Watch offline';
+
+  @override
+  String get sNeedCourse => 'Choose a course';
+
+  @override
+  String get sDemoTitle => 'Live demo request';
+
+  @override
+  String get sVideoDone => 'Video finished';
+
+  @override
+  String get sSave => 'Save';
 }

@@ -8,7 +8,12 @@ abstract class AuthRepository {
   Future<int> sendOtp(String mobile, String purpose);
   Future<SessionUser> login(String mobile, String otp);
   Future<SessionUser?> restore();
-  Future<void> logout();
+
+  /// Logout. With [deviceId] the server also revokes this phone's offline downloads.
+  Future<void> logout({String? deviceId});
+
+  /// Student registration (name*, mobile*, OTP*, education*, consent*) — logs the student in.
+  Future<SessionUser> registerStudent(Map<String, dynamic> fields);
 }
 
 class ApiAuthRepository implements AuthRepository {
@@ -25,8 +30,14 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<SessionUser> login(String mobile, String otp) async {
-    final data = await api.post('/auth/login', {'mobile': mobile, 'otp': otp}) as Map<String, dynamic>;
+  Future<SessionUser> login(String mobile, String otp) async =>
+      _signIn(await api.post('/auth/login', {'mobile': mobile, 'otp': otp}) as Map<String, dynamic>);
+
+  @override
+  Future<SessionUser> registerStudent(Map<String, dynamic> fields) async =>
+      _signIn(await api.post('/auth/register-student', fields) as Map<String, dynamic>);
+
+  Future<SessionUser> _signIn(Map<String, dynamic> data) async {
     final access = data['accessToken'] as String;
     await store.save(accessToken: access, refreshToken: data['refreshToken'] as String?);
     session.setAccessToken(access);
@@ -50,10 +61,10 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> logout() async {
+  Future<void> logout({String? deviceId}) async {
     final rt = await store.readRefresh();
     try {
-      await api.post('/auth/logout', {'refreshToken': rt});
+      await api.post('/auth/logout', {'refreshToken': rt, 'deviceId': ?deviceId});
     } on ApiException {
       // Logging out locally still works when offline.
     }

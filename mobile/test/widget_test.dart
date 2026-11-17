@@ -22,7 +22,10 @@ class _LoggedOutRepo implements AuthRepository {
   @override
   Future<SessionUser> login(String mobile, String otp) => throw UnimplementedError();
   @override
-  Future<void> logout() async {}
+  Future<void> logout({String? deviceId}) async {}
+
+  @override
+  Future<SessionUser> registerStudent(Map<String, dynamic> fields) async => throw UnimplementedError();
   @override
   Future<SessionUser?> restore() async {
     session.finishRestore();

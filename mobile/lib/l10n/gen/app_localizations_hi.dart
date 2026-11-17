@@ -668,4 +668,22 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get pOpenVideo => 'वीडियो चलाएँ';
+
+  @override
+  String get pCreate => 'खाता बनाएँ';
+
+  @override
+  String get sWatchOffline => 'ऑफ़लाइन देखें';
+
+  @override
+  String get sNeedCourse => 'कोर्स चुनें';
+
+  @override
+  String get sDemoTitle => 'लाइव डेमो अनुरोध';
+
+  @override
+  String get sVideoDone => 'वीडियो समाप्त';
+
+  @override
+  String get sSave => 'सहेजें';
 }

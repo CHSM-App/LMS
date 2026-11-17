@@ -5,6 +5,7 @@ import '../../core/network/api_client.dart';
 import '../../core/theme/app_tokens.g.dart';
 import '../../l10n/gen/app_localizations.dart';
 import '../../presentation/providers/core_providers.dart';
+import '../../presentation/providers/student_providers.dart';
 import '../../presentation/viewModels/login_viewmodel.dart';
 import '../../widgets/app_widgets.dart';
 
@@ -119,7 +120,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             ),
           ],
           const SizedBox(height: AppTokens.spaceS6),
-          AppButton(label: l.logout, variant: AppButtonVariant.secondary, onPressed: () => ref.read(authRepositoryProvider).logout()),
+          AppButton(label: l.logout, variant: AppButtonVariant.secondary, onPressed: () => logoutStudent(ref)),
         ],
       ),
     );

@@ -94,7 +94,7 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
 - On app start and on every online event: call `/student/downloads/renew`, and delete the files + keys of anything revoked. Show what was removed and why ("Removed: subscription ended").
 - Offline watch position and completion are queued in sqflite (a small table, separate from the greyed-out exam queue) and sent via `/student/progress/sync` when online.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - `EncryptedStore`: an encrypt → decrypt round trip of a 10 MB file is byte-identical. Seeking to offset X decrypts the right bytes (CTR). The stored file never contains the plain bytes (the first 1 KB doesn't match).
   - `LicenseGuard`: expired → locked. Renew revoked → the file and the key are both deleted.
   - `DownloadViewModel`: queued → downloading (progress %) → paused → resumed → completed. A Wi-Fi-only setting on mobile data → waits with the message "Waiting for Wi-Fi". Low storage (< size + 200 MB) → the message "Not enough space. Free up {n} MB".
@@ -102,8 +102,8 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
   - Logout → every offline file and key is deleted.
   - Widget tests: the download button is hidden for link (YouTube/Vimeo/Bunny) videos, and there is no share icon on the player or the Downloads screen.
   - Offline progress queue syncs once online, without duplicates.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Implement.
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Implement.
   - **Downloads screen:** list grouped by course (title, size, status, licence expiry), per-item pause/resume/delete, "Delete all", total storage bar, Wi-Fi-only toggle, and the registered devices list with Remove.
   - **Player:** a "Downloaded ✓" or download progress chip, and offline playback.
 - [ ] **Step 4:** Run `flutter test`, then check by hand on a real Android phone:
@@ -113,9 +113,9 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
   - The file isn't visible in the file manager.
   - Expire the licence (set the server date or expiry to the past) → the video locks.
   - Go online → it renews or is removed.
-- [ ] **Step 5:** Commit `feat(mobile): offline video downloads (encrypted, no sharing)`.
+- [x] **Step 5:** Commit `feat(mobile): offline video downloads (encrypted, no sharing)`.
 
-- [ ] **Step 1:** For each feature, write the failing tests. Key ones:
+- [x] **Step 1:** For each feature, write the failing tests. Key ones:
   - Exam resume after an app restart uses `deadlineAt` from the server.
   - An unsent answer is retried in memory with exponential backoff (§15.11), and the screen shows "Offline — answers will sync".
   - A 360 dp golden test in `mr` shows no overflow.

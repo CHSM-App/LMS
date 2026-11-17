@@ -104,5 +104,8 @@ class _FakeAuthRepo implements AuthRepository {
   Future<SessionUser?> restore() async => null;
 
   @override
-  Future<void> logout() async {}
+  Future<void> logout({String? deviceId}) async {}
+
+  @override
+  Future<SessionUser> registerStudent(Map<String, dynamic> fields) async => throw UnimplementedError();
 }

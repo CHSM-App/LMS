@@ -73,10 +73,83 @@ class FakeStudentRepo implements StudentRepository {
   }
 
   @override
-  Future<List<RenewResult>> renew(String deviceId, List<int> contentIds) async => renewResults;
+  Future<List<RenewResult>> renew(String deviceId, List<int> contentIds) async {
+    renewCalls++;
+    if (renewFails) throw offline;
+    return renewResults;
+  }
+
+  // ---- screens ----
+  List<ExamCard> examCards = const [];
+  AttemptResult? attemptResult;
+  final lessons = <int, LessonDetail>{};
+  final enrollRequests = <String>[];
+  final doubtsAsked = <String>[];
+  List<StudentDoubt> doubtList = const [];
+  StudentProfile? savedProfile;
+  int renewCalls = 0;
+  bool renewFails = false;
+
+  @override
+  Future<List<ExamCard>> exams(int courseId) async => examCards;
+  @override
+  Future<AttemptResult> result(String attemptId) async => attemptResult!;
+  @override
+  Future<LessonDetail> lesson(int contentId) async => lessons[contentId]!;
+  @override
+  Future<void> requestEnrollment(String courseSlug, {String? message}) async => enrollRequests.add(courseSlug);
+  @override
+  Future<List<StudentDoubt>> doubts() async => doubtList;
+  @override
+  Future<void> askDoubt(int courseId, String question, {String? attachmentPath}) async => doubtsAsked.add('$courseId:$question');
+  @override
+  Future<List<LiveClassItem>> liveClasses() async => const [];
+  @override
+  Future<List<CourseProgress>> progress() async => const [];
+  @override
+  Future<StudentProfile> profile() async => savedProfile ?? const StudentProfile(name: 'Meera', mobile: '+919876543210', education: '10th');
+  @override
+  Future<void> saveProfile(StudentProfile p) async => savedProfile = p;
+  @override
+  Future<List<AppNotification>> notifications() async => const [];
+  @override
+  Future<List<RegisteredDevice>> devices() async => const [];
 
   @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(invocation.memberName.toString());
+}
+
+class FakePublicRepo implements PublicRepository {
+  final queries = <String?>[];
+  final otpSent = <String>[];
+  final demoBodies = <Json>[];
+
+  @override
+  Future<List<CourseCard>> courses({String? q, int page = 1}) async {
+    queries.add(q);
+    const all = [
+      CourseCard(slug: 'maths-10', title: 'Maths 10th', teacherName: 'Suresh'),
+      CourseCard(slug: 'science-10', title: 'Science 10th', teacherName: 'Kavita'),
+    ];
+    return (q == null || q.isEmpty) ? all : all.where((c) => c.title.toLowerCase().contains(q.toLowerCase())).toList();
+  }
+
+  @override
+  Future<CourseDetail> course(String slug) async => const CourseDetail(
+        slug: 'maths-10',
+        title: 'Maths 10th',
+        teacherName: 'Suresh',
+        description: 'Full board syllabus',
+        demoVideos: [VideoRef(source: 'youtube', url: 'https://www.youtube.com/watch?v=abc')],
+        batches: ['Morning · 7-9 am'],
+        curriculum: [(name: 'Algebra', modules: ['Linear equations'])],
+      );
+
+  @override
+  Future<void> sendOtp(String mobile, String purpose) async => otpSent.add('$mobile|$purpose');
+
+  @override
+  Future<void> requestDemo(Map<String, dynamic> body) async => demoBodies.add(body);
 }
 
 ExamPaper paperFixture({DateTime? deadlineAt, String mode = 'mock', Map<int, Json> answers = const {}}) => ExamPaper(

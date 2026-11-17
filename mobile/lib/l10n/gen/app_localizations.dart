@@ -1305,6 +1305,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play video'**
   String get pOpenVideo;
+
+  /// No description provided for @pCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get pCreate;
+
+  /// No description provided for @sWatchOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch offline'**
+  String get sWatchOffline;
+
+  /// No description provided for @sNeedCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a course'**
+  String get sNeedCourse;
+
+  /// No description provided for @sDemoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live demo request'**
+  String get sDemoTitle;
+
+  /// No description provided for @sVideoDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Video finished'**
+  String get sVideoDone;
+
+  /// No description provided for @sSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get sSave;
 }
 
 class _AppLocalizationsDelegate

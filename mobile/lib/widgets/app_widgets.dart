@@ -300,15 +300,28 @@ class AppBanner extends StatelessWidget {
       'success' => AppTokens.success,
       _ => AppTokens.interactive,
     };
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppTokens.spaceS3),
-      decoration: BoxDecoration(
-        color: AppTokens.surface,
-        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
-        border: Border(left: BorderSide(color: edge, width: 6), top: const BorderSide(color: AppTokens.border), right: const BorderSide(color: AppTokens.border), bottom: const BorderSide(color: AppTokens.border)),
+    // Flutter can't round a border whose sides differ in colour, so the coloured edge is its own bar
+    // inside a uniformly bordered, clipped box.
+    return Semantics(
+      liveRegion: kind == 'error' || kind == 'warning',
+      child: Container(
+        width: double.infinity,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppTokens.surface,
+          borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+          border: Border.all(color: AppTokens.border),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 6, color: edge),
+              Expanded(child: Padding(padding: const EdgeInsets.all(AppTokens.spaceS3), child: Text(message))),
+            ],
+          ),
+        ),
       ),
-      child: Text(message),
     );
   }
 }

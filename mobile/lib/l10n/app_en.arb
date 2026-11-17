@@ -399,5 +399,11 @@
     }
   },
   "pLoginToEnroll": "Log in or create an account to enroll.",
-  "pOpenVideo": "Play video"
+  "pOpenVideo": "Play video",
+  "pCreate": "Create account",
+  "sWatchOffline": "Watch offline",
+  "sNeedCourse": "Choose a course",
+  "sDemoTitle": "Live demo request",
+  "sVideoDone": "Video finished",
+  "sSave": "Save"
 }

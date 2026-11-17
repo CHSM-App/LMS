@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/offline/license_guard.dart';
 import '../../core/offline/offline_platform.dart';
 import '../../core/offline/offline_ports.dart';
+import '../../core/offline/offline_sync.dart';
 import '../../core/offline/progress_queue.dart';
 import '../../data/models/student_models.dart';
 import '../../data/repositories/student_repository.dart';
@@ -64,4 +65,35 @@ final downloadsProvider = StateNotifierProvider<DownloadViewModel, DownloadsStat
 });
 
 /// What renewAll removed on the last start/online event, shown once on the Downloads screen.
-final removedDownloadsProvider = StateProvider<List<Removed>>((ref) => const []);
+final removedDownloadsProvider = StateProvider<List<RemovedDownload>>((ref) => const []);
+
+/// This phone's id for download licences and device-aware logout.
+final deviceIdProvider = Provider<Future<String> Function()>((ref) => DeviceIdentity.id);
+
+/// Deletes every offline file and key (logout, account deletion, session ended).
+final offlineWipeProvider = Provider<Future<void> Function()>((ref) => () => ref.read(downloadsProvider.notifier).wipeAll());
+
+/// Licence renewal + offline progress sync on app start and whenever connectivity returns.
+final offlineSyncProvider = Provider<OfflineSync>((ref) {
+  final sync = OfflineSync(
+    network: ref.read(networkInfoProvider),
+    renew: () => ref.read(downloadsProvider.notifier).renewAll(),
+    syncProgress: () => ref.read(progressQueueProvider).sync(),
+    onRemoved: (removed) => ref.read(removedDownloadsProvider.notifier).state = removed,
+  );
+  ref.onDispose(sync.dispose);
+  return sync;
+});
+
+/// Logout from the app: tells the server which phone (so it revokes this phone's downloads),
+/// then the app deletes every offline video and key on the phone (see LmsApp).
+Future<void> logoutStudent(WidgetRef ref) async {
+  String? device;
+  try {
+    device = await ref.read(deviceIdProvider)();
+  } catch (_) {
+    device = null;
+  }
+  // The session-end listener in LmsApp then deletes every offline video and key.
+  await ref.read(authRepositoryProvider).logout(deviceId: device);
+}

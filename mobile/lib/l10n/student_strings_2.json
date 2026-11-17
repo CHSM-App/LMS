@@ -1,0 +1,26 @@
+{
+  "en": {
+    "pCreate": "Create account",
+    "sWatchOffline": "Watch offline",
+    "sNeedCourse": "Choose a course",
+    "sDemoTitle": "Live demo request",
+    "sVideoDone": "Video finished",
+    "sSave": "Save"
+  },
+  "mr": {
+    "pCreate": "खाते तयार करा",
+    "sWatchOffline": "ऑफलाइन पाहा",
+    "sNeedCourse": "अभ्यासक्रम निवडा",
+    "sDemoTitle": "थेट डेमो विनंती",
+    "sVideoDone": "व्हिडिओ संपला",
+    "sSave": "जतन करा"
+  },
+  "hi": {
+    "pCreate": "खाता बनाएँ",
+    "sWatchOffline": "ऑफ़लाइन देखें",
+    "sNeedCourse": "कोर्स चुनें",
+    "sDemoTitle": "लाइव डेमो अनुरोध",
+    "sVideoDone": "वीडियो समाप्त",
+    "sSave": "सहेजें"
+  }
+}

@@ -200,5 +200,11 @@
   "pEnrollSend": "नामांकन अनुरोध भेजें",
   "pEnrollSent": "अनुरोध भेजा गया। {teacher} के स्वीकार करने पर आपको सूचित किया जाएगा।",
   "pLoginToEnroll": "नामांकन के लिए लॉग इन करें या खाता बनाएँ।",
-  "pOpenVideo": "वीडियो चलाएँ"
+  "pOpenVideo": "वीडियो चलाएँ",
+  "pCreate": "खाता बनाएँ",
+  "sWatchOffline": "ऑफ़लाइन देखें",
+  "sNeedCourse": "कोर्स चुनें",
+  "sDemoTitle": "लाइव डेमो अनुरोध",
+  "sVideoDone": "वीडियो समाप्त",
+  "sSave": "सहेजें"
 }

@@ -668,4 +668,22 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get pOpenVideo => 'व्हिडिओ चालवा';
+
+  @override
+  String get pCreate => 'खाते तयार करा';
+
+  @override
+  String get sWatchOffline => 'ऑफलाइन पाहा';
+
+  @override
+  String get sNeedCourse => 'अभ्यासक्रम निवडा';
+
+  @override
+  String get sDemoTitle => 'थेट डेमो विनंती';
+
+  @override
+  String get sVideoDone => 'व्हिडिओ संपला';
+
+  @override
+  String get sSave => 'जतन करा';
 }

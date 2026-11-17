@@ -75,4 +75,12 @@ void main() {
   test('clipboard import is used (keeps services import meaningful)', () {
     expect(Clipboard.kTextPlain, 'text/plain');
   });
+
+  testWidgets('AppBanner paints every kind without a border assertion (regression)', (tester) async {
+    for (final kind in ['info', 'warning', 'error', 'success']) {
+      await tester.pumpWidget(wrap(AppBanner(kind: kind, message: 'Message $kind')));
+      expect(tester.takeException(), isNull, reason: kind);
+      expect(find.text('Message $kind'), findsOneWidget);
+    }
+  });
 }
