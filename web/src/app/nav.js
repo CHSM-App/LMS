@@ -24,6 +24,12 @@ export const TEACHER_NAV = [
 
 export const STUDENT_NAV = [
   { to: '/student', label: 'common.dashboard', end: true },
+  { to: '/student/exams', label: 'nav.exams' },
+  { to: '/student/live-classes', label: 'nav.liveClasses' },
+  { to: '/student/doubts', label: 'nav.doubts' },
+  { to: '/student/progress', label: 'nav.progress' },
+  { to: '/courses', label: 'nav.browse' },
+  { to: '/student/profile', label: 'nav.profile' },
   { to: '/notifications', label: 'nav.notifications' },
 ];
 

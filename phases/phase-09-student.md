@@ -102,33 +102,33 @@ web/src/features/student/{dashboard,my-courses,player,notes,exams,results,doubts
 
 ### Task 1: Student registration + enroll request
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Register with a valid OTP → a user with role `student` and status `approved` is created, plus `student_profiles`, and the student is logged in (tokens issued).
   - A mobile that already belongs to a teacher → 409 "This number is registered as a teacher".
   - Enroll request → `pending`, and the teacher gets a notification.
   - A duplicate request → 409.
   - Re-requesting after a rejection → allowed (the row is reset to pending).
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. The `/enroll/:slug` web flow is: logged out → registration (with OTP) → submit enroll → "Request sent. You'll be notified when {teacher} approves." **Step 4:** Run and see it pass.
-- [ ] **Step 5:** Commit `feat(student): registration and enroll request`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. The `/enroll/:slug` web flow is: logged out → registration (with OTP) → submit enroll → "Request sent. You'll be notified when {teacher} approves." **Step 4:** Run and see it pass.
+- [x] **Step 5:** Commit `feat(student): registration and enroll request`.
 
 ### Task 2: Dashboard + player + notes + progress
 
 **Interfaces:** `progress% = completed contents / total contents` for the course. A completed item counts once.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - The dashboard lists only approved courses, with progress %, end date and batch name. Upcoming live classes only come from enrolled courses **and the student's batch** (or "all batches").
   - Marking complete updates the %, and doing it twice doesn't double count.
   - `last_position_sec` is saved and returned.
   - A PDF gets a signed URL valid for 10 minutes. A link-type item returns its URL.
   - A course the student isn't enrolled in → 403.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): dashboard, player, notes, progress`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): dashboard, player, notes, progress`.
 
 ### Task 3: Blocked-teacher read-only rule
 
 **Interfaces:** Extend `requireActiveEnrollment({ allowReadOnly })`. When the teacher is blocked: content GET is allowed only if `content_progress.completed_at` exists, and every write (progress, attempts, doubts) → 403 "This course is read-only because the teacher's account is inactive".
 
-- [ ] **Step 1:** Write the failing tests covering all of the above, plus a check that the dashboard shows the course with a read-only label.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): read-only access for blocked teachers`.
+- [x] **Step 1:** Write the failing tests covering all of the above, plus a check that the dashboard shows the course with a read-only label.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): read-only access for blocked teachers`.
 
 ### Task 4: Exam runtime
 
@@ -142,7 +142,7 @@ web/src/features/student/{dashboard,my-courses,player,notes,exams,results,doubts
 - Questions are serialized **without** `is_correct` / accepted answers in Mock mode. In Practice mode, the answer to `saveAnswer` includes `{correct, explanation}` straight away.
 - `autoSubmit.job` runs every minute and submits every attempt where `deadline_at < now AND submitted_at IS NULL`. Any request that touches an expired attempt also submits it lazily.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Start → the questions have no answers. Calling start again → the same attemptId, the same questions in the same order.
   - Another student → a different set (random mode, seeded).
   - Saving an answer twice → the last one wins.
@@ -152,24 +152,24 @@ web/src/features/student/{dashboard,my-courses,player,notes,exams,results,doubts
   - Outside the start/end window → 403.
   - An exam targeted at batch B, started by a batch A student → 404, and it isn't in their exam list.
   - Practice: a save returns correctness, there's no deadline, the attempts are unlimited, and they're excluded from the final result.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): exam attempts with autosave, resume and auto-submit`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): exam attempts with autosave, resume and auto-submit`.
 
 ### Task 5: Results, review, final result
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Before submit, the result → 403. After submit → marks, rank, and per-question (your answer, correct answer, explanation).
   - Another student's attempt → 404.
   - The final result matches the Phase 6 `finalResult` (weighted %, per exam, per module, pass/fail).
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): results and answer review`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): results and answer review`.
 
 ### Task 6: Doubts, attendance/progress, profile
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - A student creates a doubt with an attachment (image/pdf ≤ 5 MB) and sees only their own doubts with the teacher's replies.
   - The progress endpoint returns attendance % (present / held live classes), completed lessons and exam performance.
   - The profile is updatable, but the mobile can't be changed here.
   - No endpoint returns another student's mobile: run a key scan over every student response.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): doubts, progress, profile`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): doubts, progress, profile`.
 
 ### Task 6b: Offline download licences (API)
 
@@ -179,7 +179,7 @@ web/src/features/student/{dashboard,my-courses,player,notes,exams,results,doubts
 - `downloadService.renew(studentId, deviceId, contentIds)`
 - `downloadService.revokeFor({studentId?, courseId?, deviceId?, reason})`, called when the subscription ends, access is paused, an enrollment is rejected or blocked, the student logs out on a device, or the account is deleted.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Issue for an uploaded video of an active enrollment → 200, and the response has every field.
   - A YouTube/Vimeo/Bunny video → 409 "This video can only be watched online".
   - A PDF or link content item → 400.
@@ -192,21 +192,21 @@ web/src/features/student/{dashboard,my-courses,player,notes,exams,results,doubts
   - Logout with a device id → that device's downloads are revoked. Account deletion → all of them are revoked.
   - No response contains a share URL or a permanent file URL (the signed URL expires in 10 minutes).
   - Progress sync: a batch of offline positions is saved, and a later `completedAt` never un-completes an item.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): offline download licences and progress sync`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(student): offline download licences and progress sync`.
 
 ### Task 7: Student web screens
 
-- [ ] **Step 1:** Write failing Vitest tests:
+- [x] **Step 1:** Write failing Vitest tests:
   - The exam screen shows a countdown from the server's `deadlineAt` (not the local clock), autosaves when an answer changes (debounced), shows "Saved" / "Offline — answers will sync", and calls submit when the timer hits 0.
   - The player's "Mark complete" updates the progress bar.
   - The web player streams only. There is no download control and no right-click "Save video" (`controlsList="nodownload"`, context menu off), and it shows the hint "Download in the app to watch offline" for uploaded videos.
   - A locked Final shows the unlock rule.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Build:
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Build:
   - `StudentLayout` with nav: Dashboard, My courses, Browse courses, Live classes, Exams, Results, Doubts, Progress, Profile, Notifications.
   - Every section listed in Global Constraints.
   - The exam screen keeps unsent answers in memory, retries when back online, and warns before leaving the page.
-- [ ] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): student app`.
+- [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): student app`.
 
 ## Phase done when
 - [ ] Tests pass. Full manual run:

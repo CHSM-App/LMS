@@ -34,7 +34,19 @@ const ProfilePage = lazy(() => import('../features/teacher/ops/DoubtsProgramsPro
 const HomePage = lazy(() => import('../features/public/HomePage'));
 const CourseDetailsPage = lazy(() => import('../features/public/CourseDetailsPage'));
 const TeacherPublicPage = lazy(() => import('../features/public/TeacherPublicPage'));
-const ComingSoon = lazy(() => import('./ComingSoon'));
+const EnrollPage = lazy(() => import('../features/student/EnrollPage'));
+const StudentRegisterPage = lazy(() => import('../features/student/EnrollPage').then((m) => ({ default: m.StudentRegisterPage })));
+const CoursePlayerPage = lazy(() => import('../features/student/CoursePlayerPage'));
+const StudentExamsPage = lazy(() => import('../features/student/StudentExamsPage'));
+const ExamTakePage = lazy(() => import('../features/student/ExamTakePage'));
+const sp = (name) => lazy(() => import('../features/student/StudentPages').then((m) => ({ default: m[name] })));
+const StudentDashboard = sp('StudentDashboard');
+const ResultPage = sp('ResultPage');
+const FinalResultPage = sp('FinalResultPage');
+const StudentDoubtsPage = sp('StudentDoubtsPage');
+const StudentLiveClassesPage = sp('StudentLiveClassesPage');
+const StudentProgressPage = sp('StudentProgressPage');
+const StudentProfilePage = sp('StudentProfilePage');
 const StyleGuide = lazy(() => import('./StyleGuide'));
 
 const queryClient = new QueryClient({
@@ -61,6 +73,8 @@ export default function App() {
                   <Route path="teachers/:slug" element={<TeacherPublicPage />} />
                   <Route path="login" element={<LoginPage />} />
                   <Route path="become-teacher" element={<BecomeTeacherPage />} />
+                  <Route path="register" element={<StudentRegisterPage />} />
+                  <Route path="enroll/:slug" element={<EnrollPage />} />
                   <Route path="terms" element={<LegalPage doc="terms" />} />
                   <Route path="privacy" element={<LegalPage doc="privacy" />} />
                   {import.meta.env.DEV && <Route path="_styleguide" element={<StyleGuide />} />}
@@ -93,7 +107,16 @@ export default function App() {
                 </Route>
 
                 <Route path="student" element={<RoleShell roles={['student']} />}>
-                  <Route index element={<ComingSoon title="common.dashboard" />} />
+                  <Route index element={<StudentDashboard />} />
+                  <Route path="courses/:courseId" element={<CoursePlayerPage />} />
+                  <Route path="courses/:courseId/final-result" element={<FinalResultPage />} />
+                  <Route path="exams" element={<StudentExamsPage />} />
+                  <Route path="exams/:examId/take" element={<ExamTakePage />} />
+                  <Route path="attempts/:attemptId/result" element={<ResultPage />} />
+                  <Route path="live-classes" element={<StudentLiveClassesPage />} />
+                  <Route path="doubts" element={<StudentDoubtsPage />} />
+                  <Route path="progress" element={<StudentProgressPage />} />
+                  <Route path="profile" element={<StudentProfilePage />} />
                 </Route>
 
                 <Route element={<RoleShell roles={['admin', 'teacher', 'student']} />}>

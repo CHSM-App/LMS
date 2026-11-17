@@ -1,0 +1,122 @@
+{
+  "en": {
+    "nav": { "myCourses": "My courses", "progress": "Progress" },
+    "exam": {
+      "questionOf": "Question {{n}}", "marks": "{{n}} marks", "chooseAll": "Choose every correct answer", "yourAnswer": "Your answer",
+      "correct": "Correct", "wrong": "Not correct", "answered": "{{n}} of {{total}} answered", "saving": "Saving…", "offline": "Offline — answers will sync",
+      "submit": "Submit exam", "confirmTitle": "Submit the exam?", "confirmBody": "You answered {{n}} of {{total}} questions. You can't change answers after submitting.",
+      "keepGoing": "Keep answering", "submitNow": "Submit now"
+    },
+    "player": {
+      "progress": "Course progress", "lessons": "Lessons", "markComplete": "Mark as complete", "completed": "Completed", "openPdf": "Open notes",
+      "downloadPdf": "Download notes", "openLink": "Open link", "noLessons": "No lessons yet",
+      "downloadInApp": "To watch offline, download this video in the mobile app.",
+      "readOnly": "Your teacher's account is inactive. You can still open lessons you completed."
+    },
+    "studentExams": {
+      "subtitle": "Unit tests, final exam and practice tests for your courses.", "noCourses": "Enroll in a course to take its exams.", "none": "No exams yet",
+      "minutes": "{{n}} min", "best": "Best: {{pct}}%", "locked": "Finish all Unit Tests to unlock the Final Exam.", "start": "Start", "resume": "Resume",
+      "noneLeft": "No attempts left", "attemptsLeft": "Attempts left: {{n}}", "viewResult": "View result", "finalResult": "Final result"
+    },
+    "result": {
+      "rank": "Rank {{rank}} of {{of}}", "auto": "Submitted automatically when time ran out", "review": "Answer review", "noAnswer": "Not answered",
+      "yours": "Your answer", "correctAnswer": "Correct answer", "back": "Back to exams", "passMark": "Pass mark: {{pct}}%"
+    },
+    "studentDash": {
+      "subtitle": "Here's what to study next.", "nextUp": "Next up", "continue": "Continue", "noCourses": "You're not enrolled in any course yet.",
+      "until": "Access until {{date}}", "open": "Open course", "noClasses": "No upcoming live classes", "requests": "Requests you sent"
+    },
+    "studentDoubts": {
+      "subtitle": "Ask your teacher when you're stuck.", "ask": "Ask a doubt", "question": "Your question", "send": "Send to teacher",
+      "sent": "Doubt sent to your teacher", "none": "You haven't asked any doubts yet", "waiting": "Waiting for the teacher's reply"
+    },
+    "progressPage": { "lessons": "{{done}} of {{total}} lessons completed", "attendance": "Attendance: {{pct}}% ({{attended}} of {{held}} classes)" },
+    "studentProfile": { "mobileHint": "Change your number in Account.", "whatsappOff": "WhatsApp messages are off. Turn them on to get Meet links on WhatsApp." },
+    "enroll": {
+      "forCourse": "Enroll with {{teacher}}", "createAccount": "Create your student account", "createIntro": "It takes a minute. We'll verify your mobile number.",
+      "haveAccount": "Already have an account? Log in", "notStudent": "Enrollment is for student accounts.", "messageHint": "For example, the batch timing you prefer.",
+      "send": "Send enrollment request", "sent": "Request sent. You'll be notified when {{teacher}} approves it."
+    },
+    "register": { "create": "Create account" }
+  },
+  "mr": {
+    "nav": { "myCourses": "माझे अभ्यासक्रम", "progress": "प्रगती" },
+    "exam": {
+      "questionOf": "प्रश्न {{n}}", "marks": "{{n}} गुण", "chooseAll": "सर्व बरोबर उत्तरे निवडा", "yourAnswer": "तुमचे उत्तर",
+      "correct": "बरोबर", "wrong": "चूक", "answered": "{{total}} पैकी {{n}} उत्तरे दिली", "saving": "जतन होत आहे…", "offline": "ऑफलाइन — उत्तरे नंतर पाठवली जातील",
+      "submit": "परीक्षा सबमिट करा", "confirmTitle": "परीक्षा सबमिट करायची?", "confirmBody": "तुम्ही {{total}} पैकी {{n}} प्रश्नांची उत्तरे दिली. सबमिटनंतर उत्तरे बदलता येणार नाहीत.",
+      "keepGoing": "उत्तरे देत राहा", "submitNow": "आता सबमिट करा"
+    },
+    "player": {
+      "progress": "अभ्यासक्रमाची प्रगती", "lessons": "धडे", "markComplete": "पूर्ण झाले म्हणून चिन्हांकित करा", "completed": "पूर्ण", "openPdf": "नोट्स उघडा",
+      "downloadPdf": "नोट्स डाउनलोड करा", "openLink": "लिंक उघडा", "noLessons": "अद्याप धडे नाहीत",
+      "downloadInApp": "ऑफलाइन पाहण्यासाठी हा व्हिडिओ मोबाईल ॲपमध्ये डाउनलोड करा.",
+      "readOnly": "तुमच्या शिक्षकांचे खाते निष्क्रिय आहे. तुम्ही पूर्ण केलेले धडे तरीही उघडू शकता."
+    },
+    "studentExams": {
+      "subtitle": "तुमच्या अभ्यासक्रमांच्या घटक चाचण्या, अंतिम परीक्षा आणि सराव चाचण्या.", "noCourses": "परीक्षा देण्यासाठी अभ्यासक्रमात प्रवेश घ्या.", "none": "अद्याप परीक्षा नाहीत",
+      "minutes": "{{n}} मिनिटे", "best": "सर्वोत्तम: {{pct}}%", "locked": "अंतिम परीक्षा उघडण्यासाठी सर्व घटक चाचण्या पूर्ण करा.", "start": "सुरू करा", "resume": "पुढे सुरू ठेवा",
+      "noneLeft": "प्रयत्न शिल्लक नाहीत", "attemptsLeft": "शिल्लक प्रयत्न: {{n}}", "viewResult": "निकाल पहा", "finalResult": "अंतिम निकाल"
+    },
+    "result": {
+      "rank": "{{of}} पैकी क्रमांक {{rank}}", "auto": "वेळ संपल्यावर आपोआप सबमिट झाले", "review": "उत्तर तपासणी", "noAnswer": "उत्तर दिले नाही",
+      "yours": "तुमचे उत्तर", "correctAnswer": "बरोबर उत्तर", "back": "परीक्षांकडे परत", "passMark": "उत्तीर्ण गुण: {{pct}}%"
+    },
+    "studentDash": {
+      "subtitle": "पुढे काय शिकायचे ते येथे आहे.", "nextUp": "पुढचा धडा", "continue": "पुढे सुरू ठेवा", "noCourses": "तुम्ही अद्याप कोणत्याही अभ्यासक्रमात प्रवेश घेतलेला नाही.",
+      "until": "{{date}} पर्यंत प्रवेश", "open": "अभ्यासक्रम उघडा", "noClasses": "आगामी थेट वर्ग नाहीत", "requests": "तुम्ही पाठवलेल्या विनंत्या"
+    },
+    "studentDoubts": {
+      "subtitle": "अडकलात तर शिक्षकांना विचारा.", "ask": "शंका विचारा", "question": "तुमचा प्रश्न", "send": "शिक्षकांना पाठवा",
+      "sent": "शंका शिक्षकांना पाठवली", "none": "तुम्ही अद्याप शंका विचारलेली नाही", "waiting": "शिक्षकांच्या उत्तराची प्रतीक्षा"
+    },
+    "progressPage": { "lessons": "{{total}} पैकी {{done}} धडे पूर्ण", "attendance": "उपस्थिती: {{pct}}% ({{held}} पैकी {{attended}} वर्ग)" },
+    "studentProfile": { "mobileHint": "नंबर बदलण्यासाठी खाते पहा.", "whatsappOff": "WhatsApp संदेश बंद आहेत. Meet लिंक WhatsApp वर मिळण्यासाठी ते सुरू करा." },
+    "enroll": {
+      "forCourse": "{{teacher}} यांच्याकडे प्रवेश", "createAccount": "तुमचे विद्यार्थी खाते तयार करा", "createIntro": "एक मिनिट लागेल. आम्ही तुमचा मोबाईल नंबर पडताळू.",
+      "haveAccount": "आधीच खाते आहे? लॉग इन करा", "notStudent": "प्रवेश फक्त विद्यार्थी खात्यांसाठी आहे.", "messageHint": "उदा.: तुम्हाला सोयीची बॅचची वेळ.",
+      "send": "प्रवेश विनंती पाठवा", "sent": "विनंती पाठवली. {{teacher}} मंजूर केल्यावर तुम्हाला कळवले जाईल."
+    },
+    "register": { "create": "खाते तयार करा" }
+  },
+  "hi": {
+    "nav": { "myCourses": "मेरे कोर्स", "progress": "प्रगति" },
+    "exam": {
+      "questionOf": "प्रश्न {{n}}", "marks": "{{n}} अंक", "chooseAll": "सभी सही उत्तर चुनें", "yourAnswer": "आपका उत्तर",
+      "correct": "सही", "wrong": "गलत", "answered": "{{total}} में से {{n}} उत्तर दिए", "saving": "सहेजा जा रहा है…", "offline": "ऑफ़लाइन — उत्तर बाद में भेजे जाएँगे",
+      "submit": "परीक्षा सबमिट करें", "confirmTitle": "परीक्षा सबमिट करें?", "confirmBody": "आपने {{total}} में से {{n}} प्रश्नों के उत्तर दिए। सबमिट के बाद उत्तर नहीं बदल सकेंगे।",
+      "keepGoing": "उत्तर देते रहें", "submitNow": "अभी सबमिट करें"
+    },
+    "player": {
+      "progress": "कोर्स की प्रगति", "lessons": "पाठ", "markComplete": "पूरा हुआ चिह्नित करें", "completed": "पूरा", "openPdf": "नोट्स खोलें",
+      "downloadPdf": "नोट्स डाउनलोड करें", "openLink": "लिंक खोलें", "noLessons": "अभी कोई पाठ नहीं",
+      "downloadInApp": "ऑफ़लाइन देखने के लिए यह वीडियो मोबाइल ऐप में डाउनलोड करें।",
+      "readOnly": "आपके शिक्षक का खाता निष्क्रिय है। आप पूरे किए गए पाठ अब भी खोल सकते हैं।"
+    },
+    "studentExams": {
+      "subtitle": "आपके कोर्स के यूनिट टेस्ट, अंतिम परीक्षा और अभ्यास टेस्ट।", "noCourses": "परीक्षा देने के लिए किसी कोर्स में नामांकन करें।", "none": "अभी कोई परीक्षा नहीं",
+      "minutes": "{{n}} मिनट", "best": "सर्वश्रेष्ठ: {{pct}}%", "locked": "अंतिम परीक्षा खोलने के लिए सभी यूनिट टेस्ट पूरे करें।", "start": "शुरू करें", "resume": "जारी रखें",
+      "noneLeft": "कोई प्रयास शेष नहीं", "attemptsLeft": "शेष प्रयास: {{n}}", "viewResult": "परिणाम देखें", "finalResult": "अंतिम परिणाम"
+    },
+    "result": {
+      "rank": "{{of}} में से रैंक {{rank}}", "auto": "समय खत्म होने पर अपने-आप सबमिट हुआ", "review": "उत्तर समीक्षा", "noAnswer": "उत्तर नहीं दिया",
+      "yours": "आपका उत्तर", "correctAnswer": "सही उत्तर", "back": "परीक्षाओं पर वापस", "passMark": "उत्तीर्ण अंक: {{pct}}%"
+    },
+    "studentDash": {
+      "subtitle": "आगे क्या पढ़ना है, यहाँ देखें।", "nextUp": "अगला", "continue": "जारी रखें", "noCourses": "आपने अभी किसी कोर्स में नामांकन नहीं किया है।",
+      "until": "{{date}} तक एक्सेस", "open": "कोर्स खोलें", "noClasses": "कोई आगामी लाइव क्लास नहीं", "requests": "आपके भेजे अनुरोध"
+    },
+    "studentDoubts": {
+      "subtitle": "अटकने पर शिक्षक से पूछें।", "ask": "संदेह पूछें", "question": "आपका प्रश्न", "send": "शिक्षक को भेजें",
+      "sent": "संदेह शिक्षक को भेजा गया", "none": "आपने अभी कोई संदेह नहीं पूछा", "waiting": "शिक्षक के उत्तर की प्रतीक्षा"
+    },
+    "progressPage": { "lessons": "{{total}} में से {{done}} पाठ पूरे", "attendance": "उपस्थिति: {{pct}}% ({{held}} में से {{attended}} क्लास)" },
+    "studentProfile": { "mobileHint": "नंबर बदलने के लिए खाता देखें।", "whatsappOff": "WhatsApp संदेश बंद हैं। Meet लिंक WhatsApp पर पाने के लिए इन्हें चालू करें।" },
+    "enroll": {
+      "forCourse": "{{teacher}} के साथ नामांकन", "createAccount": "अपना छात्र खाता बनाएँ", "createIntro": "एक मिनट लगेगा। हम आपका मोबाइल नंबर जाँचेंगे।",
+      "haveAccount": "पहले से खाता है? लॉग इन करें", "notStudent": "नामांकन केवल छात्र खातों के लिए है।", "messageHint": "उदाहरण: आपकी पसंद का बैच समय।",
+      "send": "नामांकन अनुरोध भेजें", "sent": "अनुरोध भेजा गया। {{teacher}} के स्वीकार करने पर आपको सूचित किया जाएगा।"
+    },
+    "register": { "create": "खाता बनाएँ" }
+  }
+}

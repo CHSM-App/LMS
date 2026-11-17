@@ -115,7 +115,8 @@
     "attendance": "Attendance",
     "doubts": "Doubts",
     "programs": "Class programs",
-    "profile": "Public profile"
+    "profile": "Public profile",
+    "progress": "Progress"
   },
   "notifications": {
     "bell": "Notifications, {{count}} unread",
@@ -670,5 +671,97 @@
     "courses": "Courses",
     "noCourses": "No published courses yet",
     "notFound": "This teacher page isn't available"
+  },
+  "exam": {
+    "questionOf": "Question {{n}}",
+    "marks": "{{n}} marks",
+    "chooseAll": "Choose every correct answer",
+    "yourAnswer": "Your answer",
+    "correct": "Correct",
+    "wrong": "Not correct",
+    "answered": "{{n}} of {{total}} answered",
+    "saving": "Saving…",
+    "offline": "Offline — answers will sync",
+    "submit": "Submit exam",
+    "confirmTitle": "Submit the exam?",
+    "confirmBody": "You answered {{n}} of {{total}} questions. You can't change answers after submitting.",
+    "keepGoing": "Keep answering",
+    "submitNow": "Submit now"
+  },
+  "player": {
+    "progress": "Course progress",
+    "lessons": "Lessons",
+    "markComplete": "Mark as complete",
+    "completed": "Completed",
+    "openPdf": "Open notes",
+    "downloadPdf": "Download notes",
+    "openLink": "Open link",
+    "noLessons": "No lessons yet",
+    "downloadInApp": "To watch offline, download this video in the mobile app.",
+    "readOnly": "Your teacher's account is inactive. You can still open lessons you completed."
+  },
+  "studentExams": {
+    "subtitle": "Unit tests, final exam and practice tests for your courses.",
+    "noCourses": "Enroll in a course to take its exams.",
+    "none": "No exams yet",
+    "minutes": "{{n}} min",
+    "best": "Best: {{pct}}%",
+    "locked": "Finish all Unit Tests to unlock the Final Exam.",
+    "start": "Start",
+    "resume": "Resume",
+    "noneLeft": "No attempts left",
+    "attemptsLeft": "Attempts left: {{n}}",
+    "viewResult": "View result",
+    "finalResult": "Final result"
+  },
+  "result": {
+    "rank": "Rank {{rank}} of {{of}}",
+    "auto": "Submitted automatically when time ran out",
+    "review": "Answer review",
+    "noAnswer": "Not answered",
+    "yours": "Your answer",
+    "correctAnswer": "Correct answer",
+    "back": "Back to exams",
+    "passMark": "Pass mark: {{pct}}%"
+  },
+  "studentDash": {
+    "subtitle": "Here's what to study next.",
+    "nextUp": "Next up",
+    "continue": "Continue",
+    "noCourses": "You're not enrolled in any course yet.",
+    "until": "Access until {{date}}",
+    "open": "Open course",
+    "noClasses": "No upcoming live classes",
+    "requests": "Requests you sent"
+  },
+  "studentDoubts": {
+    "subtitle": "Ask your teacher when you're stuck.",
+    "ask": "Ask a doubt",
+    "question": "Your question",
+    "send": "Send to teacher",
+    "sent": "Doubt sent to your teacher",
+    "none": "You haven't asked any doubts yet",
+    "waiting": "Waiting for the teacher's reply"
+  },
+  "progressPage": {
+    "lessons": "{{done}} of {{total}} lessons completed",
+    "attendance": "Attendance: {{pct}}% ({{attended}} of {{held}} classes)"
+  },
+  "studentProfile": {
+    "mobileHint": "Change your number in Account.",
+    "whatsappOff": "WhatsApp messages are off. Turn them on to get Meet links on WhatsApp."
+  },
+  "enroll": {
+    "forCourse": "Enroll with {{teacher}}",
+    "createAccount": "Create your student account",
+    "createIntro": "It takes a minute. We'll verify your mobile number.",
+    "haveAccount": "Already have an account? Log in",
+    "notStudent": "Enrollment is for student accounts.",
+    "messageHint": "For example, the batch timing you prefer.",
+    "send": "Send enrollment request",
+    "sent": "Request sent. You'll be notified when {{teacher}} approves it."
+  },
+  "register": {
+    "create": "Create account"
   }
 }
