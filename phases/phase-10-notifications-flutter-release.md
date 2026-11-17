@@ -124,17 +124,17 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
 
 ### Task 3: End-to-end tests + web release build
 
-- [ ] **Step 1:** Write the Playwright specs (seeded DB + console providers):
+- [x] **Step 1:** Write the Playwright specs (seeded DB + console providers):
   - `admin-approves-teacher`
   - `teacher-builds-and-publishes-course`
   - `public-demo-request-to-whatsapp`
   - `student-enroll-learn-exam-result`
   - `blocked-teacher-read-only`
   - `deep-link-refresh` (for each route, reload the page → no 404)
-- [ ] **Step 2:** Run them and fix any failures.
-- [ ] **Step 3:** Add `web/public/.htaccess` (Apache: rewrite everything that isn't a file to `/index.html`) and `web/public/web.config` (IIS: a URL Rewrite rule doing the same). `VITE_API_BASE_URL` comes from `.env.production`.
-- [ ] **Step 4:** `npm run build` → `dist/`. Serve `dist/` locally with a static server and re-run the deep-link spec against it.
-- [ ] **Step 5:** Commit `chore(web): e2e suite and Plesk static build`.
+- [x] **Step 2:** Run them and fix any failures.
+- [x] **Step 3:** Add `web/public/.htaccess` (Apache: rewrite everything that isn't a file to `/index.html`) and `web/public/web.config` (IIS: a URL Rewrite rule doing the same). `VITE_API_BASE_URL` comes from `.env.production`.
+- [x] **Step 4:** `npm run build` → `dist/`. Serve `dist/` locally with a static server and re-run the deep-link spec against it.
+- [x] **Step 5:** Commit `chore(web): e2e suite and Plesk static build`.
 
 ### Task 4: API deploy + mobile builds + docs
 

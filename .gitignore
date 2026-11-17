@@ -13,3 +13,6 @@ storage/
 *.log
 storage/
 storage-test/
+e2e-report/
+test-results/
+!web/.env.production.example

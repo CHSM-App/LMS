@@ -6,7 +6,8 @@ const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 const { apiLimiter } = require('./middlewares/rateLimits');
 
-function createApp({ getPool } = {}) {
+// extraRoutes(app) is used only by scripts/e2e-server.js (test hooks); src/server.js never passes it.
+function createApp({ getPool, extraRoutes } = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
@@ -21,6 +22,7 @@ function createApp({ getPool } = {}) {
   app.use(require('./middlewares/validate').validate);
   app.use('/api/v1', require('./routes'));
 
+  if (extraRoutes) extraRoutes(app);
   app.use(notFound);
   app.use(errorHandler);
   return app;
