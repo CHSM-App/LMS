@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: LMS API
+  version: 1.0.0
+  description: |
+    Contract for the LMS web (React) and mobile (Flutter) apps.
+    Every response is `{ success: true, data, pagination? }` or `{ success: false, error, code? }`.
+servers:
+  - url: /api/v1
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    Mobile:
+      type: string
+      description: Indian mobile number; the API normalizes to +91XXXXXXXXXX
+      minLength: 10
+      maxLength: 16
+    Otp: { type: string, pattern: '^\d{6}$' }
+    Status: { type: string, enum: [pending, approved, rejected, blocked] }
+    ErrorEnvelope:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, enum: [false] }
+        error: { type: string }
+        code: { type: string }
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+  parameters:
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1 } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+paths:
+  /health:
+    get:
+      tags: [system]
+      summary: Health check (API + database)
+      responses:
+        '200': { description: OK }
+        '503': { description: Database unavailable }
