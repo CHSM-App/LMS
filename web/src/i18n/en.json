@@ -257,5 +257,107 @@
       "subscription.update": "Changed subscription",
       "user.change_mobile": "Changed mobile number"
     }
+  },
+  "courses": {
+    "subtitle": "Build your courses, then publish them when they're ready.",
+    "new": "New course",
+    "createDraft": "Create draft",
+    "title": "Course title",
+    "subject": "Subject",
+    "language": "Teaching language",
+    "description": "Full description",
+    "lessons": "Lessons",
+    "updated": "Updated",
+    "empty": "No courses yet. Create your first course to get started.",
+    "lang": {
+      "en": "English",
+      "mr": "Marathi",
+      "hi": "Hindi",
+      "other": "Other"
+    },
+    "back": "Back to courses",
+    "basics": "Course details",
+    "duration": "Duration",
+    "durationHint": "For example: 10 months",
+    "fee": "Fee (shown only)",
+    "feeHint": "Shown on the course page. No payment happens on this site.",
+    "thumbnail": "Thumbnail",
+    "thumbnailUpload": "Upload thumbnail",
+    "thumbnailHint": "16:9 image, at least 1280×720, up to 5 MB",
+    "demoVideos": "Demo videos",
+    "demoVideosHint": "Exactly 2 demo videos. Anyone can watch them without logging in.",
+    "demo1": "Demo video 1",
+    "demo2": "Demo video 2",
+    "publish": "Publish course",
+    "unpublish": "Move back to draft",
+    "published": "Course published",
+    "unpublished": "Course moved back to draft",
+    "liveNote": "This course is live on the public site.",
+    "notReady": "Finish these before publishing:",
+    "missing": {
+      "title": "Add a course title",
+      "description": "Write a description",
+      "thumbnail": "Add a thumbnail image",
+      "demo_video_1": "Add demo video 1",
+      "demo_video_2": "Add demo video 2",
+      "content": "Add at least one lesson in the curriculum"
+    },
+    "tabs": {
+      "details": "Details",
+      "curriculum": "Curriculum",
+      "batches": "Batches"
+    }
+  },
+  "video": {
+    "source": "Video source",
+    "choose": "Choose how to add the video",
+    "upload": "Upload an MP4 file",
+    "link": "Video link",
+    "chooseFile": "Choose an MP4 file",
+    "uploadHint": "Up to 500 MB. If the connection drops, the upload continues from where it stopped.",
+    "invalidLink": "Enter a valid {{name}} link",
+    "onlyMp4": "Only MP4 videos can be uploaded",
+    "tooBig": "Videos can be up to 500 MB. Use a YouTube, Vimeo or Bunny link for longer videos.",
+    "uploaded": "Video uploaded"
+  },
+  "curriculum": {
+    "addSubject": "Add subject",
+    "editSubject": "Edit subject",
+    "addModule": "Add module",
+    "editModule": "Edit module",
+    "addContent": "Add lesson",
+    "editContent": "Edit lesson",
+    "description": "Description",
+    "contentTitle": "Lesson title",
+    "type": "Type",
+    "types": {
+      "video": "Video",
+      "pdf": "PDF notes",
+      "link": "Link"
+    },
+    "pdfFile": "PDF file",
+    "pdfHint": "Up to 20 MB",
+    "pdfReady": "PDF uploaded",
+    "linkUrl": "Web address",
+    "freePreview": "Free preview (anyone can open it)",
+    "free": "Free preview",
+    "needVideo": "Add the video first",
+    "needPdf": "Upload the PDF first",
+    "moveUp": "Move {{name}} up",
+    "moveDown": "Move {{name}} down",
+    "empty": "No subjects yet",
+    "emptyBody": "Add a subject, then modules, then lessons."
+  },
+  "batches": {
+    "intro": "Batches group students by timing. Every batch sees the same lessons; live classes and exams can target one batch.",
+    "add": "Add batch",
+    "edit": "Edit {{name}}",
+    "save": "Save batch",
+    "name": "Batch name",
+    "nameHint": "For example: Morning batch",
+    "timing": "Timing",
+    "timingHint": "For example: Mon–Fri 7–8 am",
+    "max": "Maximum students",
+    "empty": "No batches yet"
   }
 }

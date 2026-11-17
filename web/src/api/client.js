@@ -29,11 +29,15 @@ function buildUrl(path, query) {
   return qs ? `${url}?${qs}` : url;
 }
 
-async function raw(method, path, { body, query, form } = {}) {
+async function raw(method, path, { body, query, form, binary, contentRange } = {}) {
   const headers = {};
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
   let payload;
-  if (form) payload = form;
+  if (binary) {
+    headers['Content-Type'] = 'application/octet-stream';
+    headers['Content-Range'] = contentRange;
+    payload = binary;
+  } else if (form) payload = form;
   else if (body !== undefined) {
     headers['Content-Type'] = 'application/json';
     payload = JSON.stringify(body);
@@ -103,6 +107,7 @@ export const api = {
   patch: (path, body) => request('PATCH', path, { body: body ?? {} }),
   del: (path) => request('DELETE', path),
   form: (path, formData, method = 'POST') => request(method, path, { form: formData }),
+  putChunk: (path, blob, contentRange) => request('PUT', path, { binary: blob, contentRange }),
 };
 
 export function fileUrl(url) {

@@ -10,6 +10,7 @@ export const ADMIN_NAV = [
 
 export const TEACHER_NAV = [
   { to: '/teacher', label: 'common.dashboard', end: true },
+  { to: '/teacher/courses', label: 'nav.courses' },
   { to: '/notifications', label: 'nav.notifications' },
 ];
 

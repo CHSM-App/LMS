@@ -1,0 +1,125 @@
+{
+  "en": {
+    "courses": {
+      "subtitle": "Build your courses, then publish them when they're ready.", "new": "New course", "createDraft": "Create draft",
+      "title": "Course title", "subject": "Subject", "language": "Teaching language", "description": "Full description",
+      "lessons": "Lessons", "updated": "Updated", "empty": "No courses yet. Create your first course to get started.",
+      "lang": { "en": "English", "mr": "Marathi", "hi": "Hindi", "other": "Other" },
+      "back": "Back to courses", "basics": "Course details", "duration": "Duration", "durationHint": "For example: 10 months",
+      "fee": "Fee (shown only)", "feeHint": "Shown on the course page. No payment happens on this site.",
+      "thumbnail": "Thumbnail", "thumbnailUpload": "Upload thumbnail", "thumbnailHint": "16:9 image, at least 1280×720, up to 5 MB",
+      "demoVideos": "Demo videos", "demoVideosHint": "Exactly 2 demo videos. Anyone can watch them without logging in.",
+      "demo1": "Demo video 1", "demo2": "Demo video 2", "publish": "Publish course", "unpublish": "Move back to draft",
+      "published": "Course published", "unpublished": "Course moved back to draft", "liveNote": "This course is live on the public site.",
+      "notReady": "Finish these before publishing:",
+      "missing": {
+        "title": "Add a course title", "description": "Write a description", "thumbnail": "Add a thumbnail image",
+        "demo_video_1": "Add demo video 1", "demo_video_2": "Add demo video 2", "content": "Add at least one lesson in the curriculum"
+      },
+      "tabs": { "details": "Details", "curriculum": "Curriculum", "batches": "Batches" }
+    },
+    "video": {
+      "source": "Video source", "choose": "Choose how to add the video", "upload": "Upload an MP4 file", "link": "Video link",
+      "chooseFile": "Choose an MP4 file", "uploadHint": "Up to 500 MB. If the connection drops, the upload continues from where it stopped.",
+      "invalidLink": "Enter a valid {{name}} link", "onlyMp4": "Only MP4 videos can be uploaded", "tooBig": "Videos can be up to 500 MB. Use a YouTube, Vimeo or Bunny link for longer videos.",
+      "uploaded": "Video uploaded"
+    },
+    "curriculum": {
+      "addSubject": "Add subject", "editSubject": "Edit subject", "addModule": "Add module", "editModule": "Edit module",
+      "addContent": "Add lesson", "editContent": "Edit lesson", "description": "Description", "contentTitle": "Lesson title",
+      "type": "Type", "types": { "video": "Video", "pdf": "PDF notes", "link": "Link" }, "pdfFile": "PDF file", "pdfHint": "Up to 20 MB",
+      "pdfReady": "PDF uploaded", "linkUrl": "Web address", "freePreview": "Free preview (anyone can open it)", "free": "Free preview",
+      "needVideo": "Add the video first", "needPdf": "Upload the PDF first",
+      "moveUp": "Move {{name}} up", "moveDown": "Move {{name}} down",
+      "empty": "No subjects yet", "emptyBody": "Add a subject, then modules, then lessons."
+    },
+    "batches": {
+      "intro": "Batches group students by timing. Every batch sees the same lessons; live classes and exams can target one batch.",
+      "add": "Add batch", "edit": "Edit {{name}}", "save": "Save batch", "name": "Batch name", "nameHint": "For example: Morning batch",
+      "timing": "Timing", "timingHint": "For example: Mon–Fri 7–8 am", "max": "Maximum students", "empty": "No batches yet"
+    },
+    "nav": { "courses": "Courses" }
+  },
+  "mr": {
+    "courses": {
+      "subtitle": "तुमचे अभ्यासक्रम तयार करा आणि तयार झाल्यावर प्रकाशित करा.", "new": "नवीन अभ्यासक्रम", "createDraft": "मसुदा तयार करा",
+      "title": "अभ्यासक्रमाचे नाव", "subject": "विषय", "language": "शिकवण्याची भाषा", "description": "संपूर्ण वर्णन",
+      "lessons": "धडे", "updated": "अद्ययावत", "empty": "अद्याप अभ्यासक्रम नाहीत. सुरुवात करण्यासाठी पहिला अभ्यासक्रम तयार करा.",
+      "lang": { "en": "इंग्रजी", "mr": "मराठी", "hi": "हिंदी", "other": "इतर" },
+      "back": "अभ्यासक्रमांकडे परत", "basics": "अभ्यासक्रमाची माहिती", "duration": "कालावधी", "durationHint": "उदा.: 10 महिने",
+      "fee": "शुल्क (फक्त दाखवण्यासाठी)", "feeHint": "अभ्यासक्रम पृष्ठावर दिसेल. या साइटवर पेमेंट होत नाही.",
+      "thumbnail": "थंबनेल", "thumbnailUpload": "थंबनेल अपलोड करा", "thumbnailHint": "16:9 प्रतिमा, किमान 1280×720, 5 MB पर्यंत",
+      "demoVideos": "डेमो व्हिडिओ", "demoVideosHint": "नेमके 2 डेमो व्हिडिओ. लॉग इन न करता कोणीही पाहू शकते.",
+      "demo1": "डेमो व्हिडिओ 1", "demo2": "डेमो व्हिडिओ 2", "publish": "अभ्यासक्रम प्रकाशित करा", "unpublish": "मसुद्यात परत न्या",
+      "published": "अभ्यासक्रम प्रकाशित झाला", "unpublished": "अभ्यासक्रम मसुद्यात परत नेला", "liveNote": "हा अभ्यासक्रम सार्वजनिक साइटवर दिसत आहे.",
+      "notReady": "प्रकाशित करण्यापूर्वी हे पूर्ण करा:",
+      "missing": {
+        "title": "अभ्यासक्रमाचे नाव लिहा", "description": "वर्णन लिहा", "thumbnail": "थंबनेल प्रतिमा जोडा",
+        "demo_video_1": "डेमो व्हिडिओ 1 जोडा", "demo_video_2": "डेमो व्हिडिओ 2 जोडा", "content": "अभ्यासक्रमात किमान एक धडा जोडा"
+      },
+      "tabs": { "details": "माहिती", "curriculum": "अभ्यासक्रम रचना", "batches": "बॅच" }
+    },
+    "video": {
+      "source": "व्हिडिओ स्रोत", "choose": "व्हिडिओ कसा जोडायचा ते निवडा", "upload": "MP4 फाइल अपलोड करा", "link": "व्हिडिओ लिंक",
+      "chooseFile": "MP4 फाइल निवडा", "uploadHint": "500 MB पर्यंत. कनेक्शन तुटल्यास अपलोड जिथे थांबले तिथून पुढे सुरू होईल.",
+      "invalidLink": "योग्य {{name}} लिंक लिहा", "onlyMp4": "फक्त MP4 व्हिडिओ अपलोड करता येतात", "tooBig": "व्हिडिओ 500 MB पर्यंत असू शकतात. मोठ्या व्हिडिओसाठी YouTube, Vimeo किंवा Bunny लिंक वापरा.",
+      "uploaded": "व्हिडिओ अपलोड झाला"
+    },
+    "curriculum": {
+      "addSubject": "विषय जोडा", "editSubject": "विषय बदला", "addModule": "मॉड्यूल जोडा", "editModule": "मॉड्यूल बदला",
+      "addContent": "धडा जोडा", "editContent": "धडा बदला", "description": "वर्णन", "contentTitle": "धड्याचे नाव",
+      "type": "प्रकार", "types": { "video": "व्हिडिओ", "pdf": "PDF नोट्स", "link": "लिंक" }, "pdfFile": "PDF फाइल", "pdfHint": "20 MB पर्यंत",
+      "pdfReady": "PDF अपलोड झाली", "linkUrl": "वेब पत्ता", "freePreview": "मोफत पूर्वावलोकन (कोणीही उघडू शकते)", "free": "मोफत पूर्वावलोकन",
+      "needVideo": "आधी व्हिडिओ जोडा", "needPdf": "आधी PDF अपलोड करा",
+      "moveUp": "{{name}} वर हलवा", "moveDown": "{{name}} खाली हलवा",
+      "empty": "अद्याप विषय नाहीत", "emptyBody": "विषय जोडा, मग मॉड्यूल, मग धडे."
+    },
+    "batches": {
+      "intro": "बॅच विद्यार्थ्यांना वेळेनुसार गटात ठेवतात. सर्व बॅचना तेच धडे दिसतात; थेट वर्ग आणि परीक्षा एका बॅचसाठी असू शकतात.",
+      "add": "बॅच जोडा", "edit": "{{name}} बदला", "save": "बॅच जतन करा", "name": "बॅचचे नाव", "nameHint": "उदा.: सकाळची बॅच",
+      "timing": "वेळ", "timingHint": "उदा.: सोम–शुक्र सकाळी 7–8", "max": "जास्तीत जास्त विद्यार्थी", "empty": "अद्याप बॅच नाहीत"
+    },
+    "nav": { "courses": "अभ्यासक्रम" }
+  },
+  "hi": {
+    "courses": {
+      "subtitle": "अपने कोर्स बनाएँ और तैयार होने पर प्रकाशित करें।", "new": "नया कोर्स", "createDraft": "ड्राफ़्ट बनाएँ",
+      "title": "कोर्स का नाम", "subject": "विषय", "language": "पढ़ाने की भाषा", "description": "पूरा विवरण",
+      "lessons": "पाठ", "updated": "अपडेट", "empty": "अभी कोई कोर्स नहीं। शुरू करने के लिए पहला कोर्स बनाएँ।",
+      "lang": { "en": "अंग्रेज़ी", "mr": "मराठी", "hi": "हिंदी", "other": "अन्य" },
+      "back": "कोर्स पर वापस", "basics": "कोर्स की जानकारी", "duration": "अवधि", "durationHint": "उदाहरण: 10 महीने",
+      "fee": "शुल्क (केवल दिखाने के लिए)", "feeHint": "कोर्स पेज पर दिखेगा। इस साइट पर कोई भुगतान नहीं होता।",
+      "thumbnail": "थंबनेल", "thumbnailUpload": "थंबनेल अपलोड करें", "thumbnailHint": "16:9 चित्र, कम से कम 1280×720, 5 MB तक",
+      "demoVideos": "डेमो वीडियो", "demoVideosHint": "ठीक 2 डेमो वीडियो। बिना लॉग इन कोई भी देख सकता है।",
+      "demo1": "डेमो वीडियो 1", "demo2": "डेमो वीडियो 2", "publish": "कोर्स प्रकाशित करें", "unpublish": "ड्राफ़्ट में वापस करें",
+      "published": "कोर्स प्रकाशित हुआ", "unpublished": "कोर्स ड्राफ़्ट में वापस किया गया", "liveNote": "यह कोर्स सार्वजनिक साइट पर दिख रहा है।",
+      "notReady": "प्रकाशित करने से पहले यह पूरा करें:",
+      "missing": {
+        "title": "कोर्स का नाम लिखें", "description": "विवरण लिखें", "thumbnail": "थंबनेल चित्र जोड़ें",
+        "demo_video_1": "डेमो वीडियो 1 जोड़ें", "demo_video_2": "डेमो वीडियो 2 जोड़ें", "content": "पाठ्यक्रम में कम से कम एक पाठ जोड़ें"
+      },
+      "tabs": { "details": "जानकारी", "curriculum": "पाठ्यक्रम", "batches": "बैच" }
+    },
+    "video": {
+      "source": "वीडियो स्रोत", "choose": "वीडियो कैसे जोड़ें चुनें", "upload": "MP4 फ़ाइल अपलोड करें", "link": "वीडियो लिंक",
+      "chooseFile": "MP4 फ़ाइल चुनें", "uploadHint": "500 MB तक। कनेक्शन टूटने पर अपलोड वहीं से आगे चलेगा जहाँ रुका था।",
+      "invalidLink": "सही {{name}} लिंक लिखें", "onlyMp4": "केवल MP4 वीडियो अपलोड हो सकते हैं", "tooBig": "वीडियो 500 MB तक हो सकते हैं। लंबे वीडियो के लिए YouTube, Vimeo या Bunny लिंक का उपयोग करें।",
+      "uploaded": "वीडियो अपलोड हुआ"
+    },
+    "curriculum": {
+      "addSubject": "विषय जोड़ें", "editSubject": "विषय बदलें", "addModule": "मॉड्यूल जोड़ें", "editModule": "मॉड्यूल बदलें",
+      "addContent": "पाठ जोड़ें", "editContent": "पाठ बदलें", "description": "विवरण", "contentTitle": "पाठ का नाम",
+      "type": "प्रकार", "types": { "video": "वीडियो", "pdf": "PDF नोट्स", "link": "लिंक" }, "pdfFile": "PDF फ़ाइल", "pdfHint": "20 MB तक",
+      "pdfReady": "PDF अपलोड हुई", "linkUrl": "वेब पता", "freePreview": "मुफ़्त पूर्वावलोकन (कोई भी खोल सकता है)", "free": "मुफ़्त पूर्वावलोकन",
+      "needVideo": "पहले वीडियो जोड़ें", "needPdf": "पहले PDF अपलोड करें",
+      "moveUp": "{{name}} ऊपर करें", "moveDown": "{{name}} नीचे करें",
+      "empty": "अभी कोई विषय नहीं", "emptyBody": "विषय जोड़ें, फिर मॉड्यूल, फिर पाठ।"
+    },
+    "batches": {
+      "intro": "बैच छात्रों को समय के हिसाब से समूह में रखते हैं। सभी बैच को वही पाठ दिखते हैं; लाइव क्लास और परीक्षा एक बैच के लिए हो सकती हैं।",
+      "add": "बैच जोड़ें", "edit": "{{name}} बदलें", "save": "बैच सहेजें", "name": "बैच का नाम", "nameHint": "उदाहरण: सुबह का बैच",
+      "timing": "समय", "timingHint": "उदाहरण: सोम–शुक्र सुबह 7–8", "max": "अधिकतम छात्र", "empty": "अभी कोई बैच नहीं"
+    },
+    "nav": { "courses": "कोर्स" }
+  }
+}

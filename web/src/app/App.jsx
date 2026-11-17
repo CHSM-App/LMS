@@ -18,6 +18,8 @@ const TeachersPage = lazy(() => import('../features/admin/TeachersPage'));
 const TeacherDetailPage = lazy(() => import('../features/admin/TeacherDetailPage'));
 const SubscriptionsPage = lazy(() => import('../features/admin/SubscriptionsPage'));
 const AuditLogPage = lazy(() => import('../features/admin/AuditLogPage'));
+const CoursesPage = lazy(() => import('../features/teacher/courses/CoursesPage'));
+const CourseEditorPage = lazy(() => import('../features/teacher/courses/CourseEditorPage'));
 const ComingSoon = lazy(() => import('./ComingSoon'));
 const StyleGuide = lazy(() => import('./StyleGuide'));
 
@@ -58,6 +60,8 @@ export default function App() {
 
                 <Route path="teacher" element={<RoleShell roles={['teacher']} />}>
                   <Route index element={<ComingSoon title="common.dashboard" />} />
+                  <Route path="courses" element={<CoursesPage />} />
+                  <Route path="courses/:courseId" element={<CourseEditorPage />} />
                 </Route>
 
                 <Route path="student" element={<RoleShell roles={['student']} />}>

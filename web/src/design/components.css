@@ -152,3 +152,15 @@
 .dl { display: grid; grid-template-columns: minmax(120px, max-content) 1fr; gap: var(--space-2) var(--space-4); margin: 0; }
 .dl dt { color: var(--color-text-secondary); font-weight: var(--font-weight-semibold); }
 .dl dd { margin: 0; }
+
+/* ---------- Teacher content ---------- */
+.thumb-sm { width: 64px; height: 36px; object-fit: cover; border-radius: var(--radius-sm); }
+.thumb-lg { width: 100%; max-width: 480px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius-md); margin-bottom: var(--space-3); }
+.video-field { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); margin: 0 0 var(--space-4); min-width: 0; }
+.video-field legend { padding: 0 var(--space-2); }
+.video-field__preview { margin-top: var(--space-3); }
+.curriculum { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: flex; flex-direction: column; gap: var(--space-3); }
+.curriculum__module { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); }
+.curriculum__contents { list-style: none; padding: 0; margin: var(--space-2) 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.curriculum__contents li { padding: var(--space-2); border-radius: var(--radius-sm); }
+.curriculum__contents li:hover { background: var(--color-hover-bg); }
