@@ -1,0 +1,144 @@
+  /teacher/modules/{moduleId}/questions:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: type, in: query, schema: { type: string, enum: [mcq, true_false, fill_blank, multi_correct] } }
+        - { name: difficulty, in: query, schema: { type: string, enum: [easy, medium, hard] } }
+        - { name: archived, in: query, schema: { type: string, enum: ['true', 'false'] } }
+      responses:
+        '200': { description: Questions of the module's bank with options }
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuestionInput' }
+      responses:
+        '201': { description: Question created }
+        '400': { description: 'details.errors lists every problem' }
+  /teacher/modules/{moduleId}/question-counts:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Active questions per difficulty { easy, medium, hard }' }
+  /teacher/questions/{questionId}:
+    parameters: [{ name: questionId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      summary: Edit. If the question was already used, a new version is created and the old one archived.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuestionInput' }
+      responses:
+        '200': { description: The current version }
+    delete:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ deleted: true } or { archived: true } when it was used' }
+  /teacher/questions/import-template:
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Excel template (.xlsx) }
+  /teacher/modules/{moduleId}/questions/import:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      summary: 'Bulk import from the template. Valid rows are imported; invalid rows are reported per row.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [file], properties: { file: { type: string, format: binary } } }
+      responses:
+        '200': { description: '{ imported, errors: [{ row, field, message }], errorFileUrl }' }
+        '400': { description: More than 2000 rows or not an xlsx file }
+  /teacher/courses/{courseId}/exams:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Exams of the course }
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExamInput' }
+      responses:
+        '201': { description: Draft exam created }
+  /teacher/exams/{examId}:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Exam with modules, random mix, questions and batches }
+    put:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExamInput' }
+      responses:
+        '200': { description: Updated }
+        '409': { description: Students already took it }
+    delete:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted (drafts without attempts) }
+  /teacher/exams/{examId}/validate:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ ok, problems[] }' }
+  /teacher/exams/{examId}/publish:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Published; targeted students notified }
+        '422': { description: 'details.problems lists what to fix' }
+  /teacher/exams/{examId}/unpublish:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Back to draft (only before any attempt) }
+  /teacher/exams/{examId}/results:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: batch, in: query, schema: { type: integer } }]
+      responses:
+        '200': { description: Best attempt per student with rank }
+  /teacher/courses/{courseId}/final-results:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Weighted final result per student }

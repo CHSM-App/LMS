@@ -1,0 +1,39 @@
+    QuestionInput:
+      type: object
+      required: [type, text]
+      properties:
+        type: { type: string, enum: [mcq, true_false, fill_blank, multi_correct] }
+        text: { type: string }
+        difficulty: { type: string, enum: [easy, medium, hard] }
+        marks: { type: number }
+        negativeMarks: { type: number }
+        explanation: { type: string, nullable: true }
+        options:
+          type: array
+          items: { type: object, properties: { text: { type: string }, isCorrect: { type: boolean } } }
+        acceptedAnswers: { type: array, items: { type: string } }
+    ExamInput:
+      type: object
+      required: [title, scope, mode, selection, category]
+      properties:
+        title: { type: string, maxLength: 200 }
+        scope: { type: string, enum: [module, modules, course] }
+        moduleIds: { type: array, items: { type: integer } }
+        mode: { type: string, enum: [practice, mock] }
+        selection: { type: string, enum: [manual, random] }
+        questionIds: { type: array, items: { type: integer } }
+        randomMix:
+          type: array
+          items: { type: object, properties: { moduleId: { type: integer }, easy: { type: integer }, medium: { type: integer }, hard: { type: integer } } }
+        category: { type: string, enum: [unit_test_1, unit_test_2, final, practice] }
+        weightage: { type: number }
+        totalMarks: { type: number, nullable: true }
+        negativeMarking: { type: boolean }
+        timeLimitMin: { type: integer, nullable: true }
+        passingPct: { type: number, nullable: true }
+        shuffleQuestions: { type: boolean }
+        shuffleOptions: { type: boolean }
+        attemptLimit: { type: integer, nullable: true }
+        startsAt: { type: string, nullable: true }
+        endsAt: { type: string, nullable: true }
+        batchIds: { type: array, items: { type: integer } }

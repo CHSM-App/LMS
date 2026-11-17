@@ -9,9 +9,11 @@ const SQL = {
   module: 'SELECT m.module_id AS id, m.subject_id, m.course_id, c.teacher_id FROM dbo.modules m JOIN dbo.courses c ON c.course_id = m.course_id WHERE m.module_id = @id',
   content: 'SELECT x.content_id AS id, x.module_id, x.course_id, c.teacher_id FROM dbo.contents x JOIN dbo.courses c ON c.course_id = x.course_id WHERE x.content_id = @id',
   batch: 'SELECT b.batch_id AS id, b.course_id, c.teacher_id FROM dbo.batches b JOIN dbo.courses c ON c.course_id = b.course_id WHERE b.batch_id = @id',
+  question: 'SELECT q.question_id AS id, q.module_id, q.course_id, c.teacher_id FROM dbo.questions q JOIN dbo.courses c ON c.course_id = q.course_id WHERE q.question_id = @id',
+  exam: 'SELECT e.exam_id AS id, e.course_id, e.status, c.teacher_id FROM dbo.exams e JOIN dbo.courses c ON c.course_id = e.course_id WHERE e.exam_id = @id',
 };
 
-const LABEL = { course: 'Course', subject: 'Subject', module: 'Module', content: 'Content', batch: 'Batch' };
+const LABEL = { course: 'Course', subject: 'Subject', module: 'Module', content: 'Content', batch: 'Batch', question: 'Question', exam: 'Exam' };
 
 async function owned(entity, id, teacherId, tx) {
   const n = Number(id);

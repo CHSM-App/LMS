@@ -20,5 +20,8 @@ if (params && !spec.includes(params.split('\n')[0])) spec = spec.replace('  para
 const paths = read('paths');
 if (paths && !spec.includes(paths.split('\n')[0])) spec = `${spec.replace(/\s+$/, '')}\n${paths}\n`;
 
+// Flow-style `{ description: a, b }` would split on the comma: quote any unquoted description that contains one.
+spec = spec.replace(/\{ description: ([^'"{}\n][^{}\n]*?) \}/g, (m, text) => (text.includes(',') || text.includes(':') ? `{ description: '${text.replace(/'/g, "''")}' }` : m));
+
 fs.writeFileSync(specPath, spec);
 console.log(`merged ${phase}`);
