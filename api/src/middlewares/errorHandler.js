@@ -1,3 +1,5 @@
+const logger = require('../utils/logger');
+
 function notFound(req, res) {
   res.status(404).json({ success: false, error: 'Not found' });
 }
@@ -23,7 +25,8 @@ function errorHandler(err, req, res, next) {
   if (typeof err.code === 'string' && status < 500 && !err.code.startsWith('LIMIT_')) body.code = err.code;
   if (err.details) body.details = err.details;
   if (env === 'development' && status >= 500) body.stack = err.stack;
-  if (status >= 500 && env !== 'test') console.error(err);
+  if (status === 403) logger.warn({ event: 'forbidden', method: req.method, path: req.originalUrl.split('?')[0], userId: req.user ? req.user.id : null, code: body.code || null });
+  if (status >= 500) logger.error({ event: 'server_error', method: req.method, path: req.originalUrl.split('?')[0], err: err.message, stack: env === 'production' ? undefined : err.stack });
   res.status(status).json(body);
 }
 

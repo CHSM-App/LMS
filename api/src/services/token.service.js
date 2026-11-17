@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { query, one, T } = require('../db/query');
+const logger = require('../utils/logger');
 const { withTransaction } = require('../db/tx');
 const { clock } = require('../utils/clock');
 const { APIError } = require('../utils/APIError');
@@ -65,6 +66,7 @@ async function rotate(refreshToken) {
       const withinGrace = clock.now() - new Date(row.revoked_at) <= REUSE_GRACE_MS;
       if (!successor || successor.revoked_at || !withinGrace || row.deleted_at || row.status !== 'approved') {
         await revokeAllForUser(row.user_id, tx);
+        logger.warn({ event: 'token_reuse', userId: row.user_id, familyId: row.family_id });
         return { error: unauthorized('This session was used somewhere else. Log in again.', 'TOKEN_REUSED') };
       }
       const next = await insertRefresh(row.user_id, row.family_id, row.device_id, tx);

@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const { withTransaction } = require('../db/tx');
 const { query, one, T } = require('../db/query');
+const logger = require('../utils/logger');
+const { maskMobile } = require('../utils/mobile');
 const { otpSender } = require('../providers/otp');
 const { clock } = require('../utils/clock');
 const { APIError, badRequest } = require('../utils/APIError');
@@ -92,7 +94,10 @@ async function verify(mobile, purpose, code, tx) {
   };
   // Wrong-attempt counts must persist even though verification fails, so they commit in their own transaction.
   const result = tx ? await run(tx) : await withTransaction(run);
-  if (result.error) throw badRequest(result.error, 'OTP_INVALID');
+  if (result.error) {
+    logger.warn({ event: 'otp_failed', purpose, mobile: maskMobile(mobile), reason: result.error });
+    throw badRequest(result.error, 'OTP_INVALID');
+  }
   return true;
 }
 
