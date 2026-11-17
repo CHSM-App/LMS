@@ -111,6 +111,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Learn from teachers you trust'**
   String get appTagline;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in'**
+  String get loginTitle;
+
+  /// No description provided for @loginIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your mobile number. We\'ll send you a one-time password.'**
+  String get loginIntro;
+
+  /// No description provided for @mobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get mobileNumber;
+
+  /// No description provided for @mobileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'10-digit mobile number'**
+  String get mobileHint;
+
+  /// No description provided for @invalidMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid 10-digit mobile number'**
+  String get invalidMobile;
+
+  /// No description provided for @sendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Send OTP'**
+  String get sendOtp;
+
+  /// No description provided for @otpSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP sent to {mobile}.'**
+  String otpSentTo(String mobile);
+
+  /// No description provided for @changeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Change number'**
+  String get changeNumber;
+
+  /// No description provided for @verifyLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify and log in'**
+  String get verifyLogin;
+
+  /// No description provided for @resendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP in {s}s'**
+  String resendIn(int s);
+
+  /// No description provided for @resendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP'**
+  String get resendOtp;
+
+  /// No description provided for @adminWebOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin tools are on the website. Log in there to manage teachers.'**
+  String get adminWebOnly;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logout;
+
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @hello.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}'**
+  String hello(String name);
+
+  /// No description provided for @changeMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Change mobile number'**
+  String get changeMobile;
+
+  /// No description provided for @newMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'New mobile number'**
+  String get newMobile;
+
+  /// No description provided for @mobileChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number changed'**
+  String get mobileChanged;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes your name, mobile number, email and photo. Your teacher keeps exam and attendance records as \"Deleted user\". This can\'t be undone.'**
+  String get deleteAccountIntro;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account was deleted'**
+  String get accountDeleted;
 }
 
 class _AppLocalizationsDelegate
