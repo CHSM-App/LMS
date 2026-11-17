@@ -1,0 +1,170 @@
+{
+  "en": {
+    "nav": { "questionBank": "Question bank", "exams": "Exams", "batches": "Batch" },
+    "status": { "approved": "Approved" },
+    "questions": {
+      "subtitle": "Each module has its own question bank.", "add": "Add question", "edit": "Edit question", "save": "Save question",
+      "saved": "Question saved", "archived": "Question archived (it was already used in an exam)", "deleted": "Question deleted",
+      "chooseCourse": "Choose a course", "chooseModule": "Choose a module", "module": "Module", "pickModule": "Choose a course and module to see its question bank",
+      "empty": "No questions in this module yet", "type": "Question type", "difficulty": "Difficulty", "question": "Question",
+      "types": { "mcq": "MCQ", "true_false": "True / False", "fill_blank": "Fill in the blank", "multi_correct": "Multiple correct" },
+      "levels": { "easy": "Easy", "medium": "Medium", "hard": "Hard" },
+      "optionsMcq": "Options (tick the one correct answer)", "optionsMulti": "Options (tick every correct answer)", "option": "Option {{letter}}",
+      "correct": "Correct", "addOption": "Add option", "correctAnswer": "Correct answer", "accepted": "Accepted answers",
+      "acceptedHint": "Separate answers with ; (for example: Mumbai; Bombay). Case and extra spaces are ignored.",
+      "marks": "Marks", "negative": "Negative marks", "negativeHint": "Taken off for a wrong answer when the exam uses negative marking",
+      "explanation": "Explanation", "explanationHint": "Shown to students in the answer review",
+      "marksShort": "{{marks}} marks, −{{neg}}", "acceptedShort": "Accepted: {{list}}",
+      "versionNote": "If this question was already used in an exam, saving creates a new version and keeps the old one for past results.",
+      "errors": {
+        "text": "Write the question", "tf": "Choose True or False as the correct answer", "accepted": "Add at least one accepted answer",
+        "mcq": "Tick exactly one correct option", "multi": "Tick at least one correct option", "options": "Add at least two options",
+        "marks": "Marks must be more than 0", "negative": "Negative marks cannot be more than marks"
+      }
+    },
+    "import": {
+      "open": "Import from Excel", "title": "Import questions from Excel", "intro": "Download the template, fill one question per row, then upload it here. Valid rows are imported; rows with problems are listed so you can fix them.",
+      "template": "Download template", "file": "Excel file (.xlsx)", "run": "Import questions",
+      "summary": "{{imported}} questions imported.", "summaryErrors": "{{imported}} questions imported. {{count}} row needs fixing.",
+      "summaryErrors_other": "{{imported}} questions imported. {{count}} rows need fixing.",
+      "download": "Download error report", "row": "Row", "field": "Column", "problem": "Problem"
+    },
+    "examList": {
+      "subtitle": "Unit tests, final exam and practice tests for each course.", "new": "New exam", "pickCourse": "Choose a course to see its exams",
+      "finalResults": "Final results", "empty": "No exams yet", "attempts": "Attempts", "results": "Results", "noFinal": "No students have taken a graded exam yet",
+      "weighted": "Weighted total", "result": "Result"
+    },
+    "examBuilder": {
+      "back": "Back to exams", "newTitle": "New exam", "untitled": "Untitled exam", "saveDraft": "Save draft", "publish": "Publish exam",
+      "saved": "Exam saved", "published": "Exam published. Students in the chosen batches were notified.", "problems": "Fix these before publishing:",
+      "saveFirst": "You have unsaved changes. Save the draft to check it again.", "lockedNote": "This exam is published. Create a new exam to change it.",
+      "noCourse": "Open this page from a course's exams", "title": "Exam title",
+      "scope": "Scope", "scopeLabel": "Questions come from", "scopes": { "module": "One module", "modules": "Several modules", "course": "The whole course" },
+      "mode": "Mode", "modeLabel": "Mode", "modes": { "mock": "Mock (timed, counted)", "practice": "Practice (no timer, not counted)" },
+      "mockHint": "Timer with auto-submit, passing %, attempt limit; results after submit.",
+      "practiceHint": "No timer, answers shown straight away, unlimited attempts, not counted in the final result.",
+      "questions": "Questions", "selection": "How questions are chosen", "selections": { "random": "Random for each student", "manual": "I'll choose them" },
+      "available": "Available: {{easy}} easy, {{medium}} medium, {{hard}} hard", "totalMarks": "Total marks",
+      "category": "Category and weightage", "categoryLabel": "Category",
+      "categories": { "unit_test_1": "Unit Test 1", "unit_test_2": "Unit Test 2", "final": "Final Exam", "practice": "Practice" },
+      "weightage": "Weightage %", "weightHint": "Graded exams of a course must add up to 100% before the Final Exam is published.",
+      "practiceWeight": "Practice tests don't count toward the final result.",
+      "batches": "Batches", "batchesHint": "Leave all unticked to give this exam to every batch.",
+      "options": "Options", "timeLimit": "Time limit (minutes)", "passing": "Passing %", "attempts": "Attempt limit", "attemptsHint": "Leave empty for unlimited",
+      "startsAt": "Opens at", "endsAt": "Closes at", "negative": "Use negative marking", "shuffleQ": "Shuffle question order", "shuffleO": "Shuffle option order"
+    },
+    "results": { "title": "Results: {{exam}}", "subtitle": "Best attempt per student. Equal marks rank the earlier submission first.", "empty": "No submitted attempts yet", "rank": "Rank", "marks": "Marks" }
+  },
+  "mr": {
+    "nav": { "questionBank": "प्रश्नसंग्रह", "exams": "परीक्षा", "batches": "बॅच" },
+    "status": { "approved": "मंजूर" },
+    "questions": {
+      "subtitle": "प्रत्येक मॉड्यूलचा स्वतःचा प्रश्नसंग्रह असतो.", "add": "प्रश्न जोडा", "edit": "प्रश्न बदला", "save": "प्रश्न जतन करा",
+      "saved": "प्रश्न जतन केला", "archived": "प्रश्न संग्रहित केला (तो आधीच परीक्षेत वापरला होता)", "deleted": "प्रश्न हटवला",
+      "chooseCourse": "अभ्यासक्रम निवडा", "chooseModule": "मॉड्यूल निवडा", "module": "मॉड्यूल", "pickModule": "प्रश्नसंग्रह पाहण्यासाठी अभ्यासक्रम आणि मॉड्यूल निवडा",
+      "empty": "या मॉड्यूलमध्ये अद्याप प्रश्न नाहीत", "type": "प्रश्नाचा प्रकार", "difficulty": "काठिण्य", "question": "प्रश्न",
+      "types": { "mcq": "बहुपर्यायी", "true_false": "चूक / बरोबर", "fill_blank": "रिकाम्या जागा भरा", "multi_correct": "अनेक बरोबर उत्तरे" },
+      "levels": { "easy": "सोपे", "medium": "मध्यम", "hard": "कठीण" },
+      "optionsMcq": "पर्याय (एक बरोबर उत्तर निवडा)", "optionsMulti": "पर्याय (सर्व बरोबर उत्तरे निवडा)", "option": "पर्याय {{letter}}",
+      "correct": "बरोबर", "addOption": "पर्याय जोडा", "correctAnswer": "बरोबर उत्तर", "accepted": "स्वीकार्य उत्तरे",
+      "acceptedHint": "उत्तरे ; ने वेगळी करा (उदा.: मुंबई; Mumbai). अक्षरांचा प्रकार आणि जादा जागा दुर्लक्षित.",
+      "marks": "गुण", "negative": "उणे गुण", "negativeHint": "परीक्षेत उणे गुणांकन असल्यास चुकीच्या उत्तराला वजा होतात",
+      "explanation": "स्पष्टीकरण", "explanationHint": "उत्तर तपासणीत विद्यार्थ्यांना दिसते",
+      "marksShort": "{{marks}} गुण, −{{neg}}", "acceptedShort": "स्वीकार्य: {{list}}",
+      "versionNote": "हा प्रश्न आधीच परीक्षेत वापरला असल्यास, जतन केल्यावर नवीन आवृत्ती तयार होईल आणि जुन्या निकालांसाठी जुनी आवृत्ती राहील.",
+      "errors": {
+        "text": "प्रश्न लिहा", "tf": "बरोबर उत्तर म्हणून चूक किंवा बरोबर निवडा", "accepted": "किमान एक स्वीकार्य उत्तर जोडा",
+        "mcq": "नेमका एक बरोबर पर्याय निवडा", "multi": "किमान एक बरोबर पर्याय निवडा", "options": "किमान दोन पर्याय जोडा",
+        "marks": "गुण 0 पेक्षा जास्त हवेत", "negative": "उणे गुण गुणांपेक्षा जास्त असू शकत नाहीत"
+      }
+    },
+    "import": {
+      "open": "Excel मधून आयात करा", "title": "Excel मधून प्रश्न आयात करा", "intro": "साचा डाउनलोड करा, प्रत्येक ओळीत एक प्रश्न भरा आणि येथे अपलोड करा. योग्य ओळी आयात होतील; चुकीच्या ओळी दुरुस्तीसाठी दाखवल्या जातील.",
+      "template": "साचा डाउनलोड करा", "file": "Excel फाइल (.xlsx)", "run": "प्रश्न आयात करा",
+      "summary": "{{imported}} प्रश्न आयात झाले.", "summaryErrors": "{{imported}} प्रश्न आयात झाले. {{count}} ओळ दुरुस्त करावी लागेल.",
+      "summaryErrors_other": "{{imported}} प्रश्न आयात झाले. {{count}} ओळी दुरुस्त कराव्या लागतील.",
+      "download": "त्रुटी अहवाल डाउनलोड करा", "row": "ओळ", "field": "स्तंभ", "problem": "समस्या"
+    },
+    "examList": {
+      "subtitle": "प्रत्येक अभ्यासक्रमासाठी घटक चाचण्या, अंतिम परीक्षा आणि सराव चाचण्या.", "new": "नवीन परीक्षा", "pickCourse": "परीक्षा पाहण्यासाठी अभ्यासक्रम निवडा",
+      "finalResults": "अंतिम निकाल", "empty": "अद्याप परीक्षा नाहीत", "attempts": "प्रयत्न", "results": "निकाल", "noFinal": "अद्याप कोणीही गुणांकित परीक्षा दिलेली नाही",
+      "weighted": "भारित एकूण", "result": "निकाल"
+    },
+    "examBuilder": {
+      "back": "परीक्षांकडे परत", "newTitle": "नवीन परीक्षा", "untitled": "नाव नसलेली परीक्षा", "saveDraft": "मसुदा जतन करा", "publish": "परीक्षा प्रकाशित करा",
+      "saved": "परीक्षा जतन केली", "published": "परीक्षा प्रकाशित झाली. निवडलेल्या बॅचच्या विद्यार्थ्यांना कळवले.", "problems": "प्रकाशित करण्यापूर्वी हे दुरुस्त करा:",
+      "saveFirst": "बदल जतन झालेले नाहीत. पुन्हा तपासण्यासाठी मसुदा जतन करा.", "lockedNote": "ही परीक्षा प्रकाशित आहे. बदल करण्यासाठी नवीन परीक्षा तयार करा.",
+      "noCourse": "हे पान अभ्यासक्रमाच्या परीक्षांमधून उघडा", "title": "परीक्षेचे नाव",
+      "scope": "व्याप्ती", "scopeLabel": "प्रश्न कुठून", "scopes": { "module": "एक मॉड्यूल", "modules": "अनेक मॉड्यूल", "course": "संपूर्ण अभ्यासक्रम" },
+      "mode": "प्रकार", "modeLabel": "प्रकार", "modes": { "mock": "मॉक (वेळेची मर्यादा, गुण मोजले जातात)", "practice": "सराव (वेळ नाही, गुण मोजले जात नाहीत)" },
+      "mockHint": "वेळ संपल्यावर आपोआप सबमिट, उत्तीर्ण %, प्रयत्न मर्यादा; निकाल सबमिटनंतर.",
+      "practiceHint": "वेळ नाही, उत्तरे लगेच दिसतात, अमर्याद प्रयत्न, अंतिम निकालात मोजले जात नाही.",
+      "questions": "प्रश्न", "selection": "प्रश्न कसे निवडायचे", "selections": { "random": "प्रत्येक विद्यार्थ्याला यादृच्छिक", "manual": "मी निवडेन" },
+      "available": "उपलब्ध: {{easy}} सोपे, {{medium}} मध्यम, {{hard}} कठीण", "totalMarks": "एकूण गुण",
+      "category": "वर्ग आणि भार", "categoryLabel": "वर्ग",
+      "categories": { "unit_test_1": "घटक चाचणी 1", "unit_test_2": "घटक चाचणी 2", "final": "अंतिम परीक्षा", "practice": "सराव" },
+      "weightage": "भार %", "weightHint": "अंतिम परीक्षा प्रकाशित करण्यापूर्वी अभ्यासक्रमाच्या गुणांकित परीक्षांचा भार 100% हवा.",
+      "practiceWeight": "सराव चाचण्या अंतिम निकालात मोजल्या जात नाहीत.",
+      "batches": "बॅच", "batchesHint": "सर्व बॅचना देण्यासाठी काहीही निवडू नका.",
+      "options": "पर्याय", "timeLimit": "वेळ मर्यादा (मिनिटे)", "passing": "उत्तीर्ण %", "attempts": "प्रयत्न मर्यादा", "attemptsHint": "अमर्याद हवे असल्यास रिकामे ठेवा",
+      "startsAt": "सुरू होते", "endsAt": "बंद होते", "negative": "उणे गुणांकन वापरा", "shuffleQ": "प्रश्नांचा क्रम बदला", "shuffleO": "पर्यायांचा क्रम बदला"
+    },
+    "results": { "title": "निकाल: {{exam}}", "subtitle": "प्रत्येक विद्यार्थ्याचा सर्वोत्तम प्रयत्न. समान गुण असल्यास आधी सबमिट करणारा पुढे.", "empty": "अद्याप सबमिट केलेले प्रयत्न नाहीत", "rank": "क्रमांक", "marks": "गुण" }
+  },
+  "hi": {
+    "nav": { "questionBank": "प्रश्न बैंक", "exams": "परीक्षाएँ", "batches": "बैच" },
+    "status": { "approved": "स्वीकृत" },
+    "questions": {
+      "subtitle": "हर मॉड्यूल का अपना प्रश्न बैंक होता है।", "add": "प्रश्न जोड़ें", "edit": "प्रश्न बदलें", "save": "प्रश्न सहेजें",
+      "saved": "प्रश्न सहेजा गया", "archived": "प्रश्न संग्रहीत किया गया (यह पहले से परीक्षा में इस्तेमाल हुआ था)", "deleted": "प्रश्न हटाया गया",
+      "chooseCourse": "कोर्स चुनें", "chooseModule": "मॉड्यूल चुनें", "module": "मॉड्यूल", "pickModule": "प्रश्न बैंक देखने के लिए कोर्स और मॉड्यूल चुनें",
+      "empty": "इस मॉड्यूल में अभी कोई प्रश्न नहीं", "type": "प्रश्न का प्रकार", "difficulty": "कठिनाई", "question": "प्रश्न",
+      "types": { "mcq": "बहुविकल्पीय", "true_false": "सही / गलत", "fill_blank": "रिक्त स्थान भरें", "multi_correct": "एक से अधिक सही" },
+      "levels": { "easy": "आसान", "medium": "मध्यम", "hard": "कठिन" },
+      "optionsMcq": "विकल्प (एक सही उत्तर चुनें)", "optionsMulti": "विकल्प (सभी सही उत्तर चुनें)", "option": "विकल्प {{letter}}",
+      "correct": "सही", "addOption": "विकल्प जोड़ें", "correctAnswer": "सही उत्तर", "accepted": "स्वीकार्य उत्तर",
+      "acceptedHint": "उत्तरों को ; से अलग करें (उदाहरण: मुंबई; Mumbai)। अक्षर का प्रकार और अतिरिक्त जगह अनदेखी।",
+      "marks": "अंक", "negative": "नकारात्मक अंक", "negativeHint": "परीक्षा में नकारात्मक अंकन होने पर गलत उत्तर पर कटते हैं",
+      "explanation": "व्याख्या", "explanationHint": "उत्तर समीक्षा में छात्रों को दिखती है",
+      "marksShort": "{{marks}} अंक, −{{neg}}", "acceptedShort": "स्वीकार्य: {{list}}",
+      "versionNote": "अगर यह प्रश्न किसी परीक्षा में इस्तेमाल हो चुका है, तो सहेजने पर नया संस्करण बनेगा और पुराने परिणामों के लिए पुराना रहेगा।",
+      "errors": {
+        "text": "प्रश्न लिखें", "tf": "सही उत्तर के रूप में सही या गलत चुनें", "accepted": "कम से कम एक स्वीकार्य उत्तर जोड़ें",
+        "mcq": "ठीक एक सही विकल्प चुनें", "multi": "कम से कम एक सही विकल्प चुनें", "options": "कम से कम दो विकल्प जोड़ें",
+        "marks": "अंक 0 से अधिक होने चाहिए", "negative": "नकारात्मक अंक अंकों से अधिक नहीं हो सकते"
+      }
+    },
+    "import": {
+      "open": "Excel से आयात करें", "title": "Excel से प्रश्न आयात करें", "intro": "टेम्पलेट डाउनलोड करें, हर पंक्ति में एक प्रश्न भरें और यहाँ अपलोड करें। सही पंक्तियाँ आयात होंगी; गलत पंक्तियाँ सुधारने के लिए दिखेंगी।",
+      "template": "टेम्पलेट डाउनलोड करें", "file": "Excel फ़ाइल (.xlsx)", "run": "प्रश्न आयात करें",
+      "summary": "{{imported}} प्रश्न आयात हुए।", "summaryErrors": "{{imported}} प्रश्न आयात हुए। {{count}} पंक्ति सुधारनी है।",
+      "summaryErrors_other": "{{imported}} प्रश्न आयात हुए। {{count}} पंक्तियाँ सुधारनी हैं।",
+      "download": "त्रुटि रिपोर्ट डाउनलोड करें", "row": "पंक्ति", "field": "कॉलम", "problem": "समस्या"
+    },
+    "examList": {
+      "subtitle": "हर कोर्स के लिए यूनिट टेस्ट, अंतिम परीक्षा और अभ्यास टेस्ट।", "new": "नई परीक्षा", "pickCourse": "परीक्षाएँ देखने के लिए कोर्स चुनें",
+      "finalResults": "अंतिम परिणाम", "empty": "अभी कोई परीक्षा नहीं", "attempts": "प्रयास", "results": "परिणाम", "noFinal": "अभी किसी ने अंकित परीक्षा नहीं दी है",
+      "weighted": "भारित कुल", "result": "परिणाम"
+    },
+    "examBuilder": {
+      "back": "परीक्षाओं पर वापस", "newTitle": "नई परीक्षा", "untitled": "बिना नाम की परीक्षा", "saveDraft": "ड्राफ़्ट सहेजें", "publish": "परीक्षा प्रकाशित करें",
+      "saved": "परीक्षा सहेजी गई", "published": "परीक्षा प्रकाशित हुई। चुने गए बैच के छात्रों को सूचित किया गया।", "problems": "प्रकाशित करने से पहले इन्हें ठीक करें:",
+      "saveFirst": "बदलाव सहेजे नहीं गए हैं। दोबारा जाँचने के लिए ड्राफ़्ट सहेजें।", "lockedNote": "यह परीक्षा प्रकाशित है। बदलने के लिए नई परीक्षा बनाएँ।",
+      "noCourse": "यह पेज कोर्स की परीक्षाओं से खोलें", "title": "परीक्षा का नाम",
+      "scope": "दायरा", "scopeLabel": "प्रश्न कहाँ से", "scopes": { "module": "एक मॉड्यूल", "modules": "कई मॉड्यूल", "course": "पूरा कोर्स" },
+      "mode": "प्रकार", "modeLabel": "प्रकार", "modes": { "mock": "मॉक (समय सीमा, अंक गिने जाते हैं)", "practice": "अभ्यास (कोई समय नहीं, अंक नहीं गिने जाते)" },
+      "mockHint": "समय खत्म होने पर अपने-आप सबमिट, उत्तीर्ण %, प्रयास सीमा; परिणाम सबमिट के बाद।",
+      "practiceHint": "कोई समय नहीं, उत्तर तुरंत दिखते हैं, असीमित प्रयास, अंतिम परिणाम में नहीं गिना जाता।",
+      "questions": "प्रश्न", "selection": "प्रश्न कैसे चुने जाएँ", "selections": { "random": "हर छात्र के लिए यादृच्छिक", "manual": "मैं चुनूँगा" },
+      "available": "उपलब्ध: {{easy}} आसान, {{medium}} मध्यम, {{hard}} कठिन", "totalMarks": "कुल अंक",
+      "category": "श्रेणी और भार", "categoryLabel": "श्रेणी",
+      "categories": { "unit_test_1": "यूनिट टेस्ट 1", "unit_test_2": "यूनिट टेस्ट 2", "final": "अंतिम परीक्षा", "practice": "अभ्यास" },
+      "weightage": "भार %", "weightHint": "अंतिम परीक्षा प्रकाशित करने से पहले कोर्स की अंकित परीक्षाओं का भार 100% होना चाहिए।",
+      "practiceWeight": "अभ्यास टेस्ट अंतिम परिणाम में नहीं गिने जाते।",
+      "batches": "बैच", "batchesHint": "सभी बैच को देने के लिए कुछ भी न चुनें।",
+      "options": "विकल्प", "timeLimit": "समय सीमा (मिनट)", "passing": "उत्तीर्ण %", "attempts": "प्रयास सीमा", "attemptsHint": "असीमित के लिए खाली छोड़ें",
+      "startsAt": "खुलने का समय", "endsAt": "बंद होने का समय", "negative": "नकारात्मक अंकन लागू करें", "shuffleQ": "प्रश्नों का क्रम बदलें", "shuffleO": "विकल्पों का क्रम बदलें"
+    },
+    "results": { "title": "परिणाम: {{exam}}", "subtitle": "हर छात्र का सबसे अच्छा प्रयास। बराबर अंक होने पर पहले सबमिट करने वाला आगे।", "empty": "अभी कोई सबमिट किया गया प्रयास नहीं", "rank": "रैंक", "marks": "अंक" }
+  }
+}

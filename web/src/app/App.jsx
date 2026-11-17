@@ -20,6 +20,10 @@ const SubscriptionsPage = lazy(() => import('../features/admin/SubscriptionsPage
 const AuditLogPage = lazy(() => import('../features/admin/AuditLogPage'));
 const CoursesPage = lazy(() => import('../features/teacher/courses/CoursesPage'));
 const CourseEditorPage = lazy(() => import('../features/teacher/courses/CourseEditorPage'));
+const QuestionBankPage = lazy(() => import('../features/teacher/exams/QuestionBankPage'));
+const ExamsPage = lazy(() => import('../features/teacher/exams/ExamsPage'));
+const ExamBuilderPage = lazy(() => import('../features/teacher/exams/ExamBuilderPage'));
+const ExamResultsPage = lazy(() => import('../features/teacher/exams/ExamResultsPage'));
 const ComingSoon = lazy(() => import('./ComingSoon'));
 const StyleGuide = lazy(() => import('./StyleGuide'));
 
@@ -62,6 +66,11 @@ export default function App() {
                   <Route index element={<ComingSoon title="common.dashboard" />} />
                   <Route path="courses" element={<CoursesPage />} />
                   <Route path="courses/:courseId" element={<CourseEditorPage />} />
+                  <Route path="question-bank" element={<QuestionBankPage />} />
+                  <Route path="exams" element={<ExamsPage />} />
+                  <Route path="exams/new" element={<ExamBuilderPage />} />
+                  <Route path="exams/:examId" element={<ExamBuilderPage />} />
+                  <Route path="exams/:examId/results" element={<ExamResultsPage />} />
                 </Route>
 
                 <Route path="student" element={<RoleShell roles={['student']} />}>

@@ -11,6 +11,8 @@ export const ADMIN_NAV = [
 export const TEACHER_NAV = [
   { to: '/teacher', label: 'common.dashboard', end: true },
   { to: '/teacher/courses', label: 'nav.courses' },
+  { to: '/teacher/question-bank', label: 'nav.questionBank' },
+  { to: '/teacher/exams', label: 'nav.exams' },
   { to: '/notifications', label: 'nav.notifications' },
 ];
 
