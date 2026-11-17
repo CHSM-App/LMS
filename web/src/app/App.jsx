@@ -3,17 +3,21 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './AuthProvider';
-import { RequireRole } from './RequireRole';
-import { AppShell } from './layouts/AppShell';
+import { RoleShell } from './layouts/RoleShell';
 import { PublicLayout } from './layouts/PublicLayout';
 import { ToastProvider, Spinner } from '../components';
-import { ADMIN_NAV, TEACHER_NAV, STUDENT_NAV } from './nav';
 
 const LoginPage = lazy(() => import('../features/auth/LoginPage'));
 const BecomeTeacherPage = lazy(() => import('../features/auth/BecomeTeacherPage'));
 const LegalPage = lazy(() => import('../features/public/LegalPage'));
 const AccountPage = lazy(() => import('../features/account/AccountPage'));
+const NotificationsPage = lazy(() => import('../features/notifications/NotificationsPage'));
+const AdminDashboard = lazy(() => import('../features/admin/AdminDashboard'));
 const TeacherRequestsPage = lazy(() => import('../features/admin/TeacherRequestsPage'));
+const TeachersPage = lazy(() => import('../features/admin/TeachersPage'));
+const TeacherDetailPage = lazy(() => import('../features/admin/TeacherDetailPage'));
+const SubscriptionsPage = lazy(() => import('../features/admin/SubscriptionsPage'));
+const AuditLogPage = lazy(() => import('../features/admin/AuditLogPage'));
 const ComingSoon = lazy(() => import('./ComingSoon'));
 const StyleGuide = lazy(() => import('./StyleGuide'));
 
@@ -24,14 +28,6 @@ const queryClient = new QueryClient({
 function Loading() {
   const { t } = useTranslation();
   return <Spinner label={t('common.loading')} />;
-}
-
-function RoleShell({ roles, nav }) {
-  return (
-    <RequireRole roles={roles}>
-      <AppShell nav={nav} />
-    </RequireRole>
-  );
 }
 
 export default function App() {
@@ -51,21 +47,26 @@ export default function App() {
                   {import.meta.env.DEV && <Route path="_styleguide" element={<StyleGuide />} />}
                 </Route>
 
-                <Route path="admin" element={<RoleShell roles={['admin']} nav={ADMIN_NAV} />}>
-                  <Route index element={<Navigate to="teacher-requests" replace />} />
+                <Route path="admin" element={<RoleShell roles={['admin']} />}>
+                  <Route index element={<AdminDashboard />} />
                   <Route path="teacher-requests" element={<TeacherRequestsPage />} />
+                  <Route path="teachers" element={<TeachersPage />} />
+                  <Route path="teachers/:publicId" element={<TeacherDetailPage />} />
+                  <Route path="subscriptions" element={<SubscriptionsPage />} />
+                  <Route path="audit-log" element={<AuditLogPage />} />
                 </Route>
 
-                <Route path="teacher" element={<RoleShell roles={['teacher']} nav={TEACHER_NAV} />}>
+                <Route path="teacher" element={<RoleShell roles={['teacher']} />}>
                   <Route index element={<ComingSoon title="common.dashboard" />} />
                 </Route>
 
-                <Route path="student" element={<RoleShell roles={['student']} nav={STUDENT_NAV} />}>
+                <Route path="student" element={<RoleShell roles={['student']} />}>
                   <Route index element={<ComingSoon title="common.dashboard" />} />
                 </Route>
 
-                <Route element={<RoleShell roles={['admin', 'teacher', 'student']} nav={[]} />}>
+                <Route element={<RoleShell roles={['admin', 'teacher', 'student']} />}>
                   <Route path="account" element={<AccountPage />} />
+                  <Route path="notifications" element={<NotificationsPage />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />

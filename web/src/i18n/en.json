@@ -104,7 +104,8 @@
     "myCourses": "My courses",
     "browse": "Browse courses",
     "becomeTeacher": "Become a Teacher",
-    "login": "Log in"
+    "login": "Log in",
+    "notifications": "Notifications"
   },
   "notifications": {
     "bell": "Notifications, {{count}} unread",
@@ -185,5 +186,76 @@
   },
   "legal": {
     "version": "Version {{v}}"
+  },
+  "teachers": {
+    "subtitle": "Every approved and blocked teacher, with their current students.",
+    "searchHint": "Name, mobile or subject",
+    "joined": "Joined",
+    "students": "Students",
+    "block": "Block",
+    "activate": "Activate",
+    "empty": "No teachers match",
+    "blockTitle": "Block {{name}}",
+    "blockIntro": "The teacher is logged out at once. Their students keep read-only access to lessons they completed.",
+    "blockConfirm": "Block teacher",
+    "blockedToast": "{{name}} is blocked",
+    "activatedToast": "{{name}} is active again",
+    "changeMobile": "Change mobile number",
+    "changeMobileTitle": "Change mobile number for {{name}}",
+    "changeMobileIntro": "Use this when the teacher lost their SIM. They are logged out everywhere.",
+    "changeMobileReasonHint": "For example: lost SIM card"
+  },
+  "subscriptions": {
+    "subtitle": "Access periods for teachers. No payments happen here.",
+    "add": "Add subscription",
+    "editTitle": "Edit subscription for {{name}}",
+    "teacher": "Teacher",
+    "chooseTeacher": "Choose a teacher",
+    "plan": "Plan",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "endsOn": "Ends on {{date}}",
+    "dateOrder": "End date must be on or after start date",
+    "save": "Save subscription",
+    "saved": "Subscription saved",
+    "blockThis": "Block this subscription",
+    "empty": "No subscriptions yet",
+    "noneForTeacher": "No subscriptions for this teacher yet",
+    "plans": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "half_yearly": "Half-yearly",
+      "yearly": "Yearly",
+      "custom": "Custom dates"
+    },
+    "limitedBanner": "Your subscription ended on {{date}}. You can't publish courses or approve students until it's renewed. Contact the admin.",
+    "noneBanner": "You don't have an active subscription yet. Contact the admin to start one."
+  },
+  "adminDash": {
+    "subtitle": "What needs your attention today.",
+    "pendingRequests": "Teacher requests waiting",
+    "activeTeachers": "Active teachers",
+    "blockedTeachers": "Blocked teachers",
+    "totalStudents": "Students with active access",
+    "expiring": "Subscriptions ending in 7 days"
+  },
+  "audit": {
+    "subtitle": "Every admin action, newest first. Entries can't be edited or deleted.",
+    "admin": "Admin",
+    "action": "Action",
+    "before": "Before",
+    "after": "After",
+    "from": "From",
+    "to": "To",
+    "empty": "No entries for these filters",
+    "actions": {
+      "teacher_request.accept": "Accepted teacher request",
+      "teacher_request.reject": "Rejected teacher request",
+      "teacher.block": "Blocked teacher",
+      "teacher.activate": "Activated teacher",
+      "subscription.create": "Added subscription",
+      "subscription.update": "Changed subscription",
+      "user.change_mobile": "Changed mobile number"
+    }
   }
 }

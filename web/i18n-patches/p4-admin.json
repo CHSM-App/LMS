@@ -1,0 +1,101 @@
+{
+  "en": {
+    "nav": { "notifications": "Notifications" },
+    "teachers": {
+      "subtitle": "Every approved and blocked teacher, with their current students.", "searchHint": "Name, mobile or subject",
+      "joined": "Joined", "students": "Students", "block": "Block", "activate": "Activate", "empty": "No teachers match",
+      "blockTitle": "Block {{name}}", "blockIntro": "The teacher is logged out at once. Their students keep read-only access to lessons they completed.",
+      "blockConfirm": "Block teacher", "blockedToast": "{{name}} is blocked", "activatedToast": "{{name}} is active again",
+      "changeMobile": "Change mobile number", "changeMobileTitle": "Change mobile number for {{name}}",
+      "changeMobileIntro": "Use this when the teacher lost their SIM. They are logged out everywhere.", "changeMobileReasonHint": "For example: lost SIM card"
+    },
+    "subscriptions": {
+      "subtitle": "Access periods for teachers. No payments happen here.", "add": "Add subscription", "editTitle": "Edit subscription for {{name}}",
+      "teacher": "Teacher", "chooseTeacher": "Choose a teacher", "plan": "Plan", "startDate": "Start date", "endDate": "End date",
+      "endsOn": "Ends on {{date}}", "dateOrder": "End date must be on or after start date", "save": "Save subscription", "saved": "Subscription saved",
+      "blockThis": "Block this subscription", "empty": "No subscriptions yet", "noneForTeacher": "No subscriptions for this teacher yet",
+      "plans": { "monthly": "Monthly", "quarterly": "Quarterly", "half_yearly": "Half-yearly", "yearly": "Yearly", "custom": "Custom dates" },
+      "limitedBanner": "Your subscription ended on {{date}}. You can't publish courses or approve students until it's renewed. Contact the admin.",
+      "noneBanner": "You don't have an active subscription yet. Contact the admin to start one."
+    },
+    "adminDash": {
+      "subtitle": "What needs your attention today.", "pendingRequests": "Teacher requests waiting", "activeTeachers": "Active teachers",
+      "blockedTeachers": "Blocked teachers", "totalStudents": "Students with active access", "expiring": "Subscriptions ending in 7 days"
+    },
+    "audit": {
+      "subtitle": "Every admin action, newest first. Entries can't be edited or deleted.", "admin": "Admin", "action": "Action",
+      "before": "Before", "after": "After", "from": "From", "to": "To", "empty": "No entries for these filters",
+      "actions": {
+        "teacher_request.accept": "Accepted teacher request", "teacher_request.reject": "Rejected teacher request", "teacher.block": "Blocked teacher",
+        "teacher.activate": "Activated teacher", "subscription.create": "Added subscription", "subscription.update": "Changed subscription", "user.change_mobile": "Changed mobile number"
+      }
+    },
+    "status": { "upcoming": "Upcoming" }
+  },
+  "mr": {
+    "nav": { "notifications": "सूचना" },
+    "teachers": {
+      "subtitle": "सर्व मंजूर आणि ब्लॉक केलेले शिक्षक, त्यांच्या सध्याच्या विद्यार्थ्यांसह.", "searchHint": "नाव, मोबाईल किंवा विषय",
+      "joined": "सामील झाले", "students": "विद्यार्थी", "block": "ब्लॉक करा", "activate": "सक्रिय करा", "empty": "जुळणारे शिक्षक नाहीत",
+      "blockTitle": "{{name}} यांना ब्लॉक करा", "blockIntro": "शिक्षक लगेच लॉग आउट होतील. त्यांचे विद्यार्थी पूर्ण केलेले धडे फक्त पाहू शकतील.",
+      "blockConfirm": "शिक्षकाला ब्लॉक करा", "blockedToast": "{{name}} ब्लॉक केले", "activatedToast": "{{name}} पुन्हा सक्रिय",
+      "changeMobile": "मोबाईल नंबर बदला", "changeMobileTitle": "{{name}} यांचा मोबाईल नंबर बदला",
+      "changeMobileIntro": "शिक्षकाचे सिम हरवले असल्यास हे वापरा. ते सर्व ठिकाणी लॉग आउट होतील.", "changeMobileReasonHint": "उदा.: सिम कार्ड हरवले"
+    },
+    "subscriptions": {
+      "subtitle": "शिक्षकांचा प्रवेश कालावधी. येथे कोणतेही पेमेंट होत नाही.", "add": "सदस्यता जोडा", "editTitle": "{{name}} यांची सदस्यता बदला",
+      "teacher": "शिक्षक", "chooseTeacher": "शिक्षक निवडा", "plan": "योजना", "startDate": "सुरुवातीची तारीख", "endDate": "शेवटची तारीख",
+      "endsOn": "{{date}} रोजी संपते", "dateOrder": "शेवटची तारीख सुरुवातीच्या तारखेनंतर किंवा त्याच दिवशी हवी", "save": "सदस्यता जतन करा", "saved": "सदस्यता जतन केली",
+      "blockThis": "ही सदस्यता ब्लॉक करा", "empty": "अद्याप सदस्यता नाहीत", "noneForTeacher": "या शिक्षकाची अद्याप सदस्यता नाही",
+      "plans": { "monthly": "मासिक", "quarterly": "त्रैमासिक", "half_yearly": "सहामाही", "yearly": "वार्षिक", "custom": "स्वतःच्या तारखा" },
+      "limitedBanner": "तुमची सदस्यता {{date}} रोजी संपली. नूतनीकरण होईपर्यंत तुम्ही अभ्यासक्रम प्रकाशित करू किंवा विद्यार्थी मंजूर करू शकत नाही. प्रशासकाशी संपर्क साधा.",
+      "noneBanner": "तुमची अद्याप सक्रिय सदस्यता नाही. सुरू करण्यासाठी प्रशासकाशी संपर्क साधा."
+    },
+    "adminDash": {
+      "subtitle": "आज लक्ष द्यावे लागणाऱ्या गोष्टी.", "pendingRequests": "प्रलंबित शिक्षक विनंत्या", "activeTeachers": "सक्रिय शिक्षक",
+      "blockedTeachers": "ब्लॉक केलेले शिक्षक", "totalStudents": "सक्रिय प्रवेश असलेले विद्यार्थी", "expiring": "7 दिवसांत संपणाऱ्या सदस्यता"
+    },
+    "audit": {
+      "subtitle": "प्रशासकाची प्रत्येक कृती, नवीन आधी. नोंदी बदलता किंवा हटवता येत नाहीत.", "admin": "प्रशासक", "action": "कृती",
+      "before": "आधी", "after": "नंतर", "from": "पासून", "to": "पर्यंत", "empty": "या फिल्टरसाठी नोंदी नाहीत",
+      "actions": {
+        "teacher_request.accept": "शिक्षक विनंती स्वीकारली", "teacher_request.reject": "शिक्षक विनंती नाकारली", "teacher.block": "शिक्षक ब्लॉक केले",
+        "teacher.activate": "शिक्षक सक्रिय केले", "subscription.create": "सदस्यता जोडली", "subscription.update": "सदस्यता बदलली", "user.change_mobile": "मोबाईल नंबर बदलला"
+      }
+    },
+    "status": { "upcoming": "आगामी" }
+  },
+  "hi": {
+    "nav": { "notifications": "सूचनाएँ" },
+    "teachers": {
+      "subtitle": "सभी स्वीकृत और ब्लॉक शिक्षक, उनके मौजूदा छात्रों के साथ।", "searchHint": "नाम, मोबाइल या विषय",
+      "joined": "जुड़े", "students": "छात्र", "block": "ब्लॉक करें", "activate": "सक्रिय करें", "empty": "कोई मेल खाता शिक्षक नहीं",
+      "blockTitle": "{{name}} को ब्लॉक करें", "blockIntro": "शिक्षक तुरंत लॉग आउट हो जाएँगे। उनके छात्र पूरे किए गए पाठ केवल देख सकेंगे।",
+      "blockConfirm": "शिक्षक को ब्लॉक करें", "blockedToast": "{{name}} ब्लॉक किए गए", "activatedToast": "{{name}} फिर से सक्रिय",
+      "changeMobile": "मोबाइल नंबर बदलें", "changeMobileTitle": "{{name}} का मोबाइल नंबर बदलें",
+      "changeMobileIntro": "जब शिक्षक का सिम खो गया हो तब इसका उपयोग करें। वे हर जगह से लॉग आउट हो जाएँगे।", "changeMobileReasonHint": "उदाहरण: सिम कार्ड खो गया"
+    },
+    "subscriptions": {
+      "subtitle": "शिक्षकों की एक्सेस अवधि। यहाँ कोई भुगतान नहीं होता।", "add": "सदस्यता जोड़ें", "editTitle": "{{name}} की सदस्यता बदलें",
+      "teacher": "शिक्षक", "chooseTeacher": "शिक्षक चुनें", "plan": "योजना", "startDate": "शुरुआत की तारीख", "endDate": "समाप्ति की तारीख",
+      "endsOn": "{{date}} को समाप्त", "dateOrder": "समाप्ति की तारीख शुरुआत के बाद या उसी दिन होनी चाहिए", "save": "सदस्यता सहेजें", "saved": "सदस्यता सहेजी गई",
+      "blockThis": "यह सदस्यता ब्लॉक करें", "empty": "अभी कोई सदस्यता नहीं", "noneForTeacher": "इस शिक्षक की अभी कोई सदस्यता नहीं",
+      "plans": { "monthly": "मासिक", "quarterly": "त्रैमासिक", "half_yearly": "छमाही", "yearly": "वार्षिक", "custom": "अपनी तारीखें" },
+      "limitedBanner": "आपकी सदस्यता {{date}} को समाप्त हो गई। नवीनीकरण तक आप कोर्स प्रकाशित या छात्रों को स्वीकृत नहीं कर सकते। एडमिन से संपर्क करें।",
+      "noneBanner": "आपकी अभी कोई सक्रिय सदस्यता नहीं है। शुरू करने के लिए एडमिन से संपर्क करें।"
+    },
+    "adminDash": {
+      "subtitle": "आज किन बातों पर ध्यान देना है।", "pendingRequests": "लंबित शिक्षक अनुरोध", "activeTeachers": "सक्रिय शिक्षक",
+      "blockedTeachers": "ब्लॉक शिक्षक", "totalStudents": "सक्रिय एक्सेस वाले छात्र", "expiring": "7 दिनों में समाप्त होने वाली सदस्यताएँ"
+    },
+    "audit": {
+      "subtitle": "एडमिन की हर कार्रवाई, नई पहले। प्रविष्टियाँ बदली या हटाई नहीं जा सकतीं।", "admin": "एडमिन", "action": "कार्रवाई",
+      "before": "पहले", "after": "बाद में", "from": "से", "to": "तक", "empty": "इन फ़िल्टर के लिए कोई प्रविष्टि नहीं",
+      "actions": {
+        "teacher_request.accept": "शिक्षक अनुरोध स्वीकार किया", "teacher_request.reject": "शिक्षक अनुरोध अस्वीकार किया", "teacher.block": "शिक्षक ब्लॉक किया",
+        "teacher.activate": "शिक्षक सक्रिय किया", "subscription.create": "सदस्यता जोड़ी", "subscription.update": "सदस्यता बदली", "user.change_mobile": "मोबाइल नंबर बदला"
+      }
+    },
+    "status": { "upcoming": "आगामी" }
+  }
+}
