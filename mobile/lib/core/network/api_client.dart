@@ -7,11 +7,14 @@ import '../storage/token_storage.dart';
 
 /// Typed failure surfaced to repositories/viewmodels (Flutter_ARCHITECTURE §15.9).
 class ApiException implements Exception {
-  const ApiException(this.status, this.message, [this.code]);
+  const ApiException(this.status, this.message, [this.code, this.details]);
 
   final int status;
   final String message;
   final String? code;
+
+  /// Extra data from the server, e.g. { fallbackUrl } for WhatsApp or { missing } for publishing.
+  final Map<String, dynamic>? details;
 
   bool get isNetwork => status == 0;
 
@@ -72,7 +75,7 @@ class ApiClient {
     final status = res.statusCode ?? 0;
     if (status >= 200 && status < 300 && json['success'] != false) return json;
 
-    final err = ApiException(status, (json['error'] ?? 'Something went wrong. Try again.') as String, json['code'] as String?);
+    final err = ApiException(status, (json['error'] ?? 'Something went wrong. Try again.') as String, json['code'] as String?, json['details'] as Map<String, dynamic>?);
     if (status == 401 && err.code == 'TOKEN_EXPIRED' && !retried) {
       await refresh();
       return _raw(method, path, body: body, query: query, retried: true);

@@ -1,0 +1,41 @@
+{
+  "en": {
+    "tRequests": "Requests", "tStudents": "Students", "tClasses": "Classes", "tDoubts": "Doubts",
+    "tDemoWaiting": "Demo requests waiting", "tEnrollWaiting": "Students waiting to enroll", "tOpenDoubts": "Open doubts", "tActiveStudents": "Active students",
+    "tToday": "Today's live classes", "tNoClasses": "No live classes", "tClassesOnWeb": "Schedule classes on the website; they appear here.",
+    "tDemoTab": "Live demos", "tEnrollTab": "Enrollments", "tNoDemos": "No demo requests", "tNoEnrollments": "No students waiting", "tNoStudents": "No students yet", "tNoDoubts": "No open doubts",
+    "join": "Join", "schedule": "Schedule", "reschedule": "Change time", "sendWhatsApp": "Send on WhatsApp", "waSent": "Sent ✓", "waNotSent": "WhatsApp message not sent",
+    "approve": "Approve", "approveStudent": "Approve student", "approveTitle": "Approve {name}", "approvedMsg": "Student approved",
+    "batch": "Batch", "startDate": "Start", "endDate": "End", "needBatch": "Choose a batch", "needDates": "Choose the start and end dates",
+    "dateOrder": "End date must be on or after start date", "needWhen": "Choose the date and time", "minReason": "Write at least 5 characters", "requiredField": "This field is required",
+    "accessUntil": "Access until {date}", "attendance": "Attendance", "markAllPresent": "Mark all present", "presentCount": "{present} of {total} present",
+    "present": "Present", "absent": "Absent", "saveAttendance": "Save attendance", "saved": "Saved",
+    "reply": "Reply", "replyTo": "Reply to {name}", "yourReply": "Your reply", "sendReply": "Send reply", "replySent": "Reply sent", "cancel": "Cancel", "tryAgain": "Try again"
+  },
+  "mr": {
+    "tRequests": "विनंत्या", "tStudents": "विद्यार्थी", "tClasses": "वर्ग", "tDoubts": "शंका",
+    "tDemoWaiting": "प्रलंबित डेमो विनंत्या", "tEnrollWaiting": "प्रवेशासाठी थांबलेले विद्यार्थी", "tOpenDoubts": "उघड्या शंका", "tActiveStudents": "सक्रिय विद्यार्थी",
+    "tToday": "आजचे थेट वर्ग", "tNoClasses": "थेट वर्ग नाहीत", "tClassesOnWeb": "वेबसाइटवर वर्ग ठरवा; ते येथे दिसतील.",
+    "tDemoTab": "थेट डेमो", "tEnrollTab": "प्रवेश", "tNoDemos": "डेमो विनंत्या नाहीत", "tNoEnrollments": "कोणीही थांबलेले नाही", "tNoStudents": "अद्याप विद्यार्थी नाहीत", "tNoDoubts": "उघड्या शंका नाहीत",
+    "join": "सामील व्हा", "schedule": "वेळ ठरवा", "reschedule": "वेळ बदला", "sendWhatsApp": "WhatsApp वर पाठवा", "waSent": "पाठवले ✓", "waNotSent": "WhatsApp संदेश पाठवला नाही",
+    "approve": "मंजूर करा", "approveStudent": "विद्यार्थी मंजूर करा", "approveTitle": "{name} यांना मंजूर करा", "approvedMsg": "विद्यार्थी मंजूर",
+    "batch": "बॅच", "startDate": "सुरुवात", "endDate": "शेवट", "needBatch": "बॅच निवडा", "needDates": "सुरुवात आणि शेवटची तारीख निवडा",
+    "dateOrder": "शेवटची तारीख सुरुवातीच्या तारखेनंतर किंवा त्याच दिवशी हवी", "needWhen": "तारीख आणि वेळ निवडा", "minReason": "किमान 5 अक्षरे लिहा", "requiredField": "हे क्षेत्र आवश्यक आहे",
+    "accessUntil": "{date} पर्यंत प्रवेश", "attendance": "उपस्थिती", "markAllPresent": "सर्व उपस्थित", "presentCount": "{total} पैकी {present} उपस्थित",
+    "present": "उपस्थित", "absent": "अनुपस्थित", "saveAttendance": "उपस्थिती जतन करा", "saved": "जतन केले",
+    "reply": "उत्तर द्या", "replyTo": "{name} यांना उत्तर", "yourReply": "तुमचे उत्तर", "sendReply": "उत्तर पाठवा", "replySent": "उत्तर पाठवले", "cancel": "रद्द करा", "tryAgain": "पुन्हा प्रयत्न करा"
+  },
+  "hi": {
+    "tRequests": "अनुरोध", "tStudents": "छात्र", "tClasses": "क्लास", "tDoubts": "संदेह",
+    "tDemoWaiting": "लंबित डेमो अनुरोध", "tEnrollWaiting": "नामांकन के लिए रुके छात्र", "tOpenDoubts": "खुले संदेह", "tActiveStudents": "सक्रिय छात्र",
+    "tToday": "आज की लाइव क्लास", "tNoClasses": "कोई लाइव क्लास नहीं", "tClassesOnWeb": "वेबसाइट पर क्लास तय करें; वे यहाँ दिखेंगी।",
+    "tDemoTab": "लाइव डेमो", "tEnrollTab": "नामांकन", "tNoDemos": "कोई डेमो अनुरोध नहीं", "tNoEnrollments": "कोई इंतज़ार नहीं कर रहा", "tNoStudents": "अभी कोई छात्र नहीं", "tNoDoubts": "कोई खुला संदेह नहीं",
+    "join": "जुड़ें", "schedule": "समय तय करें", "reschedule": "समय बदलें", "sendWhatsApp": "WhatsApp पर भेजें", "waSent": "भेजा गया ✓", "waNotSent": "WhatsApp संदेश नहीं भेजा गया",
+    "approve": "स्वीकार करें", "approveStudent": "छात्र को स्वीकार करें", "approveTitle": "{name} को स्वीकार करें", "approvedMsg": "छात्र स्वीकृत",
+    "batch": "बैच", "startDate": "शुरुआत", "endDate": "समाप्ति", "needBatch": "बैच चुनें", "needDates": "शुरुआत और समाप्ति की तारीख चुनें",
+    "dateOrder": "समाप्ति की तारीख शुरुआत के बाद या उसी दिन होनी चाहिए", "needWhen": "तारीख और समय चुनें", "minReason": "कम से कम 5 अक्षर लिखें", "requiredField": "यह फ़ील्ड ज़रूरी है",
+    "accessUntil": "{date} तक एक्सेस", "attendance": "उपस्थिति", "markAllPresent": "सभी उपस्थित", "presentCount": "{total} में से {present} उपस्थित",
+    "present": "उपस्थित", "absent": "अनुपस्थित", "saveAttendance": "उपस्थिति सहेजें", "saved": "सहेजा गया",
+    "reply": "उत्तर दें", "replyTo": "{name} को उत्तर", "yourReply": "आपका उत्तर", "sendReply": "उत्तर भेजें", "replySent": "उत्तर भेजा गया", "cancel": "रद्द करें", "tryAgain": "फिर से कोशिश करें"
+  }
+}

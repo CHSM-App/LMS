@@ -2,26 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/app_tokens.g.dart';
 import '../../l10n/gen/app_localizations.dart';
-import '../../presentation/providers/core_providers.dart';
+import 'teacher_tabs.dart';
 
-/// Light teacher app home. Filled in by Phase 7 (requests, students, live classes, attendance, doubts).
-class TeacherHomeScreen extends ConsumerWidget {
+/// Light teacher app (DECISIONS.md). Course/question/exam builders stay on the website.
+class TeacherHomeScreen extends ConsumerStatefulWidget {
   const TeacherHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TeacherHomeScreen> createState() => _TeacherHomeScreenState();
+}
+
+class _TeacherHomeScreenState extends ConsumerState<TeacherHomeScreen> {
+  int _tab = 0;
+
+  @override
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final user = ref.watch(sessionProvider).user;
+    final titles = [l.dashboard, l.tRequests, l.tStudents, l.tClasses, l.tDoubts];
+    const tabs = [DashboardTab(), RequestsTab(), StudentsTab(), ClassesTab(), DoubtsTab()];
     return Scaffold(
       appBar: AppBar(
-        title: Text(l.dashboard),
+        title: Text(titles[_tab]),
         actions: [IconButton(tooltip: l.account, icon: const Icon(Icons.person_outline), onPressed: () => context.push('/account'))],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppTokens.spaceS4),
-        child: Text(l.hello(user?.name ?? ''), style: Theme.of(context).textTheme.titleLarge),
+      body: tabs[_tab],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _tab,
+        onDestinationSelected: (i) => setState(() => _tab = i),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.home_outlined), label: l.dashboard),
+          NavigationDestination(icon: const Icon(Icons.inbox_outlined), label: l.tRequests),
+          NavigationDestination(icon: const Icon(Icons.people_outline), label: l.tStudents),
+          NavigationDestination(icon: const Icon(Icons.videocam_outlined), label: l.tClasses),
+          NavigationDestination(icon: const Icon(Icons.help_outline), label: l.tDoubts),
+        ],
       ),
     );
   }

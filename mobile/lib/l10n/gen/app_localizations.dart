@@ -243,6 +243,312 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account was deleted'**
   String get accountDeleted;
+
+  /// No description provided for @tRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get tRequests;
+
+  /// No description provided for @tStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get tStudents;
+
+  /// No description provided for @tClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes'**
+  String get tClasses;
+
+  /// No description provided for @tDoubts.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubts'**
+  String get tDoubts;
+
+  /// No description provided for @tDemoWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo requests waiting'**
+  String get tDemoWaiting;
+
+  /// No description provided for @tEnrollWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Students waiting to enroll'**
+  String get tEnrollWaiting;
+
+  /// No description provided for @tOpenDoubts.
+  ///
+  /// In en, this message translates to:
+  /// **'Open doubts'**
+  String get tOpenDoubts;
+
+  /// No description provided for @tActiveStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Active students'**
+  String get tActiveStudents;
+
+  /// No description provided for @tToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s live classes'**
+  String get tToday;
+
+  /// No description provided for @tNoClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'No live classes'**
+  String get tNoClasses;
+
+  /// No description provided for @tClassesOnWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule classes on the website; they appear here.'**
+  String get tClassesOnWeb;
+
+  /// No description provided for @tDemoTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Live demos'**
+  String get tDemoTab;
+
+  /// No description provided for @tEnrollTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrollments'**
+  String get tEnrollTab;
+
+  /// No description provided for @tNoDemos.
+  ///
+  /// In en, this message translates to:
+  /// **'No demo requests'**
+  String get tNoDemos;
+
+  /// No description provided for @tNoEnrollments.
+  ///
+  /// In en, this message translates to:
+  /// **'No students waiting'**
+  String get tNoEnrollments;
+
+  /// No description provided for @tNoStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'No students yet'**
+  String get tNoStudents;
+
+  /// No description provided for @tNoDoubts.
+  ///
+  /// In en, this message translates to:
+  /// **'No open doubts'**
+  String get tNoDoubts;
+
+  /// No description provided for @join.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get join;
+
+  /// No description provided for @schedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get schedule;
+
+  /// No description provided for @reschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Change time'**
+  String get reschedule;
+
+  /// No description provided for @sendWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Send on WhatsApp'**
+  String get sendWhatsApp;
+
+  /// No description provided for @waSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent ✓'**
+  String get waSent;
+
+  /// No description provided for @waNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp message not sent'**
+  String get waNotSent;
+
+  /// No description provided for @approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// No description provided for @approveStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve student'**
+  String get approveStudent;
+
+  /// No description provided for @approveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve {name}'**
+  String approveTitle(String name);
+
+  /// No description provided for @approvedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Student approved'**
+  String get approvedMsg;
+
+  /// No description provided for @batch.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch'**
+  String get batch;
+
+  /// No description provided for @startDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get startDate;
+
+  /// No description provided for @endDate.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get endDate;
+
+  /// No description provided for @needBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a batch'**
+  String get needBatch;
+
+  /// No description provided for @needDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the start and end dates'**
+  String get needDates;
+
+  /// No description provided for @dateOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'End date must be on or after start date'**
+  String get dateOrder;
+
+  /// No description provided for @needWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the date and time'**
+  String get needWhen;
+
+  /// No description provided for @minReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 5 characters'**
+  String get minReason;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get requiredField;
+
+  /// No description provided for @accessUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Access until {date}'**
+  String accessUntil(String date);
+
+  /// No description provided for @attendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get attendance;
+
+  /// No description provided for @markAllPresent.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all present'**
+  String get markAllPresent;
+
+  /// No description provided for @presentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{present} of {total} present'**
+  String presentCount(int present, int total);
+
+  /// No description provided for @present.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get present;
+
+  /// No description provided for @absent.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get absent;
+
+  /// No description provided for @saveAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Save attendance'**
+  String get saveAttendance;
+
+  /// No description provided for @saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get saved;
+
+  /// No description provided for @reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get reply;
+
+  /// No description provided for @replyTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply to {name}'**
+  String replyTo(String name);
+
+  /// No description provided for @yourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply'**
+  String get yourReply;
+
+  /// No description provided for @sendReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reply'**
+  String get sendReply;
+
+  /// No description provided for @replySent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply sent'**
+  String get replySent;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
 }
 
 class _AppLocalizationsDelegate
