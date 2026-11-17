@@ -109,6 +109,25 @@ components:
         startsAt: { type: string, nullable: true }
         endsAt: { type: string, nullable: true }
         batchIds: { type: array, items: { type: integer } }
+    LiveClassInput:
+      type: object
+      required: [courseId, topic, startsAt]
+      properties:
+        courseId: { type: integer }
+        batchId: { type: integer, nullable: true, description: Empty means every batch }
+        topic: { type: string, maxLength: 200 }
+        startsAt: { type: string }
+        durationMin: { type: integer, minimum: 5, maximum: 600 }
+        meetLink: { type: string, nullable: true }
+        status: { type: string, enum: [scheduled, live, completed, cancelled] }
+    ProgramInput:
+      type: object
+      required: [title, startsAt]
+      properties:
+        title: { type: string, maxLength: 200 }
+        startsAt: { type: string }
+        courseId: { type: integer, nullable: true }
+        batchId: { type: integer, nullable: true }
     Pagination:
       type: object
       properties:
@@ -873,3 +892,279 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         '200': { description: Weighted final result per student }
+  /teacher/dashboard:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'pendingDemoRequests, pendingEnrollments, openDoubts, activeStudents, todaysClasses' }
+  /teacher/demo-requests:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, scheduled, completed, rejected] } }
+        - { name: course, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Live demo requests for the teacher's courses }
+  /teacher/demo-requests/{id}/schedule:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Set date and time; a Meet link is generated unless one is pasted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scheduledAt]
+              properties:
+                scheduledAt: { type: string }
+                meetLink: { type: string, nullable: true }
+      responses:
+        '200': { description: Scheduled }
+        '400': { description: Past time or invalid link or a link is required }
+  /teacher/demo-requests/{id}/send-whatsapp:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Sent }
+        '409': { description: 'No WhatsApp opt-in; details.fallbackUrl opens WhatsApp with the message typed' }
+        '502': { description: 'Provider failed; details.fallbackUrl' }
+  /teacher/demo-requests/{id}/reject:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Rejected }
+  /teacher/demo-requests/{id}/complete:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Marked completed }
+  /teacher/enrollments:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected, blocked] } }
+        - { name: course, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Enrollment requests }
+  /teacher/enrollments/{id}/approve:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                batchId: { type: integer }
+                startDate: { type: string }
+                endDate: { type: string }
+      responses:
+        '200': { description: Approved with batch and access period }
+        '403': { description: Teacher subscription expired (limited mode) }
+        '409': { description: Already decided or batch closed or batch full }
+  /teacher/enrollments/{id}/reject:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string } } }
+      responses:
+        '200': { description: Rejected }
+  /teacher/enrollments/{id}/batch:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [batchId], properties: { batchId: { type: integer } } }
+      responses:
+        '200': { description: Moved to another batch }
+  /teacher/students:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: course, in: query, schema: { type: integer } }
+        - { name: batch, in: query, schema: { type: integer } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+      responses:
+        '200': { description: Enrolled students with batch and access status }
+  /teacher/students/{studentPublicId}/access/{courseId}:
+    parameters:
+      - { name: studentPublicId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: courseId, in: path, required: true, schema: { type: integer } }
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [startDate, endDate]
+              properties:
+                startDate: { type: string }
+                endDate: { type: string }
+                accessEnabled: { type: boolean }
+      responses:
+        '200': { description: Access period saved }
+  /teacher/live-classes:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: course, in: query, schema: { type: integer } }
+        - { name: from, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Live classes }
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveClassInput' }
+      responses:
+        '201': { description: Created; students of the batch notified }
+  /teacher/live-classes/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveClassInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Cancelled }
+  /teacher/live-classes/{id}/attendance:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Students of the class with present or absent or null }
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [records]
+              properties:
+                records:
+                  type: array
+                  items: { type: object, properties: { studentPublicId: { type: string }, present: { type: boolean } } }
+      responses:
+        '200': { description: Saved (upsert) }
+        '400': { description: A student is not in this class }
+  /teacher/doubts:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [open, answered, closed] } }
+        - { name: course, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Doubts from students of the teacher's courses }
+  /teacher/doubts/{id}/reply:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reply], properties: { reply: { type: string } } }
+      responses:
+        '200': { description: Answered; student notified }
+  /teacher/doubts/{id}/close:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Closed }
+  /teacher/programs:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Class programs }
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProgramInput' }
+      responses:
+        '201': { description: Created }
+  /teacher/programs/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProgramInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+  /teacher/profile:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Public profile fields }
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [name], properties: { name: { type: string } } }
+      responses:
+        '200': { description: Saved (bio sanitized) }
+        '409': { description: Profile address taken }

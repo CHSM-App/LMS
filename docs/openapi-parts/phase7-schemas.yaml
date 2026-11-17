@@ -1,0 +1,19 @@
+    LiveClassInput:
+      type: object
+      required: [courseId, topic, startsAt]
+      properties:
+        courseId: { type: integer }
+        batchId: { type: integer, nullable: true, description: Empty means every batch }
+        topic: { type: string, maxLength: 200 }
+        startsAt: { type: string }
+        durationMin: { type: integer, minimum: 5, maximum: 600 }
+        meetLink: { type: string, nullable: true }
+        status: { type: string, enum: [scheduled, live, completed, cancelled] }
+    ProgramInput:
+      type: object
+      required: [title, startsAt]
+      properties:
+        title: { type: string, maxLength: 200 }
+        startsAt: { type: string }
+        courseId: { type: integer, nullable: true }
+        batchId: { type: integer, nullable: true }

@@ -8,6 +8,11 @@ const jobs = [
     run: () => require('../services/teacherSubscription.service').runSubscriptionReminders(),
   },
   {
+    name: 'live-class-reminders',
+    schedule: '*/5 * * * *',
+    run: () => require('../services/liveClass.service').runLiveClassReminders(),
+  },
+  {
     name: 'upload-cleanup',
     schedule: '45 * * * *',
     run: () => require('../services/upload.service').cleanupExpired(),
