@@ -7,6 +7,7 @@ Project-wide reference. Every phase and every piece of code must follow these fi
 | [lms-full-build-prompt.md](lms-full-build-prompt.md) | **The product spec.** Workflows, page fields, exam rules, security rules and phases. It wins over every other file. |
 | [LMS.pdf](LMS.pdf) | Original spec (scanned). Its contents are still to be pasted in; any differences get added to the affected phase. |
 | [DECISIONS.md](DECISIONS.md) | **Owner decisions from the plan review.** They win over the spec where the two differ (scope, integrations, batches, greyed-out items). |
+| [BRAND-THEME.md](BRAND-THEME.md) | **Fixed colour palette, contrast rules and component colours.** Every UI, web and Flutter, must follow it. |
 | [DESIGN-BRIEF.md](DESIGN-BRIEF.md) | The design brief for this LMS. Read it with frontend.md. |
 | [SECURITY.md](SECURITY.md) | Security rules for every phase |
 | [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) | Where every file goes |

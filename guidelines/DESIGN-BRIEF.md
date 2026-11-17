@@ -5,7 +5,8 @@ Phase 2 turns it into `docs/DESIGN.md` (tokens).
 
 ## 1. Subject, audience, job
 - **Product:** a platform where independent teachers sell access to their courses, run live classes and exams, and track students. There are no payments.
-- **Name / logo / colours:** **TBD.** Use a neutral working name, "LMS", and placeholder colours until the owner confirms them.
+- **Name / logo:** **TBD.** Use the working name "LMS".
+- **Colours: fixed, see `BRAND-THEME.md`.** The owner's palette overrides frontend.md's "invent a palette" step. Its typography, layout and restraint guidance still apply.
 - **Audience (assumed, confirm):** school and competitive-exam students in Maharashtra (ages 12–25), mostly on budget Android phones. Teachers are coaching-class owners, aged 25–55 and not very tech-savvy, working on a laptop or phone.
 - **Primary job of each area:**
   - **Public site:** help a student find a course and request a live demo within 2 minutes.

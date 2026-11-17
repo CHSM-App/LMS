@@ -156,7 +156,7 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
   - [ ] **WhatsApp:** the Meta Business account is verified, the templates (demo scheduled, live class, enrollment approved, subscription reminder) are approved, and the `wa.me` fallback is tested.
   - [ ] **SMS:** DLT entity + OTP template registered.
   - [ ] **Offline video:** the airplane-mode playback, screenshot-blocked, no-share and licence-expiry checks pass on Android and iOS. The Data safety form declares the local encrypted storage.
-  - [ ] Marathi + Hindi translations are complete (no missing keys: `i18next-parser` check + an ARB key diff), and dark mode has been checked on every screen.
+  - [ ] Marathi + Hindi translations are complete (no missing keys: `i18next-parser` check + an ARB key diff), and the brand has been checked on every screen of every role: the no-raw-colours check and the contrast tests pass.
 - [ ] **Step 4:** Commit `docs: deployment guide and release checklist`.
 
 ## Phase done when

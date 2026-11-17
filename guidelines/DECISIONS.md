@@ -9,7 +9,8 @@ Items marked **(assumed)** are defaults that still need the owner's confirmation
 | Website | Every feature for every role. |
 | Mobile app (Flutter) | **Full student app + light teacher app**: requests, students, live classes, attendance, doubts, notifications, profile. **Web only:** course builder, question bank, exam builder, results admin, and the whole Super Admin app. |
 | Languages | English, Marathi and Hindi in v1. |
-| Themes | Light + dark in v1. |
+| Themes | **Light only** (dark mode was removed on 2026-11-17 because the palette is fixed). |
+| Brand colours | **Fixed palette, see `BRAND-THEME.md`**: Orange #F45803, Ice #EEF4FF, Lime #72CF10, Blue #5C8FF7, White #FFFFFF, Navy #14264C, plus functional Error #C62828. Opacity tints only as tokens. Primary buttons have White bold labels ≥ 19 px. |
 
 ## Integrations
 | Topic | Decision |

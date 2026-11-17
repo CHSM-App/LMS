@@ -14,6 +14,8 @@ A learning management system with three roles (Super Admin, Teacher, Student). L
 - Put files where `guidelines/FOLDER_STRUCTURE.md` says.
 - `docs/openapi.yaml` is the API contract. Update it before changing an endpoint.
 
+- **Colours come only from `design-tokens/tokens.json`** (palette in `guidelines/BRAND-THEME.md`). Never hard-code a colour. Light theme only.
+
 ## Conventions
 - API base path: `/api/v1`. Response shape: `{ success, data }` or `{ success:false, error }`, plus `pagination` for lists.
 - Roles: `admin`, `teacher`, `student`. Shared statuses: `pending`, `approved`, `rejected`, `blocked`. Course status in v1: `draft`, `published` (`pending` is greyed out).
