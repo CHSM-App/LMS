@@ -1,0 +1,125 @@
+{
+  "en": {
+    "home": {
+      "title": "What do you want to learn?",
+      "lead": "Courses from independent teachers. Watch two demo videos, book a free live demo, then enroll.",
+      "searchPlaceholder": "Search by subject, course or teacher",
+      "empty": "No courses yet. Check back soon.",
+      "clear": "Clear filters",
+      "noMatch": "No courses match your search. Try other words or clear the filters."
+    },
+    "courseDetails": {
+      "demo": "Demo video {{n}}",
+      "about": "About this course",
+      "curriculum": "What you'll learn",
+      "noCurriculum": "The teacher is still adding lessons.",
+      "preview": "Free preview",
+      "noPayment": "Fees are arranged with the teacher. No payment happens on this site.",
+      "bookDemo": "Book a free live demo",
+      "bookDemoTitle": "Free live demo: {{course}}",
+      "enroll": "Enroll now",
+      "batches": "Batches",
+      "starts": "starts {{date}}",
+      "teacher": "Your teacher",
+      "moreFromTeacher": "More from this teacher",
+      "notFound": "This course isn't available",
+      "browse": "Browse courses"
+    },
+    "demoForm": {
+      "educationHint": "For example: 10th, 12th Science, B.Com",
+      "classStandard": "Class / standard",
+      "preferredTime": "Preferred time",
+      "preferredTimeHint": "For example: weekday evenings",
+      "whatsappHint": "Without WhatsApp consent, the teacher will call you instead.",
+      "send": "Send demo request",
+      "sent": "Request sent. {{teacher}} will message you on WhatsApp with the date and time."
+    },
+    "teacherPage": {
+      "courses": "Courses",
+      "noCourses": "No published courses yet",
+      "notFound": "This teacher page isn't available"
+    }
+  },
+  "mr": {
+    "home": {
+      "title": "तुम्हाला काय शिकायचे आहे?",
+      "lead": "स्वतंत्र शिक्षकांचे अभ्यासक्रम. दोन डेमो व्हिडिओ पहा, मोफत थेट डेमो बुक करा, मग प्रवेश घ्या.",
+      "searchPlaceholder": "विषय, अभ्यासक्रम किंवा शिक्षकाने शोधा",
+      "empty": "अद्याप अभ्यासक्रम नाहीत. लवकरच पुन्हा पहा.",
+      "clear": "फिल्टर काढा",
+      "noMatch": "तुमच्या शोधाशी जुळणारे अभ्यासक्रम नाहीत. वेगळे शब्द वापरा किंवा फिल्टर काढा."
+    },
+    "courseDetails": {
+      "demo": "डेमो व्हिडिओ {{n}}",
+      "about": "या अभ्यासक्रमाबद्दल",
+      "curriculum": "तुम्ही काय शिकाल",
+      "noCurriculum": "शिक्षक अजून धडे जोडत आहेत.",
+      "preview": "मोफत पूर्वावलोकन",
+      "noPayment": "शुल्क शिक्षकांसोबत ठरते. या साइटवर पेमेंट होत नाही.",
+      "bookDemo": "मोफत थेट डेमो बुक करा",
+      "bookDemoTitle": "मोफत थेट डेमो: {{course}}",
+      "enroll": "आता प्रवेश घ्या",
+      "batches": "बॅच",
+      "starts": "{{date}} पासून",
+      "teacher": "तुमचे शिक्षक",
+      "moreFromTeacher": "या शिक्षकांचे आणखी अभ्यासक्रम",
+      "notFound": "हा अभ्यासक्रम उपलब्ध नाही",
+      "browse": "अभ्यासक्रम पहा"
+    },
+    "demoForm": {
+      "educationHint": "उदा.: 10 वी, 12 वी विज्ञान, B.Com",
+      "classStandard": "इयत्ता",
+      "preferredTime": "सोयीची वेळ",
+      "preferredTimeHint": "उदा.: आठवड्याच्या संध्याकाळी",
+      "whatsappHint": "WhatsApp संमती नसल्यास शिक्षक तुम्हाला फोन करतील.",
+      "send": "डेमो विनंती पाठवा",
+      "sent": "विनंती पाठवली. {{teacher}} तुम्हाला WhatsApp वर तारीख आणि वेळ कळवतील."
+    },
+    "teacherPage": {
+      "courses": "अभ्यासक्रम",
+      "noCourses": "अद्याप प्रकाशित अभ्यासक्रम नाहीत",
+      "notFound": "हे शिक्षक पान उपलब्ध नाही"
+    }
+  },
+  "hi": {
+    "home": {
+      "title": "आप क्या सीखना चाहते हैं?",
+      "lead": "स्वतंत्र शिक्षकों के कोर्स। दो डेमो वीडियो देखें, मुफ़्त लाइव डेमो बुक करें, फिर नामांकन करें।",
+      "searchPlaceholder": "विषय, कोर्स या शिक्षक से खोजें",
+      "empty": "अभी कोई कोर्स नहीं। जल्द फिर देखें।",
+      "clear": "फ़िल्टर हटाएँ",
+      "noMatch": "आपकी खोज से मेल खाता कोई कोर्स नहीं। दूसरे शब्द आज़माएँ या फ़िल्टर हटाएँ।"
+    },
+    "courseDetails": {
+      "demo": "डेमो वीडियो {{n}}",
+      "about": "इस कोर्स के बारे में",
+      "curriculum": "आप क्या सीखेंगे",
+      "noCurriculum": "शिक्षक अभी पाठ जोड़ रहे हैं।",
+      "preview": "मुफ़्त पूर्वावलोकन",
+      "noPayment": "शुल्क शिक्षक के साथ तय होता है। इस साइट पर कोई भुगतान नहीं होता।",
+      "bookDemo": "मुफ़्त लाइव डेमो बुक करें",
+      "bookDemoTitle": "मुफ़्त लाइव डेमो: {{course}}",
+      "enroll": "अभी नामांकन करें",
+      "batches": "बैच",
+      "starts": "{{date}} से",
+      "teacher": "आपके शिक्षक",
+      "moreFromTeacher": "इन शिक्षक के और कोर्स",
+      "notFound": "यह कोर्स उपलब्ध नहीं है",
+      "browse": "कोर्स देखें"
+    },
+    "demoForm": {
+      "educationHint": "उदाहरण: 10वीं, 12वीं विज्ञान, B.Com",
+      "classStandard": "कक्षा",
+      "preferredTime": "पसंदीदा समय",
+      "preferredTimeHint": "उदाहरण: सप्ताह के दिनों में शाम",
+      "whatsappHint": "WhatsApp सहमति न होने पर शिक्षक आपको फ़ोन करेंगे।",
+      "send": "डेमो अनुरोध भेजें",
+      "sent": "अनुरोध भेजा गया। {{teacher}} आपको WhatsApp पर तारीख और समय बताएँगे।"
+    },
+    "teacherPage": {
+      "courses": "कोर्स",
+      "noCourses": "अभी कोई प्रकाशित कोर्स नहीं",
+      "notFound": "यह शिक्षक पेज उपलब्ध नहीं है"
+    }
+  }
+}

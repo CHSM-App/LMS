@@ -31,6 +31,9 @@ const LiveClassesPage = lazy(() => import('../features/teacher/ops/LiveClassesPa
 const DoubtsPage = lazy(() => import('../features/teacher/ops/DoubtsProgramsProfile').then((m) => ({ default: m.DoubtsPage })));
 const ProgramsPage = lazy(() => import('../features/teacher/ops/DoubtsProgramsProfile').then((m) => ({ default: m.ProgramsPage })));
 const ProfilePage = lazy(() => import('../features/teacher/ops/DoubtsProgramsProfile').then((m) => ({ default: m.ProfilePage })));
+const HomePage = lazy(() => import('../features/public/HomePage'));
+const CourseDetailsPage = lazy(() => import('../features/public/CourseDetailsPage'));
+const TeacherPublicPage = lazy(() => import('../features/public/TeacherPublicPage'));
 const ComingSoon = lazy(() => import('./ComingSoon'));
 const StyleGuide = lazy(() => import('./StyleGuide'));
 
@@ -52,7 +55,10 @@ export default function App() {
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route element={<PublicLayout />}>
-                  <Route index element={<ComingSoon title="app.tagline" />} />
+                  <Route index element={<HomePage />} />
+                  <Route path="courses" element={<HomePage />} />
+                  <Route path="courses/:slug" element={<CourseDetailsPage />} />
+                  <Route path="teachers/:slug" element={<TeacherPublicPage />} />
                   <Route path="login" element={<LoginPage />} />
                   <Route path="become-teacher" element={<BecomeTeacherPage />} />
                   <Route path="terms" element={<LegalPage doc="terms" />} />

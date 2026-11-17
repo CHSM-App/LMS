@@ -631,5 +631,44 @@
     "students": "Active students",
     "today": "Today's live classes",
     "noClasses": "No live classes today"
+  },
+  "home": {
+    "title": "What do you want to learn?",
+    "lead": "Courses from independent teachers. Watch two demo videos, book a free live demo, then enroll.",
+    "searchPlaceholder": "Search by subject, course or teacher",
+    "empty": "No courses yet. Check back soon.",
+    "clear": "Clear filters",
+    "noMatch": "No courses match your search. Try other words or clear the filters."
+  },
+  "courseDetails": {
+    "demo": "Demo video {{n}}",
+    "about": "About this course",
+    "curriculum": "What you'll learn",
+    "noCurriculum": "The teacher is still adding lessons.",
+    "preview": "Free preview",
+    "noPayment": "Fees are arranged with the teacher. No payment happens on this site.",
+    "bookDemo": "Book a free live demo",
+    "bookDemoTitle": "Free live demo: {{course}}",
+    "enroll": "Enroll now",
+    "batches": "Batches",
+    "starts": "starts {{date}}",
+    "teacher": "Your teacher",
+    "moreFromTeacher": "More from this teacher",
+    "notFound": "This course isn't available",
+    "browse": "Browse courses"
+  },
+  "demoForm": {
+    "educationHint": "For example: 10th, 12th Science, B.Com",
+    "classStandard": "Class / standard",
+    "preferredTime": "Preferred time",
+    "preferredTimeHint": "For example: weekday evenings",
+    "whatsappHint": "Without WhatsApp consent, the teacher will call you instead.",
+    "send": "Send demo request",
+    "sent": "Request sent. {{teacher}} will message you on WhatsApp with the date and time."
+  },
+  "teacherPage": {
+    "courses": "Courses",
+    "noCourses": "No published courses yet",
+    "notFound": "This teacher page isn't available"
   }
 }
