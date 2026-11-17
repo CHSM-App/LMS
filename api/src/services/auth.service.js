@@ -33,7 +33,11 @@ async function me(userId) {
   let profile = {};
   if (u.role === 'teacher') {
     const p = await one('SELECT subject, experience_years, qualification, bio, public_slug FROM dbo.teacher_profiles WHERE user_id = @id', { id: T.int(userId) });
-    profile = { teacherProfile: p ? { subject: p.subject, experienceYears: p.experience_years, qualification: p.qualification, bio: p.bio, publicSlug: p.public_slug } : null };
+    profile = {
+      teacherProfile: p ? { subject: p.subject, experienceYears: p.experience_years, qualification: p.qualification, bio: p.bio, publicSlug: p.public_slug } : null,
+      // Limited mode banner on web/app (DECISIONS.md).
+      subscription: await require('./teacherSubscription.service').currentForTeacher(userId),
+    };
   } else if (u.role === 'student') {
     const p = await one('SELECT education, class_standard FROM dbo.student_profiles WHERE user_id = @id', { id: T.int(userId) });
     profile = { studentProfile: p ? { education: p.education, classStandard: p.class_standard } : null };
