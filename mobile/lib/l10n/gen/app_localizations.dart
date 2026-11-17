@@ -549,6 +549,762 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get tryAgain;
+
+  /// No description provided for @sHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get sHome;
+
+  /// No description provided for @sExams.
+  ///
+  /// In en, this message translates to:
+  /// **'Exams'**
+  String get sExams;
+
+  /// No description provided for @sClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes'**
+  String get sClasses;
+
+  /// No description provided for @sDoubts.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubts'**
+  String get sDoubts;
+
+  /// No description provided for @sMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get sMore;
+
+  /// No description provided for @sNextUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Next up'**
+  String get sNextUp;
+
+  /// No description provided for @sContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get sContinue;
+
+  /// No description provided for @sMyCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'My courses'**
+  String get sMyCourses;
+
+  /// No description provided for @sNoCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not enrolled in any course yet.'**
+  String get sNoCourses;
+
+  /// No description provided for @sBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse courses'**
+  String get sBrowse;
+
+  /// No description provided for @sUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Access until {date}'**
+  String sUntil(String date);
+
+  /// No description provided for @sReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Your teacher\'s account is inactive. You can still open lessons you completed.'**
+  String get sReadOnly;
+
+  /// No description provided for @sUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming live classes'**
+  String get sUpcoming;
+
+  /// No description provided for @sNoUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming live classes'**
+  String get sNoUpcoming;
+
+  /// No description provided for @sRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests you sent'**
+  String get sRequests;
+
+  /// No description provided for @sLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons'**
+  String get sLessons;
+
+  /// No description provided for @sMarkComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as complete'**
+  String get sMarkComplete;
+
+  /// No description provided for @sCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get sCompleted;
+
+  /// No description provided for @sOpenNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Open notes'**
+  String get sOpenNotes;
+
+  /// No description provided for @sOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Open link'**
+  String get sOpenLink;
+
+  /// No description provided for @sWatchOnSite.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch video'**
+  String get sWatchOnSite;
+
+  /// No description provided for @sNoLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons yet'**
+  String get sNoLessons;
+
+  /// No description provided for @sLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get sLocked;
+
+  /// No description provided for @sDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get sDownload;
+
+  /// No description provided for @sDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded'**
+  String get sDownloaded;
+
+  /// No description provided for @sDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {pct}%'**
+  String sDownloading(String pct);
+
+  /// No description provided for @sPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get sPaused;
+
+  /// No description provided for @sQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting…'**
+  String get sQueued;
+
+  /// No description provided for @sWaitingWifi.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Wi-Fi'**
+  String get sWaitingWifi;
+
+  /// No description provided for @sNotEnoughSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough space. Free up {mb} MB'**
+  String sNotEnoughSpace(String mb);
+
+  /// No description provided for @sDeviceLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads are allowed on 2 devices. Remove one in Profile → Downloads.'**
+  String get sDeviceLimit;
+
+  /// No description provided for @sDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed. Try again.'**
+  String get sDownloadFailed;
+
+  /// No description provided for @sLicenseExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the internet to keep watching offline'**
+  String get sLicenseExpired;
+
+  /// No description provided for @sRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed: {title} ({reason})'**
+  String sRemoved(String title, String reason);
+
+  /// No description provided for @sReasonSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'subscription ended'**
+  String get sReasonSubscription;
+
+  /// No description provided for @sReasonTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'teacher inactive'**
+  String get sReasonTeacher;
+
+  /// No description provided for @sReasonPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'access paused'**
+  String get sReasonPaused;
+
+  /// No description provided for @sReasonDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'device removed'**
+  String get sReasonDevice;
+
+  /// No description provided for @sReasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'no longer available'**
+  String get sReasonOther;
+
+  /// No description provided for @sDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get sDownloads;
+
+  /// No description provided for @sNoDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloaded videos'**
+  String get sNoDownloads;
+
+  /// No description provided for @sStorageUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Using {size} on this phone'**
+  String sStorageUsed(String size);
+
+  /// No description provided for @sWifiOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Download on Wi-Fi only'**
+  String get sWifiOnly;
+
+  /// No description provided for @sDeleteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all'**
+  String get sDeleteAll;
+
+  /// No description provided for @sDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get sDelete;
+
+  /// No description provided for @sPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get sPause;
+
+  /// No description provided for @sResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get sResume;
+
+  /// No description provided for @sExpires.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch offline until {date}'**
+  String sExpires(String date);
+
+  /// No description provided for @sDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices with downloads'**
+  String get sDevices;
+
+  /// No description provided for @sRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get sRemove;
+
+  /// No description provided for @sThisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone'**
+  String get sThisDevice;
+
+  /// No description provided for @sChooseCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a course'**
+  String get sChooseCourse;
+
+  /// No description provided for @sStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get sStart;
+
+  /// No description provided for @sResumeExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get sResumeExam;
+
+  /// No description provided for @sFinalLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish all Unit Tests to unlock the Final Exam.'**
+  String get sFinalLocked;
+
+  /// No description provided for @sNoAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'No attempts left'**
+  String get sNoAttempts;
+
+  /// No description provided for @sAttemptsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempts left: {n}'**
+  String sAttemptsLeft(String n);
+
+  /// No description provided for @sBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best: {pct}%'**
+  String sBest(String pct);
+
+  /// No description provided for @sViewResult.
+  ///
+  /// In en, this message translates to:
+  /// **'View result'**
+  String get sViewResult;
+
+  /// No description provided for @sNoExams.
+  ///
+  /// In en, this message translates to:
+  /// **'No exams yet'**
+  String get sNoExams;
+
+  /// No description provided for @sQuestionN.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {n}'**
+  String sQuestionN(String n);
+
+  /// No description provided for @sYourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get sYourAnswer;
+
+  /// No description provided for @sAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} of {total} answered'**
+  String sAnswered(String n, int total);
+
+  /// No description provided for @sSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get sSaving;
+
+  /// No description provided for @sSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get sSaved;
+
+  /// No description provided for @sOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — answers will sync'**
+  String get sOffline;
+
+  /// No description provided for @sSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit exam'**
+  String get sSubmit;
+
+  /// No description provided for @sSubmitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit the exam?'**
+  String get sSubmitTitle;
+
+  /// No description provided for @sSubmitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You answered {n} of {total} questions. You can\'t change answers after submitting.'**
+  String sSubmitBody(String n, int total);
+
+  /// No description provided for @sKeepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep answering'**
+  String get sKeepGoing;
+
+  /// No description provided for @sSubmitNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit now'**
+  String get sSubmitNow;
+
+  /// No description provided for @sCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct'**
+  String get sCorrect;
+
+  /// No description provided for @sWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Not correct'**
+  String get sWrong;
+
+  /// No description provided for @sTimeLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Time left {time}'**
+  String sTimeLeft(String time);
+
+  /// No description provided for @sResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get sResult;
+
+  /// No description provided for @sRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank {rank} of {of}'**
+  String sRank(String rank, String of);
+
+  /// No description provided for @sPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get sPassed;
+
+  /// No description provided for @sFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not passed'**
+  String get sFailed;
+
+  /// No description provided for @sAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted automatically when time ran out'**
+  String get sAuto;
+
+  /// No description provided for @sReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer review'**
+  String get sReview;
+
+  /// No description provided for @sCorrectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer'**
+  String get sCorrectAnswer;
+
+  /// No description provided for @sNotAnswered.
+  ///
+  /// In en, this message translates to:
+  /// **'Not answered'**
+  String get sNotAnswered;
+
+  /// No description provided for @sAskDoubt.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a doubt'**
+  String get sAskDoubt;
+
+  /// No description provided for @sQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Your question'**
+  String get sQuestion;
+
+  /// No description provided for @sSendToTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to teacher'**
+  String get sSendToTeacher;
+
+  /// No description provided for @sDoubtSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Doubt sent to your teacher'**
+  String get sDoubtSent;
+
+  /// No description provided for @sNoDoubts.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t asked any doubts yet'**
+  String get sNoDoubts;
+
+  /// No description provided for @sWaitingReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the teacher\'s reply'**
+  String get sWaitingReply;
+
+  /// No description provided for @sProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get sProgress;
+
+  /// No description provided for @sLessonsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} lessons completed'**
+  String sLessonsDone(String done, int total);
+
+  /// No description provided for @sAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance: {pct}% ({attended} of {held} classes)'**
+  String sAttendance(String pct, String attended, String held);
+
+  /// No description provided for @sProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get sProfile;
+
+  /// No description provided for @sName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get sName;
+
+  /// No description provided for @sEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get sEducation;
+
+  /// No description provided for @sClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class / standard'**
+  String get sClass;
+
+  /// No description provided for @sCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get sCity;
+
+  /// No description provided for @sEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get sEmail;
+
+  /// No description provided for @sLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get sLanguage;
+
+  /// No description provided for @sNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get sNotifications;
+
+  /// No description provided for @sNoNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get sNoNotifications;
+
+  /// No description provided for @sMarkAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get sMarkAllRead;
+
+  /// No description provided for @sLiveClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'Live classes'**
+  String get sLiveClasses;
+
+  /// No description provided for @sOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} (optional)'**
+  String sOptional(String label);
+
+  /// No description provided for @pCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get pCourses;
+
+  /// No description provided for @pSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search courses'**
+  String get pSearch;
+
+  /// No description provided for @pNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses match your search'**
+  String get pNoResults;
+
+  /// No description provided for @pBy.
+  ///
+  /// In en, this message translates to:
+  /// **'by {teacher}'**
+  String pBy(String teacher);
+
+  /// No description provided for @pDemoVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo videos'**
+  String get pDemoVideos;
+
+  /// No description provided for @pCurriculum.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'ll learn'**
+  String get pCurriculum;
+
+  /// No description provided for @pBatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Batches'**
+  String get pBatches;
+
+  /// No description provided for @pRequestDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a live demo'**
+  String get pRequestDemo;
+
+  /// No description provided for @pEnroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Enroll now'**
+  String get pEnroll;
+
+  /// No description provided for @pDemoSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. The teacher will message you with the demo time.'**
+  String get pDemoSent;
+
+  /// No description provided for @pPreferredTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred time'**
+  String get pPreferredTime;
+
+  /// No description provided for @pMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get pMessage;
+
+  /// No description provided for @pAcceptTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'I accept the Terms and Privacy Policy'**
+  String get pAcceptTerms;
+
+  /// No description provided for @pWhatsAppOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Send me class links on WhatsApp'**
+  String get pWhatsAppOk;
+
+  /// No description provided for @pNeedTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept the Terms and Privacy Policy to continue'**
+  String get pNeedTerms;
+
+  /// No description provided for @pContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get pContinue;
+
+  /// No description provided for @pCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your student account'**
+  String get pCreateAccount;
+
+  /// No description provided for @pHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Log in'**
+  String get pHaveAccount;
+
+  /// No description provided for @pNewHere.
+  ///
+  /// In en, this message translates to:
+  /// **'New here? Create an account'**
+  String get pNewHere;
+
+  /// No description provided for @pEnrollSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send enrollment request'**
+  String get pEnrollSend;
+
+  /// No description provided for @pEnrollSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. You\'ll be notified when {teacher} approves it.'**
+  String pEnrollSent(String teacher);
+
+  /// No description provided for @pLoginToEnroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in or create an account to enroll.'**
+  String get pLoginToEnroll;
+
+  /// No description provided for @pOpenVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Play video'**
+  String get pOpenVideo;
 }
 
 class _AppLocalizationsDelegate

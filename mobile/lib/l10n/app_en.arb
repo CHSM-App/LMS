@@ -126,5 +126,278 @@
   "sendReply": "Send reply",
   "replySent": "Reply sent",
   "cancel": "Cancel",
-  "tryAgain": "Try again"
+  "tryAgain": "Try again",
+  "sHome": "Home",
+  "sExams": "Exams",
+  "sClasses": "Classes",
+  "sDoubts": "Doubts",
+  "sMore": "More",
+  "sNextUp": "Next up",
+  "sContinue": "Continue",
+  "sMyCourses": "My courses",
+  "sNoCourses": "You're not enrolled in any course yet.",
+  "sBrowse": "Browse courses",
+  "sUntil": "Access until {date}",
+  "@sUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "sReadOnly": "Your teacher's account is inactive. You can still open lessons you completed.",
+  "sUpcoming": "Upcoming live classes",
+  "sNoUpcoming": "No upcoming live classes",
+  "sRequests": "Requests you sent",
+  "sLessons": "Lessons",
+  "sMarkComplete": "Mark as complete",
+  "sCompleted": "Completed",
+  "sOpenNotes": "Open notes",
+  "sOpenLink": "Open link",
+  "sWatchOnSite": "Watch video",
+  "sNoLessons": "No lessons yet",
+  "sLocked": "Locked",
+  "sDownload": "Download",
+  "sDownloaded": "Downloaded",
+  "sDownloading": "Downloading {pct}%",
+  "@sDownloading": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "sPaused": "Paused",
+  "sQueued": "Waiting…",
+  "sWaitingWifi": "Waiting for Wi-Fi",
+  "sNotEnoughSpace": "Not enough space. Free up {mb} MB",
+  "@sNotEnoughSpace": {
+    "placeholders": {
+      "mb": {
+        "type": "String"
+      }
+    }
+  },
+  "sDeviceLimit": "Downloads are allowed on 2 devices. Remove one in Profile → Downloads.",
+  "sDownloadFailed": "Download failed. Try again.",
+  "sLicenseExpired": "Connect to the internet to keep watching offline",
+  "sRemoved": "Removed: {title} ({reason})",
+  "@sRemoved": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "sReasonSubscription": "subscription ended",
+  "sReasonTeacher": "teacher inactive",
+  "sReasonPaused": "access paused",
+  "sReasonDevice": "device removed",
+  "sReasonOther": "no longer available",
+  "sDownloads": "Downloads",
+  "sNoDownloads": "No downloaded videos",
+  "sStorageUsed": "Using {size} on this phone",
+  "@sStorageUsed": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "sWifiOnly": "Download on Wi-Fi only",
+  "sDeleteAll": "Delete all",
+  "sDelete": "Delete",
+  "sPause": "Pause",
+  "sResume": "Resume",
+  "sExpires": "Watch offline until {date}",
+  "@sExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "sDevices": "Devices with downloads",
+  "sRemove": "Remove",
+  "sThisDevice": "This phone",
+  "sChooseCourse": "Choose a course",
+  "sStart": "Start",
+  "sResumeExam": "Resume",
+  "sFinalLocked": "Finish all Unit Tests to unlock the Final Exam.",
+  "sNoAttempts": "No attempts left",
+  "sAttemptsLeft": "Attempts left: {n}",
+  "@sAttemptsLeft": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "sBest": "Best: {pct}%",
+  "@sBest": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "sViewResult": "View result",
+  "sNoExams": "No exams yet",
+  "sQuestionN": "Question {n}",
+  "@sQuestionN": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "sYourAnswer": "Your answer",
+  "sAnswered": "{n} of {total} answered",
+  "@sAnswered": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sSaving": "Saving…",
+  "sSaved": "Saved",
+  "sOffline": "Offline — answers will sync",
+  "sSubmit": "Submit exam",
+  "sSubmitTitle": "Submit the exam?",
+  "sSubmitBody": "You answered {n} of {total} questions. You can't change answers after submitting.",
+  "@sSubmitBody": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sKeepGoing": "Keep answering",
+  "sSubmitNow": "Submit now",
+  "sCorrect": "Correct",
+  "sWrong": "Not correct",
+  "sTimeLeft": "Time left {time}",
+  "@sTimeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sResult": "Result",
+  "sRank": "Rank {rank} of {of}",
+  "@sRank": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "of": {
+        "type": "String"
+      }
+    }
+  },
+  "sPassed": "Passed",
+  "sFailed": "Not passed",
+  "sAuto": "Submitted automatically when time ran out",
+  "sReview": "Answer review",
+  "sCorrectAnswer": "Correct answer",
+  "sNotAnswered": "Not answered",
+  "sAskDoubt": "Ask a doubt",
+  "sQuestion": "Your question",
+  "sSendToTeacher": "Send to teacher",
+  "sDoubtSent": "Doubt sent to your teacher",
+  "sNoDoubts": "You haven't asked any doubts yet",
+  "sWaitingReply": "Waiting for the teacher's reply",
+  "sProgress": "Progress",
+  "sLessonsDone": "{done} of {total} lessons completed",
+  "@sLessonsDone": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sAttendance": "Attendance: {pct}% ({attended} of {held} classes)",
+  "@sAttendance": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "attended": {
+        "type": "String"
+      },
+      "held": {
+        "type": "String"
+      }
+    }
+  },
+  "sProfile": "Profile",
+  "sName": "Name",
+  "sEducation": "Education",
+  "sClass": "Class / standard",
+  "sCity": "City",
+  "sEmail": "Email",
+  "sLanguage": "Language",
+  "sNotifications": "Notifications",
+  "sNoNotifications": "No notifications",
+  "sMarkAllRead": "Mark all as read",
+  "sLiveClasses": "Live classes",
+  "sOptional": "{label} (optional)",
+  "@sOptional": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "pCourses": "Courses",
+  "pSearch": "Search courses",
+  "pNoResults": "No courses match your search",
+  "pBy": "by {teacher}",
+  "@pBy": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "pDemoVideos": "Demo videos",
+  "pCurriculum": "What you'll learn",
+  "pBatches": "Batches",
+  "pRequestDemo": "Request a live demo",
+  "pEnroll": "Enroll now",
+  "pDemoSent": "Request sent. The teacher will message you with the demo time.",
+  "pPreferredTime": "Preferred time",
+  "pMessage": "Message",
+  "pAcceptTerms": "I accept the Terms and Privacy Policy",
+  "pWhatsAppOk": "Send me class links on WhatsApp",
+  "pNeedTerms": "Accept the Terms and Privacy Policy to continue",
+  "pContinue": "Continue",
+  "pCreateAccount": "Create your student account",
+  "pHaveAccount": "Already have an account? Log in",
+  "pNewHere": "New here? Create an account",
+  "pEnrollSend": "Send enrollment request",
+  "pEnrollSent": "Request sent. You'll be notified when {teacher} approves it.",
+  "@pEnrollSent": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "pLoginToEnroll": "Log in or create an account to enroll.",
+  "pOpenVideo": "Play video"
 }

@@ -18,6 +18,17 @@ String homeFor(String? role) => switch (role) {
       _ => '/login',
     };
 
+/// Where a logged-in user with [role] must go instead of [loc], or null to stay.
+/// Public catalog routes (/courses...) are open to everyone.
+String? roleRedirect(String loc, String role) {
+  final home = homeFor(role);
+  if (loc == '/splash' || loc == '/login' || loc == '/register') return home;
+  for (final area in const ['teacher', 'student', 'admin']) {
+    if ((loc == '/$area' || loc.startsWith('/$area/')) && role != area) return home;
+  }
+  return null;
+}
+
 /// Role-based redirect replaces the navigatorKey pattern (Flutter_ARCHITECTURE §15.6).
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<SessionState>(ref.read(sessionProvider));
@@ -33,12 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (s.restoring) return loc == '/splash' ? null : '/splash';
       final publicRoutes = {'/login'};
       if (!s.isLoggedIn) return publicRoutes.contains(loc) ? null : '/login';
-      final home = homeFor(s.user!.role);
-      if (loc == '/splash' || loc == '/login') return home;
-      if (loc.startsWith('/teacher') && s.user!.role != 'teacher') return home;
-      if (loc.startsWith('/student') && s.user!.role != 'student') return home;
-      if (loc.startsWith('/admin') && s.user!.role != 'admin') return home;
-      return null;
+      return roleRedirect(loc, s.user!.role);
     },
     routes: [
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),

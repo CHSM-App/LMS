@@ -72,7 +72,10 @@ void main() {
     }, fireImmediately: false);
 
     final run = vm.download(contentId: 5, courseId: 3, courseTitle: 'Maths', title: 'Fractions');
-    await pumpEventQueue();
+    // Wait for the first chunk to land (real file IO; timing varies under load).
+    for (var i = 0; i < 200 && vm.state.items[5]!.percent < 25; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
     expect(vm.state.items[5]!.status, DownloadStatus.downloading);
     expect(vm.state.items[5]!.percent, 25);
     vm.pause(5);

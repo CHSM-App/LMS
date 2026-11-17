@@ -327,5 +327,3 @@ class DownloadViewModel extends StateNotifier<DownloadsState> {
   }
 }
 
-/// Wired in student_providers.dart with the platform implementations.
-typedef DownloadViewModelProvider = StateNotifierProvider<DownloadViewModel, DownloadsState>;

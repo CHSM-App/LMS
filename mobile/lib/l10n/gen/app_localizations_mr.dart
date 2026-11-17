@@ -250,4 +250,422 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get tryAgain => 'पुन्हा प्रयत्न करा';
+
+  @override
+  String get sHome => 'मुख्यपृष्ठ';
+
+  @override
+  String get sExams => 'परीक्षा';
+
+  @override
+  String get sClasses => 'वर्ग';
+
+  @override
+  String get sDoubts => 'शंका';
+
+  @override
+  String get sMore => 'अधिक';
+
+  @override
+  String get sNextUp => 'पुढचा धडा';
+
+  @override
+  String get sContinue => 'पुढे सुरू ठेवा';
+
+  @override
+  String get sMyCourses => 'माझे अभ्यासक्रम';
+
+  @override
+  String get sNoCourses =>
+      'तुम्ही अद्याप कोणत्याही अभ्यासक्रमात प्रवेश घेतलेला नाही.';
+
+  @override
+  String get sBrowse => 'अभ्यासक्रम पहा';
+
+  @override
+  String sUntil(String date) {
+    return '$date पर्यंत प्रवेश';
+  }
+
+  @override
+  String get sReadOnly =>
+      'तुमच्या शिक्षकांचे खाते निष्क्रिय आहे. तुम्ही पूर्ण केलेले धडे तरीही उघडू शकता.';
+
+  @override
+  String get sUpcoming => 'आगामी थेट वर्ग';
+
+  @override
+  String get sNoUpcoming => 'आगामी थेट वर्ग नाहीत';
+
+  @override
+  String get sRequests => 'तुम्ही पाठवलेल्या विनंत्या';
+
+  @override
+  String get sLessons => 'धडे';
+
+  @override
+  String get sMarkComplete => 'पूर्ण झाले म्हणून चिन्हांकित करा';
+
+  @override
+  String get sCompleted => 'पूर्ण';
+
+  @override
+  String get sOpenNotes => 'नोट्स उघडा';
+
+  @override
+  String get sOpenLink => 'लिंक उघडा';
+
+  @override
+  String get sWatchOnSite => 'व्हिडिओ पहा';
+
+  @override
+  String get sNoLessons => 'अद्याप धडे नाहीत';
+
+  @override
+  String get sLocked => 'बंद';
+
+  @override
+  String get sDownload => 'डाउनलोड';
+
+  @override
+  String get sDownloaded => 'डाउनलोड झाले';
+
+  @override
+  String sDownloading(String pct) {
+    return 'डाउनलोड होत आहे $pct%';
+  }
+
+  @override
+  String get sPaused => 'थांबवले';
+
+  @override
+  String get sQueued => 'प्रतीक्षेत…';
+
+  @override
+  String get sWaitingWifi => 'Wi-Fi ची प्रतीक्षा';
+
+  @override
+  String sNotEnoughSpace(String mb) {
+    return 'पुरेशी जागा नाही. $mb MB जागा मोकळी करा';
+  }
+
+  @override
+  String get sDeviceLimit =>
+      'डाउनलोड 2 उपकरणांवर चालतात. प्रोफाइल → डाउनलोड मधून एक काढा.';
+
+  @override
+  String get sDownloadFailed => 'डाउनलोड अयशस्वी. पुन्हा प्रयत्न करा.';
+
+  @override
+  String get sLicenseExpired => 'ऑफलाइन पाहत राहण्यासाठी इंटरनेटशी जोडा';
+
+  @override
+  String sRemoved(String title, String reason) {
+    return 'काढले: $title ($reason)';
+  }
+
+  @override
+  String get sReasonSubscription => 'सदस्यता संपली';
+
+  @override
+  String get sReasonTeacher => 'शिक्षक निष्क्रिय';
+
+  @override
+  String get sReasonPaused => 'प्रवेश थांबवला';
+
+  @override
+  String get sReasonDevice => 'उपकरण काढले';
+
+  @override
+  String get sReasonOther => 'आता उपलब्ध नाही';
+
+  @override
+  String get sDownloads => 'डाउनलोड';
+
+  @override
+  String get sNoDownloads => 'डाउनलोड केलेले व्हिडिओ नाहीत';
+
+  @override
+  String sStorageUsed(String size) {
+    return 'या फोनवर $size वापरले';
+  }
+
+  @override
+  String get sWifiOnly => 'फक्त Wi-Fi वर डाउनलोड करा';
+
+  @override
+  String get sDeleteAll => 'सर्व हटवा';
+
+  @override
+  String get sDelete => 'हटवा';
+
+  @override
+  String get sPause => 'थांबवा';
+
+  @override
+  String get sResume => 'पुढे सुरू करा';
+
+  @override
+  String sExpires(String date) {
+    return '$date पर्यंत ऑफलाइन पाहा';
+  }
+
+  @override
+  String get sDevices => 'डाउनलोड असलेली उपकरणे';
+
+  @override
+  String get sRemove => 'काढा';
+
+  @override
+  String get sThisDevice => 'हा फोन';
+
+  @override
+  String get sChooseCourse => 'अभ्यासक्रम निवडा';
+
+  @override
+  String get sStart => 'सुरू करा';
+
+  @override
+  String get sResumeExam => 'पुढे सुरू ठेवा';
+
+  @override
+  String get sFinalLocked =>
+      'अंतिम परीक्षा उघडण्यासाठी सर्व घटक चाचण्या पूर्ण करा.';
+
+  @override
+  String get sNoAttempts => 'प्रयत्न शिल्लक नाहीत';
+
+  @override
+  String sAttemptsLeft(String n) {
+    return 'शिल्लक प्रयत्न: $n';
+  }
+
+  @override
+  String sBest(String pct) {
+    return 'सर्वोत्तम: $pct%';
+  }
+
+  @override
+  String get sViewResult => 'निकाल पहा';
+
+  @override
+  String get sNoExams => 'अद्याप परीक्षा नाहीत';
+
+  @override
+  String sQuestionN(String n) {
+    return 'प्रश्न $n';
+  }
+
+  @override
+  String get sYourAnswer => 'तुमचे उत्तर';
+
+  @override
+  String sAnswered(String n, int total) {
+    return '$total पैकी $n उत्तरे दिली';
+  }
+
+  @override
+  String get sSaving => 'जतन होत आहे…';
+
+  @override
+  String get sSaved => 'जतन झाले';
+
+  @override
+  String get sOffline => 'ऑफलाइन — उत्तरे नंतर पाठवली जातील';
+
+  @override
+  String get sSubmit => 'परीक्षा सबमिट करा';
+
+  @override
+  String get sSubmitTitle => 'परीक्षा सबमिट करायची?';
+
+  @override
+  String sSubmitBody(String n, int total) {
+    return 'तुम्ही $total पैकी $n प्रश्नांची उत्तरे दिली. सबमिटनंतर उत्तरे बदलता येणार नाहीत.';
+  }
+
+  @override
+  String get sKeepGoing => 'उत्तरे देत राहा';
+
+  @override
+  String get sSubmitNow => 'आता सबमिट करा';
+
+  @override
+  String get sCorrect => 'बरोबर';
+
+  @override
+  String get sWrong => 'चूक';
+
+  @override
+  String sTimeLeft(String time) {
+    return 'उरलेला वेळ $time';
+  }
+
+  @override
+  String get sResult => 'निकाल';
+
+  @override
+  String sRank(String rank, String of) {
+    return '$of पैकी क्रमांक $rank';
+  }
+
+  @override
+  String get sPassed => 'उत्तीर्ण';
+
+  @override
+  String get sFailed => 'अनुत्तीर्ण';
+
+  @override
+  String get sAuto => 'वेळ संपल्यावर आपोआप सबमिट झाले';
+
+  @override
+  String get sReview => 'उत्तर तपासणी';
+
+  @override
+  String get sCorrectAnswer => 'बरोबर उत्तर';
+
+  @override
+  String get sNotAnswered => 'उत्तर दिले नाही';
+
+  @override
+  String get sAskDoubt => 'शंका विचारा';
+
+  @override
+  String get sQuestion => 'तुमचा प्रश्न';
+
+  @override
+  String get sSendToTeacher => 'शिक्षकांना पाठवा';
+
+  @override
+  String get sDoubtSent => 'शंका शिक्षकांना पाठवली';
+
+  @override
+  String get sNoDoubts => 'तुम्ही अद्याप शंका विचारलेली नाही';
+
+  @override
+  String get sWaitingReply => 'शिक्षकांच्या उत्तराची प्रतीक्षा';
+
+  @override
+  String get sProgress => 'प्रगती';
+
+  @override
+  String sLessonsDone(String done, int total) {
+    return '$total पैकी $done धडे पूर्ण';
+  }
+
+  @override
+  String sAttendance(String pct, String attended, String held) {
+    return 'उपस्थिती: $pct% ($held पैकी $attended वर्ग)';
+  }
+
+  @override
+  String get sProfile => 'प्रोफाइल';
+
+  @override
+  String get sName => 'नाव';
+
+  @override
+  String get sEducation => 'शिक्षण';
+
+  @override
+  String get sClass => 'इयत्ता';
+
+  @override
+  String get sCity => 'शहर';
+
+  @override
+  String get sEmail => 'ईमेल';
+
+  @override
+  String get sLanguage => 'भाषा';
+
+  @override
+  String get sNotifications => 'सूचना';
+
+  @override
+  String get sNoNotifications => 'सूचना नाहीत';
+
+  @override
+  String get sMarkAllRead => 'सर्व वाचले म्हणून चिन्हांकित करा';
+
+  @override
+  String get sLiveClasses => 'थेट वर्ग';
+
+  @override
+  String sOptional(String label) {
+    return '$label (ऐच्छिक)';
+  }
+
+  @override
+  String get pCourses => 'अभ्यासक्रम';
+
+  @override
+  String get pSearch => 'अभ्यासक्रम शोधा';
+
+  @override
+  String get pNoResults => 'तुमच्या शोधाशी जुळणारे अभ्यासक्रम नाहीत';
+
+  @override
+  String pBy(String teacher) {
+    return '$teacher यांच्याकडून';
+  }
+
+  @override
+  String get pDemoVideos => 'डेमो व्हिडिओ';
+
+  @override
+  String get pCurriculum => 'तुम्ही काय शिकाल';
+
+  @override
+  String get pBatches => 'बॅच';
+
+  @override
+  String get pRequestDemo => 'थेट डेमोची विनंती करा';
+
+  @override
+  String get pEnroll => 'आता प्रवेश घ्या';
+
+  @override
+  String get pDemoSent => 'विनंती पाठवली. शिक्षक डेमोची वेळ तुम्हाला कळवतील.';
+
+  @override
+  String get pPreferredTime => 'सोयीची वेळ';
+
+  @override
+  String get pMessage => 'संदेश';
+
+  @override
+  String get pAcceptTerms => 'मी अटी आणि गोपनीयता धोरण स्वीकारतो/स्वीकारते';
+
+  @override
+  String get pWhatsAppOk => 'वर्गाच्या लिंक WhatsApp वर पाठवा';
+
+  @override
+  String get pNeedTerms => 'पुढे जाण्यासाठी अटी आणि गोपनीयता धोरण स्वीकारा';
+
+  @override
+  String get pContinue => 'पुढे';
+
+  @override
+  String get pCreateAccount => 'तुमचे विद्यार्थी खाते तयार करा';
+
+  @override
+  String get pHaveAccount => 'आधीच खाते आहे? लॉग इन करा';
+
+  @override
+  String get pNewHere => 'नवीन आहात? खाते तयार करा';
+
+  @override
+  String get pEnrollSend => 'प्रवेश विनंती पाठवा';
+
+  @override
+  String pEnrollSent(String teacher) {
+    return 'विनंती पाठवली. $teacher मंजूर केल्यावर तुम्हाला कळवले जाईल.';
+  }
+
+  @override
+  String get pLoginToEnroll => 'प्रवेशासाठी लॉग इन करा किंवा खाते तयार करा.';
+
+  @override
+  String get pOpenVideo => 'व्हिडिओ चालवा';
 }

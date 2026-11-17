@@ -159,7 +159,3 @@ class ExamViewModel extends StateNotifier<ExamState> {
     super.dispose();
   }
 }
-
-final examViewModelProvider = StateNotifierProvider.autoDispose.family<ExamViewModel, ExamState, ({StudentRepository repo, int examId})>(
-  (ref, args) => ExamViewModel(args.repo, args.examId)..start(),
-);
