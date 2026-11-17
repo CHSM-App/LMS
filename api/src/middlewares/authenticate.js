@@ -23,6 +23,7 @@ async function loadUser(userId) {
 }
 
 async function authenticate(req, res, next) {
+  if (req.user) return next(); // already identified earlier in this request (accessGate)
   try {
     const header = req.get('authorization') || '';
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;

@@ -19,6 +19,7 @@ function createApp({ getPool, extraRoutes } = {}) {
   app.use(cookieParser());
   if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
   app.use('/api/v1', apiLimiter);
+  app.use(require('./middlewares/accessGate').accessGate);
   app.use(require('./middlewares/validate').validate);
   app.use('/api/v1', require('./routes'));
 
