@@ -46,6 +46,19 @@ class ApiClient {
   Future<dynamic> put(String path, [Object? body]) => _send('PUT', path, body: body ?? <String, dynamic>{});
   Future<dynamic> delete(String path) => _send('DELETE', path);
 
+  /// POST with extra headers (e.g. X-Device-Id for offline download licences).
+  Future<dynamic> postWith(String path, Object? body, Map<String, String> headers) async =>
+      (await _raw('POST', path, body: body ?? <String, dynamic>{}, headers: headers))['data'];
+
+  /// Multipart POST (doubt attachments). Fields are strings; [file] is optional.
+  Future<dynamic> postForm(String path, Map<String, String> fields, {String? fileField, String? filePath}) async {
+    final form = FormData.fromMap({
+      ...fields,
+      if (fileField != null && filePath != null) fileField: await MultipartFile.fromFile(filePath),
+    });
+    return (await _raw('POST', path, body: form))['data'];
+  }
+
   /// Returns the full envelope (data + pagination) for list endpoints.
   Future<Map<String, dynamic>> getPage(String path, {Map<String, dynamic>? query}) async {
     final res = await _raw('GET', path, query: query);
@@ -57,7 +70,7 @@ class ApiClient {
     return res['data'];
   }
 
-  Future<Map<String, dynamic>> _raw(String method, String path, {Object? body, Map<String, dynamic>? query, bool retried = false}) async {
+  Future<Map<String, dynamic>> _raw(String method, String path, {Object? body, Map<String, dynamic>? query, Map<String, String>? headers, bool retried = false}) async {
     Response<dynamic> res;
     try {
       res = await _dio.request<dynamic>(
@@ -65,6 +78,7 @@ class ApiClient {
         data: body,
         queryParameters: query,
         options: Options(method: method, headers: {
+          ...?headers,
           if (session.current.accessToken != null) 'Authorization': 'Bearer ${session.current.accessToken}',
         }),
       );
@@ -78,7 +92,7 @@ class ApiClient {
     final err = ApiException(status, (json['error'] ?? 'Something went wrong. Try again.') as String, json['code'] as String?, json['details'] as Map<String, dynamic>?);
     if (status == 401 && err.code == 'TOKEN_EXPIRED' && !retried) {
       await refresh();
-      return _raw(method, path, body: body, query: query, retried: true);
+      return _raw(method, path, body: body, query: query, headers: headers, retried: true);
     }
     if (status == 401 && const {'ACCOUNT_BLOCKED', 'SESSION_ENDED', 'TOKEN_REUSED'}.contains(err.code)) {
       await session.end(err.message);
