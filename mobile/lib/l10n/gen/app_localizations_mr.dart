@@ -718,4 +718,7 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get sLiveJoinOpens => 'वर्गाच्या 10 मिनिटे आधी सामील व्हा बटण दिसेल.';
+
+  @override
+  String get sLiveJoinSoon => 'वर्गाच्या 10 मिनिटे आधी सामील होता येईल';
 }

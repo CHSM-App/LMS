@@ -50,20 +50,28 @@ class SectionTitle extends StatelessWidget {
       );
 }
 
+/// Join shows only when [meetLink] is set, which the API does only in the join window
+/// (10 min before start until the end). Before that the tile says when Join opens.
 class LiveClassTile extends StatelessWidget {
   const LiveClassTile({super.key, required this.topic, required this.subtitle, required this.meetLink});
   final String topic;
   final String subtitle;
-  final String meetLink;
+  final String? meetLink;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final link = meetLink;
     return Card(
       child: ListTile(
         title: Text(topic, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(subtitle),
-        trailing: TextButton(onPressed: () => openExternal(meetLink), child: Text(l.join)),
+        trailing: link != null
+            ? TextButton(onPressed: () => openExternal(link), child: Text(l.join))
+            : ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 120),
+                child: Text(l.sLiveJoinSoon, textAlign: TextAlign.end, style: const TextStyle(color: AppTokens.textSecondary)),
+              ),
       ),
     );
   }

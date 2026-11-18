@@ -718,4 +718,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get sLiveJoinOpens => 'क्लास से 10 मिनट पहले जुड़ें बटन दिखेगा।';
+
+  @override
+  String get sLiveJoinSoon => 'क्लास से 10 मिनट पहले जुड़ सकेंगे';
 }

@@ -97,14 +97,17 @@ class MyCourse {
 
 @immutable
 class LiveClassItem {
-  const LiveClassItem({required this.id, required this.topic, required this.course, required this.startsAt, required this.meetLink, this.batch, this.durationMin = 60});
+  const LiveClassItem({required this.id, required this.topic, required this.course, required this.startsAt, this.meetLink, this.canJoin = false, this.batch, this.durationMin = 60});
   final int id;
   final String topic;
   final String course;
   final String? batch;
   final DateTime startsAt;
   final int durationMin;
-  final String meetLink;
+
+  /// Sent by the API only during the join window (10 min before start until the end).
+  final String? meetLink;
+  final bool canJoin;
 
   factory LiveClassItem.fromJson(Json j) => LiveClassItem(
         id: _int(j['id']),
@@ -113,7 +116,8 @@ class LiveClassItem {
         batch: j['batch'] as String?,
         startsAt: _date(j['startsAt'])!,
         durationMin: _int(j['durationMin']),
-        meetLink: j['meetLink'] as String,
+        meetLink: j['meetLink'] as String?,
+        canJoin: j['canJoin'] == true && j['meetLink'] != null,
       );
 }
 

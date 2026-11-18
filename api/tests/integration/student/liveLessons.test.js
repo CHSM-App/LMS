@@ -35,10 +35,11 @@ test('course view shows the live lesson as upcoming without a Meet link', async 
   expect(JSON.stringify(view.body)).not.toContain(MEET);
 });
 
-test('content view has the Meet link only before and during the class', async () => {
+test('content view has the Meet link only during the join window', async () => {
   const w = await withLive();
   const early = await w.s.get(`/api/v1/student/contents/${w.live.id}`);
-  expect(early.body.data).toMatchObject({ type: 'live', live: { stage: 'upcoming', meetLink: MEET }, url: null });
+  expect(early.body.data).toMatchObject({ type: 'live', live: { stage: 'upcoming' }, url: null });
+  expect(JSON.stringify(early.body)).not.toContain(MEET);
   clock.set(new Date('2026-06-15T12:25:00Z'));
   const during = await w.s.get(`/api/v1/student/contents/${w.live.id}`);
   expect(during.body.data.live).toMatchObject({ stage: 'live', meetLink: MEET });
@@ -146,6 +147,19 @@ test('other lessons can always be completed', async () => {
   const other = view.body.data.subjects.flatMap((s) => s.modules).flatMap((m) => m.contents).find((x) => x.type !== 'live');
   expect((await w.s.get(`/api/v1/student/contents/${other.id}`)).body.data.canComplete).toBe(true);
   expect((await w.s.post(`/api/v1/student/contents/${other.id}/progress`, { completed: true })).status).toBe(200);
+});
+
+test('live classes list and dashboard give Join and the Meet link only from 10 minutes before until the end', async () => {
+  const w = await withLive();
+  const listed = async () => (await w.s.get('/api/v1/student/live-classes')).body.data.find((x) => x.contentId === w.live.id);
+  const onDash = async () => (await w.s.get('/api/v1/student/dashboard')).body.data.upcomingLiveClasses.find((x) => x.contentId === w.live.id);
+
+  for (const item of [await listed(), await onDash()]) {
+    expect(item).toMatchObject({ stage: 'upcoming', canJoin: false });
+    expect(item.meetLink).toBeUndefined();
+  }
+  clock.set(new Date('2026-06-15T12:20:00Z'));
+  for (const item of [await listed(), await onDash()]) expect(item).toMatchObject({ stage: 'live', canJoin: true, meetLink: MEET });
 });
 
 test('student live classes list links live lessons to their content', async () => {

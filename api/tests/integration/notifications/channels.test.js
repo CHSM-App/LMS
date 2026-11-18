@@ -112,21 +112,22 @@ describe('events that carry a Meet link over WhatsApp', () => {
     return { t, ...c, morning, inBatch, otherBatch, blocked };
   }
 
-  test('a new batch-targeted live class sends the Meet link to that batch only, never to blocked students', async () => {
+  test('a new batch-targeted live class sends the app link (not the Meet link) to that batch only, never to blocked students', async () => {
     const { t, courseId, morning, inBatch, otherBatch, blocked } = await setup();
     const lc = await t.post('/api/v1/teacher/live-classes', { courseId, batchId: morning.id, topic: 'Algebra', startsAt: '2099-06-15T03:20:00Z', durationMin: 60 });
     expect(lc.status).toBe(201);
     const sent = whatsapp.sentMessages();
     expect(sent.map((m) => m.mobile)).toEqual([inBatch.mobile]);
-    expect(sent[0].text).toContain(lc.body.data.meetLink);
+    expect(sent[0].text).not.toContain(lc.body.data.meetLink);
+    expect(sent[0].text).toContain(`${require('../../../src/config/env').config.webOrigin}/student/live-classes`);
     expect(sent[0].template).toBe('live_class');
     expect(await inbox(blocked.user_id)).toHaveLength(1);
     expect(await inbox(otherBatch.user_id)).toHaveLength(0);
   });
 
-  test('the 30-minute reminder also skips blocked students', async () => {
+  test('the 30-minute reminder also skips blocked students and has no Meet link', async () => {
     const { t, courseId, morning, inBatch } = await setup();
-    await t.post('/api/v1/teacher/live-classes', { courseId, batchId: morning.id, topic: 'Algebra', startsAt: '2099-06-15T03:20:00Z', durationMin: 60 });
+    const lc = await t.post('/api/v1/teacher/live-classes', { courseId, batchId: morning.id, topic: 'Algebra', startsAt: '2099-06-15T03:20:00Z', durationMin: 60 });
     whatsapp.clearSent();
     clock.set(new Date('2099-06-15T03:00:00Z'));
     try {
@@ -136,6 +137,7 @@ describe('events that carry a Meet link over WhatsApp', () => {
       clock.reset();
     }
     expect(whatsapp.sentMessages().map((m) => m.mobile)).toEqual([inBatch.mobile]);
+    expect(whatsapp.sentMessages()[0].text).not.toContain(lc.body.data.meetLink);
   });
 });
 

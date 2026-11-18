@@ -9,6 +9,7 @@ import { ExamRunner } from './ExamTakePage';
 import CoursePlayerPage from './CoursePlayerPage';
 import StudentExamsPage from './StudentExamsPage';
 import EnrollPage from './EnrollPage';
+import { StudentDashboard, StudentLiveClassesPage } from './StudentPages';
 
 function wrap(ui, { path = '/', route = '/', user = { role: 'student', name: 'Meera' } } = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -98,6 +99,23 @@ test.each([
   expect(await screen.findByRole('heading', { name: 'Live doubt session' })).toBeInTheDocument();
   if (shown) expect(await screen.findByRole('button', { name: 'Mark as complete' })).toBeInTheDocument();
   else expect(screen.queryByRole('button', { name: 'Mark as complete' })).not.toBeInTheDocument();
+});
+
+const classes = [
+  { id: 1, topic: 'Tomorrow class', course: 'Maths', startsAt: '2099-06-16T12:30:00Z', durationMin: 60, stage: 'upcoming', canJoin: false },
+  { id: 2, topic: 'Now class', course: 'Maths', startsAt: '2026-06-15T12:30:00Z', durationMin: 60, stage: 'live', canJoin: true, meetLink: 'https://meet.google.com/abc-defg-hij' },
+];
+
+test.each([
+  ['dashboard', <StudentDashboard key="d" />, '/student/dashboard', { myCourses: [], upcomingLiveClasses: classes, requests: [] }],
+  ['live classes page', <StudentLiveClassesPage key="l" />, '/student/live-classes', classes],
+])('%s: Join only for a class that can be joined now', async (_name, ui, url, data) => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => (path === url ? { data } : { data: [] }));
+  wrap(ui);
+  const joins = await screen.findAllByRole('link', { name: 'Join' });
+  expect(joins).toHaveLength(1);
+  expect(joins[0]).toHaveAttribute('href', 'https://meet.google.com/abc-defg-hij');
+  expect(screen.getByText('Join opens 10 min before')).toBeInTheDocument();
 });
 
 test('exams: a locked Final explains how to unlock it', async () => {

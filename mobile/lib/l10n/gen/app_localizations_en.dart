@@ -719,4 +719,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sLiveJoinOpens =>
       'The Join button appears 10 minutes before the class.';
+
+  @override
+  String get sLiveJoinSoon => 'Join opens 10 min before';
 }

@@ -1401,6 +1401,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The Join button appears 10 minutes before the class.'**
   String get sLiveJoinOpens;
+
+  /// No description provided for @sLiveJoinSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Join opens 10 min before'**
+  String get sLiveJoinSoon;
 }
 
 class _AppLocalizationsDelegate

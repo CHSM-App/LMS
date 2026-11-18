@@ -6,6 +6,7 @@ import 'package:lms_app/data/models/student_models.dart';
 import 'package:lms_app/l10n/gen/app_localizations.dart';
 import 'package:lms_app/presentation/providers/student_providers.dart';
 import 'package:lms_app/screens/student/course_player_screen.dart';
+import 'package:lms_app/screens/student/widgets/common.dart';
 import 'package:lms_app/screens/student/widgets/lesson_row.dart';
 
 import 'fake_student_repo.dart';
@@ -40,9 +41,31 @@ void main() {
       expect(e.live!.meetLink, isNull);
     });
 
+    test('LiveClassItem has no Meet link and cannot join before the window', () {
+      final soon = LiveClassItem.fromJson({'id': 1, 'topic': 'Algebra', 'course': 'Maths', 'startsAt': '2099-06-16T12:30:00.000Z', 'durationMin': 60, 'stage': 'upcoming', 'canJoin': false});
+      expect(soon.canJoin, isFalse);
+      expect(soon.meetLink, isNull);
+      final now = LiveClassItem.fromJson({'id': 2, 'topic': 'Algebra', 'course': 'Maths', 'startsAt': '2026-06-15T12:30:00.000Z', 'durationMin': 60, 'stage': 'live', 'canJoin': true, 'meetLink': 'https://meet.google.com/abc-defg-hij'});
+      expect(now.canJoin, isTrue);
+      expect(now.meetLink, 'https://meet.google.com/abc-defg-hij');
+    });
+
     test('LessonDetail parses canComplete; missing means true', () {
       expect(LessonDetail.fromJson({'id': 5, 'courseId': 3, 'title': 'Live', 'type': 'live', 'canComplete': false, 'live': _live}).canComplete, isFalse);
       expect(LessonDetail.fromJson({'id': 6, 'courseId': 3, 'title': 'Notes', 'type': 'pdf'}).canComplete, isTrue);
+    });
+  });
+
+  group('live class tile', () {
+    testWidgets('upcoming class shows when Join opens, no Join button', (tester) async {
+      await tester.pumpWidget(app(const Scaffold(body: LiveClassTile(topic: 'Algebra', subtitle: 'Maths', meetLink: null))));
+      expect(find.text('Join'), findsNothing);
+      expect(find.text('Join opens 10 min before'), findsOneWidget);
+    });
+
+    testWidgets('class in the join window shows Join', (tester) async {
+      await tester.pumpWidget(app(const Scaffold(body: LiveClassTile(topic: 'Algebra', subtitle: 'Maths', meetLink: 'https://meet.google.com/abc-defg-hij'))));
+      expect(find.text('Join'), findsOneWidget);
     });
   });
 

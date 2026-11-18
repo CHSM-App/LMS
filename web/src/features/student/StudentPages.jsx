@@ -7,6 +7,15 @@ import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
 import { formatDate, formatDateTime } from '../../utils/format';
 
+// Join is shown only in the join window (10 min before start until the end); the API sends meetLink only then.
+function JoinOrWait({ c, className }) {
+  const { t } = useTranslation();
+  if (c.canJoin && c.meetLink) {
+    return <a className={className} href={c.meetLink} target="_blank" rel="noopener noreferrer"><span className="btn__label">{t('liveClasses.join')}</span></a>;
+  }
+  return <span className="muted">{t('liveClasses.joinSoon')}</span>;
+}
+
 export function StudentDashboard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -52,7 +61,7 @@ export function StudentDashboard() {
             {d.upcomingLiveClasses.map((c) => (
               <li key={c.id} className="row row--between">
                 <span><strong>{c.topic}</strong> <span className="muted">· {c.course} · {formatDateTime(c.startsAt, i18n.language)}</span></span>
-                <a className="btn btn--compact btn--sm" href={c.meetLink} target="_blank" rel="noreferrer"><span className="btn__label">{t('liveClasses.join')}</span></a>
+                <JoinOrWait c={c} className="btn btn--compact btn--sm" />
               </li>
             ))}
           </ul>
@@ -196,7 +205,7 @@ export function StudentLiveClassesPage() {
         { key: 'topic', header: t('liveClasses.topic') },
         { key: 'course', header: t('nav.courses') },
         { key: 'startsAt', header: t('requests.when'), render: (c) => formatDateTime(c.startsAt, i18n.language) },
-        { key: 'j', header: '', render: (c) => <a className="btn btn--primary btn--sm" href={c.meetLink} target="_blank" rel="noreferrer"><span className="btn__label">{t('liveClasses.join')}</span></a> },
+        { key: 'j', header: '', render: (c) => <JoinOrWait c={c} className="btn btn--primary btn--sm" /> },
       ]} />
     </>
   );

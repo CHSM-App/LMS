@@ -20,7 +20,7 @@
 - Reminders for live lessons: **60 and 15 minutes** before start, in-app + WhatsApp (WhatsApp only to opted-in students, as today). Standalone live classes keep their current single 30-minute reminder.
 - Recording: `videoSource` is `upload` (with `fileKey`) or `youtube` / `vimeo` / `bunny` (with `url`). Only `upload` recordings are downloadable offline.
 - A live lesson can never be a free preview (`isFreePreview` is forced to `false`) and the public catalog never shows its Meet link or recording.
-- The Meet link is sent to students only while the lesson is in the Join window or earlier (upcoming); never after it ends.
+- The Meet link is sent to students only during the Join window (10 min before start until the end), for live lessons and standalone live classes alike. WhatsApp messages carry a link to the class page in the app, never the Meet link. (Changed 2026-11-18; demo requests still send the Meet link.)
 - All UI text goes through i18n (`en`, `mr`, `hi`). Colours only from design tokens.
 - Every new SQL uses parameters, named constraints, and an index on the new FK.
 

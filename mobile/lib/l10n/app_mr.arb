@@ -216,5 +216,6 @@
   "sLiveRecordingSoon": "रेकॉर्डिंग लवकरच येईल",
   "sLiveStartsAt": "सुरुवात {when}",
   "sLiveCancelledText": "हा वर्ग रद्द झाला आहे.",
-  "sLiveJoinOpens": "वर्गाच्या 10 मिनिटे आधी सामील व्हा बटण दिसेल."
+  "sLiveJoinOpens": "वर्गाच्या 10 मिनिटे आधी सामील व्हा बटण दिसेल.",
+  "sLiveJoinSoon": "वर्गाच्या 10 मिनिटे आधी सामील होता येईल"
 }

@@ -102,7 +102,7 @@ async function liveClasses(studentId, { upcomingOnly = true } = {}) {
   const now = clock.now();
   const rows = await query(
     `SELECT l.live_class_id, l.course_id, l.topic, l.starts_at, l.duration_min, l.meet_link, l.status, c.title AS course_title, b.name AS batch_name,
-            x.content_id
+            x.content_id, x.video_source
      FROM dbo.live_classes l
      LEFT JOIN dbo.contents x ON x.live_class_id = l.live_class_id
      JOIN dbo.enrollments e ON e.course_id = l.course_id AND e.student_id = @s AND e.status = 'approved'
@@ -115,18 +115,25 @@ async function liveClasses(studentId, { upcomingOnly = true } = {}) {
      ORDER BY l.starts_at`,
     { s: T.int(studentId), now: T.datetime(now), up: T.bit(upcomingOnly) },
   );
-  return rows.map((r) => ({
-    id: r.live_class_id,
-    courseId: r.course_id,
-    contentId: r.content_id || null,
-    topic: r.topic,
-    course: r.course_title,
-    batch: r.batch_name,
-    startsAt: r.starts_at,
-    durationMin: r.duration_min,
-    meetLink: r.meet_link,
-    status: r.status,
-  }));
+  return rows.map((r) => {
+    const stage = liveStage({ status: r.status, startsAt: r.starts_at, durationMin: r.duration_min, hasRecording: !!r.video_source }, now);
+    const canJoin = stage === 'live';
+    return {
+      id: r.live_class_id,
+      courseId: r.course_id,
+      contentId: r.content_id || null,
+      topic: r.topic,
+      course: r.course_title,
+      batch: r.batch_name,
+      startsAt: r.starts_at,
+      durationMin: r.duration_min,
+      status: r.status,
+      stage,
+      canJoin,
+      // The Meet link is shared only during the join window.
+      ...(canJoin ? { meetLink: r.meet_link } : {}),
+    };
+  });
 }
 
 async function dashboard(studentId) {
@@ -213,8 +220,8 @@ async function contentView(studentId, contentId) {
   };
   if (x.type === 'live') {
     out.live = liveSummary(x);
-    // The Meet link is shared only until the class ends.
-    if (['upcoming', 'live'].includes(out.live.stage)) out.live.meetLink = x.live_meet_link;
+    // The Meet link is shared only during the join window (10 min before start until the end).
+    if (out.live.stage === 'live') out.live.meetLink = x.live_meet_link;
   }
   return out;
 }

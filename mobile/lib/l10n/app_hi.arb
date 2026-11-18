@@ -216,5 +216,6 @@
   "sLiveRecordingSoon": "रिकॉर्डिंग जल्द आएगी",
   "sLiveStartsAt": "शुरुआत {when}",
   "sLiveCancelledText": "यह क्लास रद्द हो गई है।",
-  "sLiveJoinOpens": "क्लास से 10 मिनट पहले जुड़ें बटन दिखेगा।"
+  "sLiveJoinOpens": "क्लास से 10 मिनट पहले जुड़ें बटन दिखेगा।",
+  "sLiveJoinSoon": "क्लास से 10 मिनट पहले जुड़ सकेंगे"
 }

@@ -79,6 +79,10 @@ so a course can be fully recorded, fully live, or mixed (hybrid).
    check. The teacher can add live lessons after the course is published.
 9. **Existing live classes:** the separate live classes list stays as it is, for classes
    that don't belong to a module (e.g. a general doubt session).
+10. **Join only on time:** for every live class and live lesson, students get the Join button
+    and the Meet link only from **10 minutes before the start until the end**. Before that they
+    see the date and time. WhatsApp messages link to the class page in the app, not to Meet.
+    (Demo requests are unchanged: the visitor gets the Meet link on WhatsApp.)
 
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**

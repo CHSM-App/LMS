@@ -574,6 +574,7 @@
     "duration": "Duration (minutes)",
     "allBatches": "All batches",
     "join": "Join",
+    "joinSoon": "Join opens 10 min before",
     "cancel": "Cancel class",
     "empty": "No live classes yet"
   },

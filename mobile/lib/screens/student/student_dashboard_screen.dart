@@ -51,7 +51,7 @@ class StudentDashboardScreen extends ConsumerWidget {
             for (final c in d.myCourses) _CourseCard(course: c),
             SectionTitle(l.sUpcoming),
             if (d.upcomingLiveClasses.isEmpty) Text(l.sNoUpcoming, style: const TextStyle(color: AppTokens.textSecondary)),
-            for (final c in d.upcomingLiveClasses) LiveClassTile(topic: c.topic, subtitle: '${c.course} · ${formatDateTime(context, c.startsAt)}', meetLink: c.meetLink),
+            for (final c in d.upcomingLiveClasses) LiveClassTile(topic: c.topic, subtitle: '${c.course} · ${formatDateTime(context, c.startsAt)}', meetLink: c.canJoin ? c.meetLink : null),
             if (d.requests.isNotEmpty) ...[
               SectionTitle(l.sRequests),
               for (final r in d.requests)

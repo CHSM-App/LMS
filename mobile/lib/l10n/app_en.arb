@@ -416,6 +416,7 @@
   "sLiveStartsAt": "Starts {when}",
   "sLiveCancelledText": "This class was cancelled.",
   "sLiveJoinOpens": "The Join button appears 10 minutes before the class.",
+  "sLiveJoinSoon": "Join opens 10 min before",
   "@sLiveStartsAt": {
     "placeholders": {
       "when": {

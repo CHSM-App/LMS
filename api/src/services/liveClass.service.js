@@ -1,6 +1,7 @@
 const { query, one, T } = require('../db/query');
 const { withTransaction } = require('../db/tx');
 const meet = require('../providers/meet');
+const { config } = require('../config/env');
 const { notifyMany } = require('./notification.service');
 const { owned } = require('./ownership');
 const { clock } = require('../utils/clock');
@@ -74,6 +75,10 @@ async function insertLiveClass(f, tx) {
   return row.live_class_id;
 }
 
+// WhatsApp carries a link to the class page, never the Meet link: students get the Meet link
+// in the app only during the join window (10 min before start until the end).
+const appLink = (path) => `${config.webOrigin}${path}`;
+
 // "New class" notification to the students the class is for (WhatsApp to opted-in students).
 async function notifyNewClass(f, link, tx) {
   const { date, time } = istParts(f.startsAt);
@@ -83,7 +88,7 @@ async function notifyNewClass(f, link, tx) {
     key: 'liveClass.new',
     vars: { topic: f.topic, date, time },
     link,
-    whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: f.topic, course: course.title, date, time, link: f.meetLink } },
+    whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: f.topic, course: course.title, date, time, link: appLink(link) } },
   }, tx);
 }
 
@@ -195,11 +200,12 @@ async function runLiveClassReminders() {
     sent += 1;
     const { date, time } = istParts(lc.starts_at);
     const students = await targetStudents(lc.course_id, lc.batch_id);
+    const link = lc.content_id ? lessonLink(lc.course_id, lc.content_id) : '/student/live-classes';
     await notifyMany(students.map((s) => s.user_id), {
       key: 'liveClass.reminder',
       vars: { topic: lc.topic, time },
-      link: lc.content_id ? lessonLink(lc.course_id, lc.content_id) : '/student/live-classes',
-      whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: lc.topic, course: lc.course_title, date, time, link: lc.meet_link } },
+      link,
+      whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: lc.topic, course: lc.course_title, date, time, link: appLink(link) } },
     });
   }
   return sent;

@@ -1350,7 +1350,7 @@ paths:
       tags: [student]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Upcoming classes for my courses and batch }
+        '200': { description: 'Upcoming classes for my courses and batch, each with stage and canJoin; meetLink only while canJoin (10 min before start until the end)' }
   /student/progress:
     get:
       tags: [student]
