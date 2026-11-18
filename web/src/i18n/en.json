@@ -344,7 +344,8 @@
     "types": {
       "video": "Video",
       "pdf": "PDF notes",
-      "link": "Link"
+      "link": "Link",
+      "live": "Live class"
     },
     "pdfFile": "PDF file",
     "pdfHint": "Up to 20 MB",
@@ -784,5 +785,31 @@
     "helpTitle": "Need help?",
     "help": "Can't log in? Contact {{contact}} from your registered mobile number and we'll delete the account for you.",
     "helpNoContact": "Can't log in? Contact your teacher or the school office from your registered mobile number."
+  },
+  "content": {
+    "live": {
+      "type": "Live class",
+      "startsAt": "Date and time",
+      "duration": "Duration (minutes)",
+      "meetLink": "Meet link",
+      "meetLinkHint": "Leave empty to create one automatically",
+      "batch": "Batch",
+      "allBatches": "All batches",
+      "addRecording": "Add recording",
+      "removeRecording": "Remove recording",
+      "recording": "Recording",
+      "recordingSoon": "Recording coming soon",
+      "join": "Join class",
+      "cancelledText": "This class was cancelled.",
+      "startsOn": "Starts {{when}}",
+      "joinOpens": "The Join button appears 10 minutes before the class.",
+      "stage": {
+        "upcoming": "Upcoming",
+        "live": "Live now",
+        "ended": "Ended",
+        "recorded": "Recorded",
+        "cancelled": "Cancelled"
+      }
+    }
   }
 }

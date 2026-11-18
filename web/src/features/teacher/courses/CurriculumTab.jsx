@@ -5,6 +5,9 @@ import { api } from '../../../api/client';
 import { Button, Card, Checkbox, EmptyState, Input, Modal, Select, Spinner, Textarea, useToast, FileUpload } from '../../../components';
 import { uploadSmall } from '../../../utils/upload';
 import { VideoSourceField } from './VideoSourceField';
+import { LiveLessonFields, LiveStageBadge, emptyLive, liveBody } from './LiveLessonFields';
+import { RecordingModal } from './RecordingModal';
+import { formatDateTime } from '../../../utils/format';
 
 const swap = (list, i, j) => {
   const next = list.map((x) => x.id);
@@ -39,8 +42,9 @@ function NameDialog({ title, initial = '', withDescription, onSave, onClose, sav
   );
 }
 
-function ContentDialog({ initial, onSave, onClose, saving, error }) {
+function ContentDialog({ courseId, initial, onSave, onClose, saving, error }) {
   const { t } = useTranslation();
+  const [live, setLive] = useState(() => emptyLive(initial));
   const [f, setF] = useState(() => ({
     title: initial?.title || '',
     type: initial?.type || 'video',
@@ -53,6 +57,11 @@ function ContentDialog({ initial, onSave, onClose, saving, error }) {
   const [pdfError, setPdfError] = useState('');
   const submit = () => {
     if (!f.title.trim()) return setLocal(t('validation.required'));
+    if (f.type === 'live') {
+      const lb = liveBody(live);
+      if (!lb) return setLocal(t('validation.required'));
+      return onSave({ title: f.title.trim(), type: 'live', ...lb });
+    }
     const body = { title: f.title.trim(), type: f.type, isFreePreview: f.isFreePreview };
     if (f.type === 'video') {
       if (!f.video) return setLocal(t('curriculum.needVideo'));
@@ -79,21 +88,28 @@ function ContentDialog({ initial, onSave, onClose, saving, error }) {
     <Modal open size="lg" title={initial ? t('curriculum.editContent') : t('curriculum.addContent')} onClose={onClose}
       footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button loading={saving} onClick={submit}>{t('common.save')}</Button></>}>
       <Input label={t('curriculum.contentTitle')} value={f.title} onChange={(e) => setF((x) => ({ ...x, title: e.target.value }))} required autoFocus />
+      {/* A live lesson stays live (the API refuses switching), so its type is fixed when editing. */}
       <Select label={t('curriculum.type')} value={f.type} onChange={(e) => setF((x) => ({ ...x, type: e.target.value }))}
-        options={[{ value: 'video', label: t('curriculum.types.video') }, { value: 'pdf', label: t('curriculum.types.pdf') }, { value: 'link', label: t('curriculum.types.link') }]} />
+        disabled={!!initial && initial.type === 'live'}
+        options={[
+          { value: 'video', label: t('curriculum.types.video') }, { value: 'pdf', label: t('curriculum.types.pdf') },
+          { value: 'link', label: t('curriculum.types.link') },
+          ...(!initial || initial.type === 'live' ? [{ value: 'live', label: t('curriculum.types.live') }] : []),
+        ]} />
+      {f.type === 'live' && <LiveLessonFields courseId={courseId} value={live} onChange={setLive} />}
       {f.type === 'video' && <VideoSourceField label={t('curriculum.types.video')} kind="video" value={f.video} onChange={(v) => setF((x) => ({ ...x, video: v }))} required />}
       {f.type === 'pdf' && (
         <FileUpload label={t('curriculum.pdfFile')} accept="application/pdf" maxMb={20} onFile={onPdf} error={pdfError} hint={f.fileKey ? t('curriculum.pdfReady') : t('curriculum.pdfHint')} required />
       )}
       {f.type === 'link' && <Input label={t('curriculum.linkUrl')} type="url" value={f.url} onChange={(e) => setF((x) => ({ ...x, url: e.target.value }))} placeholder="https://" required />}
-      <Checkbox label={t('curriculum.freePreview')} checked={f.isFreePreview} onChange={(e) => setF((x) => ({ ...x, isFreePreview: e.target.checked }))} />
+      {f.type !== 'live' && <Checkbox label={t('curriculum.freePreview')} checked={f.isFreePreview} onChange={(e) => setF((x) => ({ ...x, isFreePreview: e.target.checked }))} />}
       {(local || error) && <p className="field__error" role="alert">{local || error}</p>}
     </Modal>
   );
 }
 
 export function CurriculumTab({ courseId }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const toast = useToast();
   const [dialog, setDialog] = useState(null);
@@ -151,8 +167,17 @@ export function CurriculumTab({ courseId }) {
                       <span>
                         <span className="badge badge--neutral">{t(`curriculum.types.${c.type}`)}</span> {c.title}
                         {c.isFreePreview && <span className="muted"> · {t('curriculum.free')}</span>}
+                        {c.live && (
+                          <>
+                            {' '}<LiveStageBadge stage={c.live.stage} />
+                            <span className="muted"> · {formatDateTime(c.live.startsAt, i18n.language)} · {c.live.batch ? c.live.batch.name : t('content.live.allBatches')}</span>
+                          </>
+                        )}
                       </span>
                       <span className="row">
+                        {c.type === 'live' && (c.recording
+                          ? <Button variant="ghost" size="sm" onClick={() => run.mutate({ method: 'del', path: `/teacher/contents/${c.id}/recording` })}>{t('content.live.removeRecording')}</Button>
+                          : <Button variant="compact" size="sm" onClick={() => setDialog({ kind: 'recording', item: c })}>{t('content.live.addRecording')}</Button>)}
                         <MoveButtons name={c.title} index={ci} count={m.contents.length} onMove={(i, j) => run.mutate({ method: 'put', path: `/teacher/modules/${m.id}/contents/order`, body: { contentIds: swap(m.contents, i, j) } })} />
                         <Button variant="ghost" size="sm" onClick={() => setDialog({ kind: 'content', item: c, moduleId: m.id })}>{t('common.edit')}</Button>
                         <Button variant="ghost" size="sm" onClick={() => run.mutate({ method: 'del', path: `/teacher/contents/${c.id}` })}>{t('common.delete')}</Button>
@@ -189,11 +214,15 @@ export function CurriculumTab({ courseId }) {
       )}
       {dialog?.kind === 'content' && (
         <ContentDialog
+          courseId={courseId}
           initial={dialog.item}
           saving={run.isPending}
           onClose={() => setDialog(null)}
           onSave={dialog.item ? save('put', `/teacher/contents/${dialog.item.id}`) : save('post', `/teacher/modules/${dialog.moduleId}/contents`)}
         />
+      )}
+      {dialog?.kind === 'recording' && (
+        <RecordingModal lesson={dialog.item} saving={run.isPending} onClose={() => setDialog(null)} onSave={save('put', `/teacher/contents/${dialog.item.id}/recording`)} />
       )}
     </div>
   );
