@@ -11,7 +11,7 @@ export function MeetLinkAction({ liveClass: r, onSaved, size = 'sm' }) {
   const [open, setOpen] = useState(false);
   if (r.meetLink) {
     return (
-      <a className={`btn btn--primary btn--${size}`} href={r.meetLink} target="_blank" rel="noopener noreferrer">
+      <a className={`btn btn--compact btn--${size}`} href={r.meetLink} target="_blank" rel="noopener noreferrer">
         <span className="btn__label">{t('liveClasses.join')}</span>
       </a>
     );
