@@ -3,7 +3,8 @@
 //   -> published course (2 subjects, 4 modules, video/PDF/link lessons) -> 2 batches
 //   -> question bank (all 4 types) -> Unit Test 1, Unit Test 2, Final and Practice exams
 //   -> 4 enrolled students with lesson progress and exam results, 1 waiting for approval
-//   -> a held live class with attendance, an upcoming one, doubts, demo requests, a class program.
+//   -> a held live class with attendance, an upcoming one, two live lessons (one recorded),
+//      doubts, demo requests, a class program.
 // Every step checks first, so re-running adds only what is missing. Called by scripts/seed.js.
 const request = require('supertest');
 const { createApp } = require('../src/app');
@@ -340,6 +341,30 @@ async function ensureLiveClasses(teacher, courseId, batches, students, today) {
   if (!row) await teacher.post('/api/v1/teacher/live-classes', { courseId, batchId: batches['Morning Batch'], topic: next, startsAt: at(addDays(today, 1), 1).toISOString(), durationMin: 60, meetLink: MEET });
 }
 
+// Live lessons inside modules: one held three days ago (with a YouTube recording) and one tomorrow 18:00 IST.
+async function ensureLiveLessons(teacher, mods, today) {
+  const has = async (moduleId, title) => one("SELECT 1 AS y FROM dbo.contents WHERE module_id = @m AND title = @t AND type = 'live'", {
+    m: T.int(moduleId), t: T.nvarchar(title, 200),
+  });
+  const held = 'Live: linear equations recap';
+  if (!(await has(mods.linear, held))) {
+    // The API only accepts future times, so the lesson is created ahead and then moved into the past with SQL.
+    const x = await teacher.post(`/api/v1/teacher/modules/${mods.linear}/contents`, {
+      title: held, type: 'live', startsAt: addDays(today, 1).toISOString(), durationMin: 60, meetLink: MEET,
+    });
+    await query("UPDATE dbo.live_classes SET starts_at = @s, status = 'completed' WHERE live_class_id = @id", {
+      s: T.datetime(at(addDays(today, -3), 12)), id: T.int(x.live.liveClassId),
+    });
+    await teacher.put(`/api/v1/teacher/contents/${x.id}/recording`, { videoSource: 'youtube', url: 'https://youtu.be/abcdefgh129' });
+  }
+  const next = 'Live: solving quadratics together';
+  if (!(await has(mods.quadratic, next))) {
+    await teacher.post(`/api/v1/teacher/modules/${mods.quadratic}/contents`, {
+      title: next, type: 'live', startsAt: at(addDays(today, 1), 12).toISOString(), durationMin: 60, meetLink: MEET,
+    });
+  }
+}
+
 async function ensureDoubts(app, teacher, courseId, students) {
   const doubts = [
     { by: students[0].user, question: 'In Unit Test 1 question 4, why do we add both equations instead of subtracting?', reply: 'Adding removes y because +y and -y cancel. Then 2x = 6, so x = 3. Subtracting would remove x instead - both work!' },
@@ -404,6 +429,7 @@ async function seedDemo({ admin, log = console.log }) {
   await ensureStudent(app, anon, DEMO.pendingStudent, course);
 
   await ensureLiveClasses(teacher, course.id, batches, students, today);
+  await ensureLiveLessons(teacher, mods, today);
   await ensureDoubts(app, teacher, course.id, students);
   await ensureDemoRequests(anon, teacher, course, today);
   await ensureProgram(teacher, user, course.id, batches, today);

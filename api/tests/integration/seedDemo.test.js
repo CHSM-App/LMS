@@ -44,8 +44,16 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(await count('SELECT COUNT(*) n FROM dbo.content_progress')).toBeGreaterThan(0);
 
   // Operations: a held class with attendance and an upcoming one, doubts, demo requests, a class program.
-  expect(await count("SELECT COUNT(*) n FROM dbo.live_classes WHERE course_id = @c AND status = 'completed'", c)).toBe(1);
-  expect(await count("SELECT COUNT(*) n FROM dbo.live_classes WHERE course_id = @c AND status = 'scheduled'", c)).toBe(1);
+  const standalone = 'NOT EXISTS (SELECT 1 FROM dbo.contents x WHERE x.live_class_id = l.live_class_id)';
+  expect(await count(`SELECT COUNT(*) n FROM dbo.live_classes l WHERE course_id = @c AND status = 'completed' AND ${standalone}`, c)).toBe(1);
+  expect(await count(`SELECT COUNT(*) n FROM dbo.live_classes l WHERE course_id = @c AND status = 'scheduled' AND ${standalone}`, c)).toBe(1);
+
+  // Live lessons inside modules: one upcoming, one held with a YouTube recording.
+  expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live'", c)).toBe(2);
+  expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live' AND video_source = 'youtube'", c)).toBe(1);
+  expect(await count(
+    "SELECT COUNT(*) n FROM dbo.contents x JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id WHERE x.course_id = @c AND l.starts_at > SYSUTCDATETIME()", c,
+  )).toBe(1);
   expect(await count('SELECT COUNT(*) n FROM dbo.attendance')).toBe(4);
   expect(await count("SELECT COUNT(*) n FROM dbo.doubts WHERE course_id = @c AND reply IS NOT NULL", c)).toBe(1);
   expect(await count("SELECT COUNT(*) n FROM dbo.doubts WHERE course_id = @c AND reply IS NULL", c)).toBe(1);
