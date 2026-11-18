@@ -3,11 +3,13 @@
 DateTime? _date(dynamic v) => v == null ? null : DateTime.tryParse(v as String);
 
 class TodayClass {
-  const TodayClass({required this.id, required this.topic, required this.startsAt, required this.meetLink, required this.course, this.batch});
+  const TodayClass({required this.id, required this.topic, required this.startsAt, required this.course, this.meetLink, this.batch});
   final int id;
   final String topic;
   final DateTime startsAt;
-  final String meetLink;
+
+  /// Null until the teacher adds the Google Meet link.
+  final String? meetLink;
   final String course;
   final String? batch;
 
@@ -15,7 +17,7 @@ class TodayClass {
         id: j['id'] as int,
         topic: j['topic'] as String,
         startsAt: DateTime.parse(j['startsAt'] as String),
-        meetLink: j['meetLink'] as String,
+        meetLink: j['meetLink'] as String?,
         course: j['course'] as String,
         batch: j['batch'] as String?,
       );
@@ -142,12 +144,17 @@ class StudentRow {
 }
 
 class LiveClass {
-  const LiveClass({required this.id, required this.topic, required this.courseTitle, required this.startsAt, required this.meetLink, required this.status, this.batchName});
+  const LiveClass({required this.id, required this.topic, required this.courseTitle, required this.startsAt, required this.status, this.meetLink, this.needsMeetLink = false, this.batchName});
   final int id;
   final String topic;
   final String courseTitle;
   final DateTime startsAt;
-  final String meetLink;
+
+  /// Null until the teacher adds the Google Meet link.
+  final String? meetLink;
+
+  /// Scheduled or live with no Meet link yet: show "Add Meet link".
+  final bool needsMeetLink;
   final String status;
   final String? batchName;
 
@@ -156,7 +163,8 @@ class LiveClass {
         topic: j['topic'] as String,
         courseTitle: (j['course'] as Map<String, dynamic>)['title'] as String,
         startsAt: DateTime.parse(j['startsAt'] as String),
-        meetLink: j['meetLink'] as String,
+        meetLink: j['meetLink'] as String?,
+        needsMeetLink: j['needsMeetLink'] == true,
         status: j['status'] as String,
         batchName: (j['batch'] as Map<String, dynamic>?)?['name'] as String?,
       );

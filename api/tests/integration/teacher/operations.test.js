@@ -168,7 +168,7 @@ describe('live classes and attendance', () => {
     await activeEnrollment(courseId, t.user.user_id, b.user_id, evening.id);
     const lc = await t.post('/api/v1/teacher/live-classes', { courseId, batchId: batch.id, topic: 'Algebra revision', startsAt: '2026-06-15T03:20:00Z', durationMin: 60 });
     expect(lc.status).toBe(201);
-    expect(lc.body.data.meetLink).toMatch(/^https:\/\/meet\.google\.com\//);
+    expect(lc.body.data).toMatchObject({ meetLink: null, needsMeetLink: true }); // no fake link; the teacher adds it
     expect(await one('SELECT COUNT(*) n FROM dbo.notifications WHERE user_id = @u', { u: T.int(a.user_id) })).toEqual({ n: 1 });
     expect(await one('SELECT COUNT(*) n FROM dbo.notifications WHERE user_id = @u', { u: T.int(b.user_id) })).toEqual({ n: 0 });
     const sheet = await t.get(`/api/v1/teacher/live-classes/${lc.body.data.id}/attendance`);

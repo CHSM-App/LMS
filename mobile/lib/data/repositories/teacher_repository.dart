@@ -15,6 +15,7 @@ abstract class TeacherRepository {
   Future<List<StudentRow>> students({int? courseId});
   Future<void> setAccess(String studentPublicId, int courseId, {required String startDate, required String endDate, required bool accessEnabled});
   Future<List<LiveClass>> liveClasses();
+  Future<void> setMeetLink(int liveClassId, String meetLink);
   Future<List<AttendanceRow>> attendance(int liveClassId);
   Future<void> saveAttendance(int liveClassId, List<AttendanceRow> rows);
   Future<List<Doubt>> doubts({String? status});
@@ -75,6 +76,9 @@ class ApiTeacherRepository implements TeacherRepository {
 
   @override
   Future<List<LiveClass>> liveClasses() async => _list(await api.get('/teacher/live-classes')).map(LiveClass.fromJson).toList();
+
+  @override
+  Future<void> setMeetLink(int liveClassId, String meetLink) => api.put('/teacher/live-classes/$liveClassId/meet-link', {'meetLink': meetLink});
 
   @override
   Future<List<AttendanceRow>> attendance(int liveClassId) async =>

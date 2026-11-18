@@ -576,7 +576,14 @@
     "join": "Join",
     "joinSoon": "Join opens 10 min before",
     "cancel": "Cancel class",
-    "empty": "No live classes yet"
+    "empty": "No live classes yet",
+    "addLink": "Add Meet link",
+    "addLinkTitle": "Add Google Meet link",
+    "linkLabel": "Google Meet link",
+    "addLinkHint": "Open meet.google.com, create a meeting and paste its link here.",
+    "saveLink": "Save link",
+    "waitingForLink": "The teacher will share the link soon",
+    "noLink": "No link yet"
   },
   "attendance": {
     "title": "Attendance: {{topic}}",
@@ -810,7 +817,8 @@
         "ended": "Ended",
         "recorded": "Recorded",
         "cancelled": "Cancelled"
-      }
+      },
+      "waitingForLink": "The teacher will share the link soon"
     }
   }
 }

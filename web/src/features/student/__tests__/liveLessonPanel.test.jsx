@@ -40,3 +40,9 @@ test('cancelled shows the cancelled message and no Join', () => {
   expect(screen.getByText('This class was cancelled.')).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Join class' })).not.toBeInTheDocument();
 });
+
+test('live without a Meet link tells the student the teacher will share it', () => {
+  render(<LiveLessonPanel content={withStage('live', { live: { meetLink: undefined, waitingForLink: true } })} />);
+  expect(screen.queryByRole('link', { name: 'Join class' })).not.toBeInTheDocument();
+  expect(screen.getByText('The teacher will share the link soon')).toBeInTheDocument();
+});

@@ -117,7 +117,7 @@ async function liveClasses(studentId, { upcomingOnly = true } = {}) {
   );
   return rows.map((r) => {
     const stage = liveStage({ status: r.status, startsAt: r.starts_at, durationMin: r.duration_min, hasRecording: !!r.video_source }, now);
-    const canJoin = stage === 'live';
+    const canJoin = stage === 'live' && !!r.meet_link;
     return {
       id: r.live_class_id,
       courseId: r.course_id,
@@ -130,6 +130,8 @@ async function liveClasses(studentId, { upcomingOnly = true } = {}) {
       status: r.status,
       stage,
       canJoin,
+      // Class time, but the teacher has not added the Meet link yet.
+      waitingForLink: stage === 'live' && !r.meet_link,
       // The Meet link is shared only during the join window.
       ...(canJoin ? { meetLink: r.meet_link } : {}),
     };
@@ -221,7 +223,8 @@ async function contentView(studentId, contentId) {
   if (x.type === 'live') {
     out.live = liveSummary(x);
     // The Meet link is shared only during the join window (10 min before start until the end).
-    if (out.live.stage === 'live') out.live.meetLink = x.live_meet_link;
+    if (out.live.stage === 'live' && x.live_meet_link) out.live.meetLink = x.live_meet_link;
+    out.live.waitingForLink = out.live.stage === 'live' && !x.live_meet_link;
   }
   return out;
 }

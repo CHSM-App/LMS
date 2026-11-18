@@ -114,7 +114,7 @@ describe('events that carry a Meet link over WhatsApp', () => {
 
   test('a new batch-targeted live class sends the app link (not the Meet link) to that batch only, never to blocked students', async () => {
     const { t, courseId, morning, inBatch, otherBatch, blocked } = await setup();
-    const lc = await t.post('/api/v1/teacher/live-classes', { courseId, batchId: morning.id, topic: 'Algebra', startsAt: '2099-06-15T03:20:00Z', durationMin: 60 });
+    const lc = await t.post('/api/v1/teacher/live-classes', { courseId, batchId: morning.id, topic: 'Algebra', startsAt: '2099-06-15T03:20:00Z', durationMin: 60, meetLink: 'https://meet.google.com/abc-defg-hij' });
     expect(lc.status).toBe(201);
     const sent = whatsapp.sentMessages();
     expect(sent.map((m) => m.mobile)).toEqual([inBatch.mobile]);
@@ -127,7 +127,7 @@ describe('events that carry a Meet link over WhatsApp', () => {
 
   test('the 30-minute reminder also skips blocked students and has no Meet link', async () => {
     const { t, courseId, morning, inBatch } = await setup();
-    const lc = await t.post('/api/v1/teacher/live-classes', { courseId, batchId: morning.id, topic: 'Algebra', startsAt: '2099-06-15T03:20:00Z', durationMin: 60 });
+    const lc = await t.post('/api/v1/teacher/live-classes', { courseId, batchId: morning.id, topic: 'Algebra', startsAt: '2099-06-15T03:20:00Z', durationMin: 60, meetLink: 'https://meet.google.com/abc-defg-hij' });
     whatsapp.clearSent();
     clock.set(new Date('2099-06-15T03:00:00Z'));
     try {

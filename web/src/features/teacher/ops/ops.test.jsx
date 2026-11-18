@@ -6,6 +6,7 @@ import { ToastProvider } from '../../../components';
 import * as client from '../../../api/client';
 import RequestsPage from './RequestsPage';
 import { AttendanceSheet } from './AttendanceSheet';
+import LiveClassesPage from './LiveClassesPage';
 
 function wrap(ui) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -88,4 +89,24 @@ test('attendance sheet: Mark all present then save', async () => {
   await userEvent.click(await screen.findByRole('button', { name: 'Mark all present' }));
   await userEvent.click(screen.getByRole('button', { name: 'Save attendance' }));
   expect(put).toHaveBeenCalledWith('/teacher/live-classes/5/attendance', { records: [{ studentPublicId: 'a', present: true }, { studentPublicId: 'b', present: true }] });
+});
+
+const liveRow = (over) => ({ id: 1, course: { id: 3, title: 'Class 10 Maths' }, batch: null, topic: 'Algebra', startsAt: '2099-06-15T12:30:00Z', durationMin: 60, status: 'scheduled', meetLink: null, needsMeetLink: true, ...over });
+
+test('live classes: Join when there is a link; Add Meet link when there is none', async () => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/teacher/live-classes') return { data: [liveRow({ id: 1, topic: 'Has link', meetLink: 'https://meet.google.com/abc-defg-hij', needsMeetLink: false }), liveRow({ id: 2, topic: 'No link' })] };
+    return { data: [] };
+  });
+  const put = vi.spyOn(client.api, 'put').mockResolvedValue({ data: {} });
+  wrap(<LiveClassesPage />);
+  const withLink = (await screen.findByText('Has link')).closest('tr');
+  expect(within(withLink).getByRole('link', { name: 'Join' })).toHaveAttribute('href', 'https://meet.google.com/abc-defg-hij');
+  const noLink = screen.getByText('No link').closest('tr');
+  expect(within(noLink).queryByRole('link', { name: 'Join' })).not.toBeInTheDocument();
+  await userEvent.click(within(noLink).getByRole('button', { name: 'Add Meet link' }));
+  const dialog = screen.getByRole('dialog');
+  await userEvent.type(within(dialog).getByLabelText(/Google Meet link/), 'https://meet.google.com/xyz-abcd-efg');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save link' }));
+  await waitFor(() => expect(put).toHaveBeenCalledWith('/teacher/live-classes/2/meet-link', { meetLink: 'https://meet.google.com/xyz-abcd-efg' }));
 });

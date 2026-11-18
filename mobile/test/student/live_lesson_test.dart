@@ -63,6 +63,12 @@ void main() {
       expect(find.text('Join opens 10 min before'), findsOneWidget);
     });
 
+    testWidgets('class time without a link says the teacher will share it', (tester) async {
+      await tester.pumpWidget(app(const Scaffold(body: LiveClassTile(topic: 'Algebra', subtitle: 'Maths', meetLink: null, waitingForLink: true))));
+      expect(find.text('Join'), findsNothing);
+      expect(find.text('The teacher will share the link soon'), findsOneWidget);
+    });
+
     testWidgets('class in the join window shows Join', (tester) async {
       await tester.pumpWidget(app(const Scaffold(body: LiveClassTile(topic: 'Algebra', subtitle: 'Maths', meetLink: 'https://meet.google.com/abc-defg-hij'))));
       expect(find.text('Join'), findsOneWidget);
@@ -112,6 +118,12 @@ void main() {
     testWidgets('Join button only while live', (tester) async {
       await pumpPlayer(tester, detail('live', meetLink: 'https://meet.google.com/abc-defg-hij'));
       expect(find.text('Join class'), findsOneWidget);
+    });
+
+    testWidgets('live without a link: no Join, the teacher will share it', (tester) async {
+      await pumpPlayer(tester, detail('live'));
+      expect(find.text('Join class'), findsNothing);
+      expect(find.text('The teacher will share the link soon'), findsOneWidget);
     });
 
     testWidgets('no Join button when upcoming', (tester) async {

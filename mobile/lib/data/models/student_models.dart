@@ -97,7 +97,7 @@ class MyCourse {
 
 @immutable
 class LiveClassItem {
-  const LiveClassItem({required this.id, required this.topic, required this.course, required this.startsAt, this.meetLink, this.canJoin = false, this.batch, this.durationMin = 60});
+  const LiveClassItem({required this.id, required this.topic, required this.course, required this.startsAt, this.meetLink, this.canJoin = false, this.waitingForLink = false, this.batch, this.durationMin = 60});
   final int id;
   final String topic;
   final String course;
@@ -109,6 +109,9 @@ class LiveClassItem {
   final String? meetLink;
   final bool canJoin;
 
+  /// Class time, but the teacher has not added the Meet link yet.
+  final bool waitingForLink;
+
   factory LiveClassItem.fromJson(Json j) => LiveClassItem(
         id: _int(j['id']),
         topic: j['topic'] as String,
@@ -118,6 +121,7 @@ class LiveClassItem {
         durationMin: _int(j['durationMin']),
         meetLink: j['meetLink'] as String?,
         canJoin: j['canJoin'] == true && j['meetLink'] != null,
+        waitingForLink: j['waitingForLink'] == true,
       );
 }
 
@@ -159,11 +163,14 @@ class StudentDashboard {
 /// The Meet link is sent by the API only while the lesson is upcoming or live.
 @immutable
 class LessonLive {
-  const LessonLive({required this.startsAt, required this.durationMin, required this.stage, this.meetLink});
+  const LessonLive({required this.startsAt, required this.durationMin, required this.stage, this.meetLink, this.waitingForLink = false});
   final DateTime startsAt;
   final int durationMin;
   final String stage;
   final String? meetLink;
+
+  /// Class time, but the teacher has not added the Meet link yet.
+  final bool waitingForLink;
 
   static LessonLive? fromJson(dynamic j) {
     if (j is! Map) return null;
@@ -172,6 +179,7 @@ class LessonLive {
       durationMin: _int(j['durationMin']),
       stage: j['stage'] as String,
       meetLink: j['meetLink'] as String?,
+      waitingForLink: j['waitingForLink'] == true,
     );
   }
 }

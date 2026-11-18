@@ -6,6 +6,7 @@ import { Button, Input, Modal, PageHeader, Select, StatusBadge, Table, useToast 
 import { formatDateTime } from '../../../utils/format';
 import { useCourseModules } from '../exams/useCourseModules';
 import { AttendanceSheet } from './AttendanceSheet';
+import { MeetLinkAction } from './MeetLinkAction';
 
 const toLocalInput = (iso) => (iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
 
@@ -71,7 +72,7 @@ export default function LiveClassesPage() {
     { key: 'batch', header: t('nav.batches'), render: (r) => (r.batch ? r.batch.name : t('liveClasses.allBatches')) },
     { key: 'startsAt', header: t('requests.when'), render: (r) => formatDateTime(r.startsAt, i18n.language) },
     { key: 'status', header: t('common.status'), render: (r) => <StatusBadge status={r.status} /> },
-    { key: 'meet', header: 'Meet', render: (r) => <a href={r.meetLink} target="_blank" rel="noreferrer">{t('liveClasses.join')}</a> },
+    { key: 'meet', header: 'Meet', render: (r) => <MeetLinkAction liveClass={r} onSaved={refresh} /> },
     {
       key: 'a', header: t('common.actions'),
       render: (r) => (

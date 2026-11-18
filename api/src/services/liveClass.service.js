@@ -2,7 +2,7 @@ const { query, one, T } = require('../db/query');
 const { withTransaction } = require('../db/tx');
 const meet = require('../providers/meet');
 const { config } = require('../config/env');
-const { notifyMany } = require('./notification.service');
+const { notify, notifyMany } = require('./notification.service');
 const { owned } = require('./ownership');
 const { clock } = require('../utils/clock');
 const { text } = require('../utils/validate');
@@ -20,9 +20,19 @@ const out = (r) => ({
   topic: r.topic,
   startsAt: r.starts_at,
   durationMin: r.duration_min,
-  meetLink: r.meet_link,
+  meetLink: r.meet_link || null,
+  needsMeetLink: !r.meet_link && ['scheduled', 'live'].includes(r.status),
   status: r.status,
 });
+
+// The teacher adds or changes the Meet link of a class (standalone or live lesson).
+async function setMeetLink(id, teacherId, body) {
+  await get(id, teacherId);
+  const link = String((body && body.meetLink) || '').trim();
+  if (!meet.isMeetLink(link)) throw badRequest('Enter a Google Meet link like https://meet.google.com/abc-defg-hij', 'INVALID_MEET_LINK');
+  await query('UPDATE dbo.live_classes SET meet_link = @l WHERE live_class_id = @id', { l: T.varchar(link, 300), id: T.int(Number(id)) });
+  return out(await get(id));
+}
 
 const SELECT = `SELECT l.*, c.title AS course_title, c.teacher_id, b.name AS batch_name FROM dbo.live_classes l
                 JOIN dbo.courses c ON c.course_id = l.course_id LEFT JOIN dbo.batches b ON b.batch_id = l.batch_id`;
@@ -59,8 +69,8 @@ async function parse(teacherId, b) {
   let meetLink = b.meetLink ? String(b.meetLink).trim() : null;
   if (meetLink && !meet.isMeetLink(meetLink)) throw badRequest('Enter a Google Meet link like https://meet.google.com/abc-defg-hij', 'INVALID_MEET_LINK');
   const topic = text(b.topic, 'topic', { max: 200 });
-  if (!meetLink) meetLink = await meet.createLink({ title: topic, start: startsAt, durationMin });
-  if (!meetLink) throw badRequest('Paste a Meet link', 'MEET_LINK_REQUIRED');
+  // The link is optional: only a real Google provider fills it in; otherwise the teacher adds it later.
+  if (!meetLink && meet.createsRealLinks()) meetLink = await meet.createLink({ title: topic, start: startsAt, durationMin });
   return { courseId: course.id, batchId, topic, startsAt, durationMin, meetLink, status: b.status || 'scheduled' };
 }
 
@@ -179,7 +189,7 @@ async function runLiveClassReminders() {
   const now = clock.now();
   const at = (min) => T.datetime(new Date(now.getTime() + min * 60000));
   const due = await query(
-    `SELECT l.*, c.title AS course_title, x.content_id FROM dbo.live_classes l
+    `SELECT l.*, c.title AS course_title, c.teacher_id, x.content_id FROM dbo.live_classes l
      JOIN dbo.courses c ON c.course_id = l.course_id
      LEFT JOIN dbo.contents x ON x.live_class_id = l.live_class_id
      WHERE l.status = 'scheduled' AND l.starts_at > @now AND (
@@ -207,11 +217,13 @@ async function runLiveClassReminders() {
       link,
       whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: lc.topic, course: lc.course_title, date, time, link: appLink(link) } },
     });
+    // No Meet link yet: remind the teacher to add it (in-app only).
+    if (!lc.meet_link) await notify(lc.teacher_id, { key: 'liveClass.addLink', vars: { topic: lc.topic, time }, link: '/teacher/live-classes' });
   }
   return sent;
 }
 
 module.exports = {
-  create, update, cancel, list, get, out, attendanceSheet, saveAttendance, runLiveClassReminders, targetStudents,
+  create, update, cancel, list, get, out, setMeetLink, attendanceSheet, saveAttendance, runLiveClassReminders, targetStudents,
   parse, insertLiveClass, notifyNewClass, lessonLink,
 };

@@ -146,3 +146,10 @@ test('enroll: visitor is asked to register', async () => {
   expect(await screen.findByRole('heading', { name: /create your student account/i })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /log in/i })).toBeInTheDocument();
 });
+
+test('live classes page: class time without a link says the teacher will share it', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: [{ id: 3, topic: 'Waiting class', course: 'Maths', startsAt: '2026-06-15T12:30:00Z', durationMin: 60, stage: 'live', canJoin: false, waitingForLink: true }] });
+  wrap(<StudentLiveClassesPage />);
+  expect(await screen.findByText('The teacher will share the link soon')).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Join' })).not.toBeInTheDocument();
+});

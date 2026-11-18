@@ -16,7 +16,7 @@ Items marked **(assumed)** are defaults that still need the owner's confirmation
 | Topic | Decision |
 |---|---|
 | WhatsApp | **Official WhatsApp Business API** (Meta Cloud API, approved template). **Fallback** until approval: "Send on WhatsApp" opens a `wa.me` link with the message already typed. |
-| Google Meet | **Created automatically** through the Google Calendar API (Workspace account). **Fallback:** the teacher pastes a link. |
+| Google Meet | **Created automatically** through the Google Calendar API (Workspace account, `MEET_PROVIDER=google`). **Fallback:** the teacher pastes a link. For live classes and live lessons the link is **optional when scheduling**: without the Google provider the class is saved with no link (never a made-up one), the teacher adds it later with **"Add Meet link"**, and the class reminder asks the teacher to add it if it is still missing. Teachers see **"Join"** (opens Meet any time); students see Join only in the join window and "The teacher will share the link soon" if it is class time with no link. (Updated 2026-11-18.) |
 | OTP | SMS provider (DLT-registered template). |
 | Videos (lessons + 2 demo videos) | **Both options:** the teacher picks either a **link** (YouTube unlisted / Vimeo / Bunny Stream) or an **upload** for each video. Uploads are chunked and resumable, with a progress bar. |
 

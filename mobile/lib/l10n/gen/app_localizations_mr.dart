@@ -721,4 +721,20 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get sLiveJoinSoon => 'वर्गाच्या 10 मिनिटे आधी सामील होता येईल';
+
+  @override
+  String get tAddMeetLink => 'Meet लिंक जोडा';
+
+  @override
+  String get tMeetLinkLabel => 'Google Meet लिंक';
+
+  @override
+  String get tMeetLinkHint =>
+      'meet.google.com उघडा, मीटिंग तयार करा आणि तिची लिंक इथे पेस्ट करा.';
+
+  @override
+  String get tSaveLink => 'लिंक जतन करा';
+
+  @override
+  String get sLiveWaitingForLink => 'शिक्षक लवकरच लिंक देतील';
 }

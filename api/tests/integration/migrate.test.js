@@ -38,6 +38,12 @@ test('all foreign keys are trusted', async () => {
   expect(r.recordset[0].n).toBe(0);
 });
 
+test('007 makes the live class Meet link optional', async () => {
+  const pool = await getPool();
+  const r = await pool.request().query("SELECT IS_NULLABLE n FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'live_classes' AND COLUMN_NAME = 'meet_link'");
+  expect(r.recordset[0].n).toBe('YES');
+});
+
 test('006 adds live lesson columns', async () => {
   const pool = await getPool();
   const r = await pool.request().query(`SELECT TABLE_NAME t, COLUMN_NAME c FROM INFORMATION_SCHEMA.COLUMNS

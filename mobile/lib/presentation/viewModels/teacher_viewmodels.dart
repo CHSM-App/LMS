@@ -145,6 +145,17 @@ class LiveClassesViewModel extends StateNotifier<LoadState<List<LiveClass>>> {
       state = LoadState(data: state.data, error: e.message);
     }
   }
+
+  /// Saves the Meet link, then reloads. Returns the error message, or null on success.
+  Future<String?> setMeetLink(int liveClassId, String meetLink) async {
+    try {
+      await _repo.setMeetLink(liveClassId, meetLink.trim());
+    } on ApiException catch (e) {
+      return e.message;
+    }
+    await load();
+    return null;
+  }
 }
 
 class AttendanceViewModel extends StateNotifier<LoadState<List<AttendanceRow>>> {

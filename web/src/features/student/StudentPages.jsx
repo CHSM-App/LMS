@@ -13,7 +13,7 @@ function JoinOrWait({ c, className }) {
   if (c.canJoin && c.meetLink) {
     return <a className={className} href={c.meetLink} target="_blank" rel="noopener noreferrer"><span className="btn__label">{t('liveClasses.join')}</span></a>;
   }
-  return <span className="muted">{t('liveClasses.joinSoon')}</span>;
+  return <span className="muted">{t(c.waitingForLink ? 'liveClasses.waitingForLink' : 'liveClasses.joinSoon')}</span>;
 }
 
 export function StudentDashboard() {

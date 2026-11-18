@@ -1093,6 +1093,25 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         '200': { description: Cancelled }
+  /teacher/live-classes/{id}/meet-link:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Add or change the Google Meet link of a class (standalone or live lesson)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [meetLink]
+              properties:
+                meetLink: { type: string, example: 'https://meet.google.com/abc-defg-hij' }
+      responses:
+        '200': { description: 'The class, with meetLink and needsMeetLink: false' }
+        '400': { description: 'INVALID_MEET_LINK: not a Google Meet link' }
+        '404': { description: Not your class }
   /teacher/live-classes/{id}/attendance:
     parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
     get:
@@ -1350,7 +1369,7 @@ paths:
       tags: [student]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: 'Upcoming classes for my courses and batch, each with stage and canJoin; meetLink only while canJoin (10 min before start until the end)' }
+        '200': { description: 'Upcoming classes for my courses and batch, each with stage and canJoin; meetLink only while canJoin (10 min before start until the end and the teacher has added it); waitingForLink when it is class time but no link yet' }
   /student/progress:
     get:
       tags: [student]

@@ -177,6 +177,7 @@ class _LivePanel extends StatelessWidget {
           if (live.stage == 'upcoming') Text(l.sLiveJoinOpens, style: const TextStyle(color: AppTokens.textSecondary)),
           if (live.stage == 'live' && live.meetLink != null)
             AppButton(label: l.sLiveJoin, icon: Icons.videocam_outlined, onPressed: () => openExternal(live.meetLink!)),
+          if (live.stage == 'live' && live.meetLink == null) Text(l.sLiveWaitingForLink, style: const TextStyle(color: AppTokens.textSecondary)),
           if (live.stage == 'ended') Text(l.sLiveRecordingSoon),
           if (live.stage == 'cancelled') Text(l.sLiveCancelledText),
         ],

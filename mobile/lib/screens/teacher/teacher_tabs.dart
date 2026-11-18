@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/network/api_client.dart';
 import '../../core/theme/app_tokens.g.dart';
 import '../../data/models/teacher_models.dart';
 import '../../l10n/gen/app_localizations.dart';
@@ -16,6 +17,28 @@ String _iso(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
 Future<void> _open(String url) => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 
 void _snack(BuildContext context, String message) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+
+/// Asks the teacher for a Google Meet link. Returns the trimmed link, or null when cancelled.
+Future<String?> _askMeetLink(BuildContext context) {
+  final l = AppLocalizations.of(context);
+  final ctrl = TextEditingController();
+  return showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l.tAddMeetLink),
+      content: TextField(
+        controller: ctrl,
+        keyboardType: TextInputType.url,
+        autofocus: true,
+        decoration: InputDecoration(labelText: l.tMeetLinkLabel, hintText: 'https://meet.google.com/abc-defg-hij', helperText: l.tMeetLinkHint, helperMaxLines: 3),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l.cancel)),
+        FilledButton(onPressed: () => ctrl.text.trim().isEmpty ? null : Navigator.of(ctx).pop(ctrl.text.trim()), child: Text(l.tSaveLink)),
+      ],
+    ),
+  );
+}
 
 String _msg(AppLocalizations l, String keyOrMessage) => switch (keyOrMessage) {
       'needBatch' => l.needBatch,
@@ -95,7 +118,22 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
               child: ListTile(
                 title: Text(c.topic),
                 subtitle: Text('${DateFormat.jm().format(c.startsAt.toLocal())} · ${c.course}${c.batch != null ? ' · ${c.batch}' : ''}'),
-                trailing: AppButton(label: l.join, onPressed: () => _open(c.meetLink)),
+                trailing: c.meetLink != null
+                    ? AppButton(label: l.join, onPressed: () => _open(c.meetLink!))
+                    : AppButton(
+                        label: l.tAddMeetLink,
+                        variant: AppButtonVariant.secondary,
+                        onPressed: () async {
+                          final link = await _askMeetLink(context);
+                          if (link == null) return;
+                          try {
+                            await ref.read(teacherRepositoryProvider).setMeetLink(c.id, link);
+                            await ref.read(teacherDashboardProvider.notifier).load();
+                          } on ApiException catch (e) {
+                            if (context.mounted) _snack(context, e.message);
+                          }
+                        },
+                      ),
               ),
             ),
         ],
@@ -365,7 +403,18 @@ class _ClassesTabState extends ConsumerState<ClassesTab> {
                     Text('${_when(context, c.startsAt)} · ${c.courseTitle}${c.batchName != null ? ' · ${c.batchName}' : ''}', style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(height: AppTokens.spaceS2),
                     Wrap(spacing: AppTokens.spaceS2, children: [
-                      if (c.status != 'cancelled') AppButton(label: l.join, onPressed: () => _open(c.meetLink)),
+                      if (c.status != 'cancelled' && c.meetLink != null) AppButton(label: l.join, onPressed: () => _open(c.meetLink!)),
+                      if (c.needsMeetLink)
+                        AppButton(
+                          label: l.tAddMeetLink,
+                          variant: AppButtonVariant.secondary,
+                          onPressed: () async {
+                            final link = await _askMeetLink(context);
+                            if (link == null) return;
+                            final error = await ref.read(liveClassesProvider.notifier).setMeetLink(c.id, link);
+                            if (error != null && context.mounted) _snack(context, error);
+                          },
+                        ),
                       AppButton(
                         label: l.attendance,
                         variant: AppButtonVariant.compact,

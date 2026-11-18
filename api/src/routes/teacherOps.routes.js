@@ -31,6 +31,7 @@ router.get('/teacher/live-classes', h((req) => live.list(req.user.id, { courseId
 router.post('/teacher/live-classes', h((req) => live.create(req.user.id, req.body), 201));
 router.put('/teacher/live-classes/:id', h((req) => live.update(req.params.id, req.user.id, req.body)));
 router.delete('/teacher/live-classes/:id', h((req) => live.cancel(req.params.id, req.user.id)));
+router.put('/teacher/live-classes/:id/meet-link', h((req) => live.setMeetLink(req.params.id, req.user.id, req.body)));
 router.get('/teacher/live-classes/:id/attendance', h((req) => live.attendanceSheet(req.params.id, req.user.id)));
 router.put('/teacher/live-classes/:id/attendance', h((req) => live.saveAttendance(req.params.id, req.user.id, req.body.records)));
 

@@ -217,5 +217,10 @@
   "sLiveStartsAt": "शुरुआत {when}",
   "sLiveCancelledText": "यह क्लास रद्द हो गई है।",
   "sLiveJoinOpens": "क्लास से 10 मिनट पहले जुड़ें बटन दिखेगा।",
-  "sLiveJoinSoon": "क्लास से 10 मिनट पहले जुड़ सकेंगे"
+  "sLiveJoinSoon": "क्लास से 10 मिनट पहले जुड़ सकेंगे",
+  "tAddMeetLink": "Meet लिंक जोड़ें",
+  "tMeetLinkLabel": "Google Meet लिंक",
+  "tMeetLinkHint": "meet.google.com खोलें, मीटिंग बनाएँ और उसका लिंक यहाँ पेस्ट करें।",
+  "tSaveLink": "लिंक सहेजें",
+  "sLiveWaitingForLink": "शिक्षक जल्द ही लिंक देंगे"
 }

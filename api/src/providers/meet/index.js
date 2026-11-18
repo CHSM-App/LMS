@@ -75,5 +75,7 @@ function provider() {
 
 module.exports = {
   createLink: (opts) => provider().createLink(opts),
+  // Only the Google provider makes real links. Live classes never get a console (fake) link.
+  createsRealLinks: () => process.env.MEET_PROVIDER === 'google',
   isMeetLink: (url) => MEET_RE.test(String(url || '').trim()),
 };

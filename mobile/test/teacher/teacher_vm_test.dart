@@ -48,8 +48,15 @@ class FakeTeacherRepo implements TeacherRepository {
   @override
   Future<void> setAccess(String studentPublicId, int courseId, {required String startDate, required String endDate, required bool accessEnabled}) async {}
 
+  final meetLinks = <int, String>{};
+
   @override
-  Future<List<LiveClass>> liveClasses() async => [];
+  Future<List<LiveClass>> liveClasses() async => [
+        LiveClass(id: 5, topic: 'Algebra', courseTitle: 'Maths', startsAt: DateTime.utc(2099), meetLink: meetLinks[5], needsMeetLink: meetLinks[5] == null, status: 'scheduled'),
+      ];
+
+  @override
+  Future<void> setMeetLink(int liveClassId, String meetLink) async => meetLinks[liveClassId] = meetLink;
 
   @override
   Future<List<AttendanceRow>> attendance(int liveClassId) async => [
@@ -105,6 +112,22 @@ void main() {
     vm.markAllPresent();
     await vm.save();
     expect(repo.savedAttendance.map((r) => r.present), [true, true]);
+  });
+
+  test('LiveClass parses a missing Meet link', () {
+    final c = LiveClass.fromJson({'id': 5, 'topic': 'Algebra', 'course': {'id': 3, 'title': 'Maths'}, 'startsAt': '2099-06-15T12:30:00.000Z', 'meetLink': null, 'needsMeetLink': true, 'status': 'scheduled'});
+    expect(c.meetLink, isNull);
+    expect(c.needsMeetLink, isTrue);
+    expect(TodayClass.fromJson({'id': 5, 'topic': 'Algebra', 'startsAt': '2099-06-15T12:30:00.000Z', 'meetLink': null, 'course': 'Maths'}).meetLink, isNull);
+  });
+
+  test('adding a Meet link saves it and reloads the list', () async {
+    final repo = FakeTeacherRepo();
+    final vm = LiveClassesViewModel(repo);
+    await vm.load();
+    expect(vm.state.data!.single.needsMeetLink, isTrue);
+    expect(await vm.setMeetLink(5, 'https://meet.google.com/abc-defg-hij'), isNull);
+    expect(vm.state.data!.single.meetLink, 'https://meet.google.com/abc-defg-hij');
   });
 
   test('ApiException message surfaces as the error', () async {

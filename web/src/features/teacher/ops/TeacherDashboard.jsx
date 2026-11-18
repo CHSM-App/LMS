@@ -38,7 +38,11 @@ export default function TeacherDashboard() {
             {d.todaysClasses.map((c) => (
               <li key={c.id} className="row row--between">
                 <span><strong>{formatTime(c.startsAt, i18n.language)}</strong> {c.topic} <span className="muted">· {c.course}{c.batch ? ` · ${c.batch}` : ''}</span></span>
-                <a className="btn btn--primary btn--sm" href={c.meetLink} target="_blank" rel="noreferrer"><span className="btn__label">{t('liveClasses.join')}</span></a>
+                {c.meetLink ? (
+                  <a className="btn btn--primary btn--sm" href={c.meetLink} target="_blank" rel="noopener noreferrer"><span className="btn__label">{t('liveClasses.join')}</span></a>
+                ) : (
+                  <Link className="btn btn--secondary btn--sm" to="/teacher/live-classes"><span className="btn__label">{t('liveClasses.addLink')}</span></Link>
+                )}
               </li>
             ))}
           </ul>

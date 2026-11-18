@@ -423,5 +423,10 @@
         "type": "String"
       }
     }
-  }
+  },
+  "tAddMeetLink": "Add Meet link",
+  "tMeetLinkLabel": "Google Meet link",
+  "tMeetLinkHint": "Open meet.google.com, create a meeting and paste its link here.",
+  "tSaveLink": "Save link",
+  "sLiveWaitingForLink": "The teacher will share the link soon"
 }

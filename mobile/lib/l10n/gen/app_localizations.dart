@@ -1407,6 +1407,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Join opens 10 min before'**
   String get sLiveJoinSoon;
+
+  /// No description provided for @tAddMeetLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Meet link'**
+  String get tAddMeetLink;
+
+  /// No description provided for @tMeetLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Meet link'**
+  String get tMeetLinkLabel;
+
+  /// No description provided for @tMeetLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Open meet.google.com, create a meeting and paste its link here.'**
+  String get tMeetLinkHint;
+
+  /// No description provided for @tSaveLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Save link'**
+  String get tSaveLink;
+
+  /// No description provided for @sLiveWaitingForLink.
+  ///
+  /// In en, this message translates to:
+  /// **'The teacher will share the link soon'**
+  String get sLiveWaitingForLink;
 }
 
 class _AppLocalizationsDelegate

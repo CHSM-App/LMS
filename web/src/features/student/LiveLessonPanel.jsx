@@ -21,6 +21,7 @@ export function LiveLessonPanel({ content: c, onTimeUpdate, onEnded }) {
           </a>
         </p>
       )}
+      {stage === 'live' && !meetLink && <p className="field__hint">{t('content.live.waitingForLink')}</p>}
       {stage === 'ended' && <p>{t('content.live.recordingSoon')}</p>}
       {stage === 'cancelled' && <p>{t('content.live.cancelledText')}</p>}
       {stage === 'recorded' && (

@@ -576,7 +576,14 @@
     "join": "सामील व्हा",
     "joinSoon": "वर्गाच्या 10 मिनिटे आधी सामील होता येईल",
     "cancel": "वर्ग रद्द करा",
-    "empty": "अद्याप थेट वर्ग नाहीत"
+    "empty": "अद्याप थेट वर्ग नाहीत",
+    "addLink": "Meet लिंक जोडा",
+    "addLinkTitle": "Google Meet लिंक जोडा",
+    "linkLabel": "Google Meet लिंक",
+    "addLinkHint": "meet.google.com उघडा, मीटिंग तयार करा आणि तिची लिंक इथे पेस्ट करा.",
+    "saveLink": "लिंक जतन करा",
+    "waitingForLink": "शिक्षक लवकरच लिंक देतील",
+    "noLink": "अजून लिंक नाही"
   },
   "attendance": {
     "title": "उपस्थिती: {{topic}}",
@@ -810,7 +817,8 @@
         "ended": "संपला",
         "recorded": "रेकॉर्ड केलेला",
         "cancelled": "रद्द"
-      }
+      },
+      "waitingForLink": "शिक्षक लवकरच लिंक देतील"
     }
   }
 }
