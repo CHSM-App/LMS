@@ -1,0 +1,23 @@
+    RecordingInput:
+      type: object
+      required: [videoSource]
+      properties:
+        videoSource: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        fileKey: { type: string, nullable: true, description: Required when videoSource is upload }
+        url: { type: string, nullable: true, description: Required for youtube / vimeo / bunny }
+    LiveLessonInfo:
+      type: object
+      description: Present on contents of type live
+      properties:
+        liveClassId: { type: integer }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer }
+        batch: { type: object, nullable: true, properties: { id: { type: integer }, name: { type: string } } }
+        stage: { type: string, enum: [upcoming, live, ended, recorded, cancelled] }
+        meetLink: { type: string, nullable: true, description: Teacher always; student only while upcoming or live }
+    RecordingInfo:
+      type: object
+      nullable: true
+      properties:
+        videoSource: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        url: { type: string, nullable: true }

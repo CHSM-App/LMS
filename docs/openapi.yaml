@@ -55,11 +55,15 @@ components:
       required: [title, type]
       properties:
         title: { type: string, maxLength: 200 }
-        type: { type: string }
+        type: { type: string, enum: [video, pdf, link, live] }
         videoSource: { type: string, nullable: true }
         fileKey: { type: string, nullable: true }
         url: { type: string, nullable: true }
-        isFreePreview: { type: boolean }
+        isFreePreview: { type: boolean, description: Always false for live lessons }
+        startsAt: { type: string, format: date-time, description: Live lessons only (required) }
+        durationMin: { type: integer, minimum: 5, maximum: 600, description: Live lessons only (default 60) }
+        meetLink: { type: string, nullable: true, description: Live lessons only. Empty means create one automatically }
+        batchId: { type: integer, nullable: true, description: Live lessons only. Empty means every batch }
     BatchInput:
       type: object
       required: [name, startDate]
@@ -128,6 +132,29 @@ components:
         startsAt: { type: string }
         courseId: { type: integer, nullable: true }
         batchId: { type: integer, nullable: true }
+    RecordingInput:
+      type: object
+      required: [videoSource]
+      properties:
+        videoSource: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        fileKey: { type: string, nullable: true, description: Required when videoSource is upload }
+        url: { type: string, nullable: true, description: Required for youtube / vimeo / bunny }
+    LiveLessonInfo:
+      type: object
+      description: Present on contents of type live
+      properties:
+        liveClassId: { type: integer }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer }
+        batch: { type: object, nullable: true, properties: { id: { type: integer }, name: { type: string } } }
+        stage: { type: string, enum: [upcoming, live, ended, recorded, cancelled] }
+        meetLink: { type: string, nullable: true, description: Teacher always; student only while upcoming or live }
+    RecordingInfo:
+      type: object
+      nullable: true
+      properties:
+        videoSource: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        url: { type: string, nullable: true }
     Pagination:
       type: object
       properties:
@@ -1470,3 +1497,27 @@ paths:
                 contentIds: { type: array, items: { type: integer } }
       responses:
         '200': { description: 'Per lesson: new licenseExpiresAt, or revoked with reason' }
+  /teacher/contents/{contentId}/recording:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      summary: Add or replace the recording of a live lesson
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordingInput' }
+      responses:
+        '200': { description: The live lesson with its recording }
+        '400': { description: 'Invalid source, file key or link' }
+        '404': { description: Not your content }
+        '409': { description: NOT_LIVE_LESSON }
+    delete:
+      tags: [teacher-content]
+      summary: Remove the recording of a live lesson
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The live lesson without a recording }
+        '404': { description: Not your content }
+        '409': { description: NOT_LIVE_LESSON }
