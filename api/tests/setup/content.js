@@ -58,4 +58,12 @@ async function readyCourse(t) {
   return { courseId, subjectId: sub.body.data.id, moduleId: mod.body.data.id };
 }
 
-module.exports = { MP4, PNG, PDF, teacher, activeSubscription, uploadVideo, baseCourse, readyCourse, one, query, T };
+// Body for POST /teacher/modules/:id/contents that creates a live lesson.
+function liveLessonBody(overrides = {}) {
+  return {
+    title: 'Live: factorisation', type: 'live', startsAt: '2099-06-15T12:30:00Z', durationMin: 60,
+    meetLink: 'https://meet.google.com/abc-defg-hij', ...overrides,
+  };
+}
+
+module.exports = { liveLessonBody, MP4, PNG, PDF, teacher, activeSubscription, uploadVideo, baseCourse, readyCourse, one, query, T };

@@ -5,6 +5,9 @@ const storage = require('../providers/storage');
 const { validateVideoLink, validateHttpUrl } = require('../utils/videoLinks');
 const { text, bool } = require('../utils/validate');
 const { badRequest, conflict } = require('../utils/APIError');
+const { liveStage } = require('../domain/liveLesson');
+const { clock } = require('../utils/clock');
+const live = require('./liveLesson.service');
 
 // ---------- Subjects ----------
 const subjectOut = (s) => ({ id: s.subject_id, name: s.name, description: s.description, sortOrder: s.sort_order });
@@ -85,7 +88,7 @@ async function deleteModule(id) {
 // ---------- Contents ----------
 async function parseContent(teacherId, b) {
   const type = b.type;
-  if (!['video', 'pdf', 'link'].includes(type)) throw badRequest('type: choose video, pdf or link');
+  if (!['video', 'pdf', 'link'].includes(type)) throw badRequest('type: choose video, pdf, link or live');
   const out = { title: text(b.title, 'title', { max: 200 }), type, videoSource: null, fileKey: null, url: null, isFreePreview: bool(b.isFreePreview) };
   if (type === 'link') out.url = validateHttpUrl(b.url);
   if (type === 'pdf') {
@@ -113,10 +116,19 @@ const contentParams = (c) => ({
   free: T.bit(c.isFreePreview),
 });
 
-// Teacher view: their own files get short-lived signed URLs.
+// Contents with their live class (live lessons only) and its batch.
+const CONTENT_SELECT = `SELECT x.*, l.starts_at AS live_starts_at, l.duration_min AS live_duration_min, l.meet_link AS live_meet_link,
+    l.status AS live_status, l.batch_id AS live_batch_id, b.name AS live_batch_name
+  FROM dbo.contents x LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id LEFT JOIN dbo.batches b ON b.batch_id = l.batch_id`;
+
+const loadContent = (id) => one(`${CONTENT_SELECT} WHERE x.content_id = @id`, { id: T.int(id) });
+
+const hasRecording = (x) => !!x.video_source;
+
+// Teacher view: their own files get short-lived signed URLs. Live lessons add `live` and `recording`.
 function contentOut(x) {
   const fileUrl = x.file_key ? storage.signedUrl(x.file_key) : null;
-  return {
+  const o = {
     id: x.content_id,
     title: x.title,
     type: x.type,
@@ -126,9 +138,22 @@ function contentOut(x) {
     isFreePreview: x.is_free_preview,
     sortOrder: x.sort_order,
   };
+  if (x.type === 'live') {
+    o.live = {
+      liveClassId: x.live_class_id,
+      startsAt: x.live_starts_at,
+      durationMin: x.live_duration_min,
+      batch: x.live_batch_id ? { id: x.live_batch_id, name: x.live_batch_name } : null,
+      stage: liveStage({ status: x.live_status, startsAt: x.live_starts_at, durationMin: x.live_duration_min, hasRecording: hasRecording(x) }, clock.now()),
+      meetLink: x.live_meet_link,
+    };
+    o.recording = hasRecording(x) ? { videoSource: x.video_source, url: x.url || fileUrl } : null;
+  }
+  return o;
 }
 
 async function createContent(teacherId, mod, b) {
+  if (b && b.type === 'live') return contentOut(await loadContent(await live.createLiveLesson(teacherId, mod, b)));
   const c = await parseContent(teacherId, b);
   return withTransaction(async (tx) => {
     const next = await one('SELECT ISNULL(MAX(sort_order), 0) + 1 AS n FROM dbo.contents WITH (UPDLOCK, HOLDLOCK) WHERE module_id = @m', { m: T.int(mod.id) }, tx);
@@ -143,16 +168,36 @@ async function createContent(teacherId, mod, b) {
 }
 
 async function updateContent(teacherId, id, b) {
+  const existing = await loadContent(id);
+  if ((existing.type === 'live') !== (!!b && b.type === 'live')) {
+    throw badRequest('A live lesson stays live. Delete it and add a new lesson to change its type.', 'LIVE_TYPE_FIXED');
+  }
+  if (existing.type === 'live') {
+    await live.updateLiveLesson(teacherId, existing, b);
+    return contentOut(await loadContent(id));
+  }
   const c = await parseContent(teacherId, b);
-  const row = await one(
+  await query(
     `UPDATE dbo.contents SET title = @title, type = @type, video_source = @vs, file_key = @key, url = @url, is_free_preview = @free
-     OUTPUT INSERTED.* WHERE content_id = @id`,
+     WHERE content_id = @id`,
     { ...contentParams(c), id: T.int(id) },
   );
-  return contentOut(row);
+  return contentOut(await loadContent(id));
+}
+
+async function setRecording(teacherId, id, b) {
+  await live.setRecording(teacherId, await loadContent(id), b);
+  return contentOut(await loadContent(id));
+}
+
+async function clearRecording(id) {
+  await live.clearRecording(await loadContent(id));
+  return contentOut(await loadContent(id));
 }
 
 async function deleteContent(id) {
+  const existing = await loadContent(id);
+  if (existing && existing.type === 'live') return live.deleteLiveLesson(existing);
   const progress = await one("SELECT OBJECT_ID('dbo.content_progress') AS t");
   if (progress.t) await query('DELETE FROM dbo.content_progress WHERE content_id = @id', { id: T.int(id) });
   await query('DELETE FROM dbo.contents WHERE content_id = @id', { id: T.int(id) });
@@ -164,7 +209,7 @@ async function curriculum(courseId) {
   const p = { c: T.int(courseId) };
   const subjects = await query('SELECT * FROM dbo.subjects WHERE course_id = @c ORDER BY sort_order', p);
   const modules = await query('SELECT * FROM dbo.modules WHERE course_id = @c ORDER BY sort_order', p);
-  const contents = await query('SELECT * FROM dbo.contents WHERE course_id = @c ORDER BY sort_order', p);
+  const contents = await query(`${CONTENT_SELECT} WHERE x.course_id = @c ORDER BY x.sort_order`, p);
   return {
     subjects: subjects.map((s) => ({
       ...subjectOut(s),
@@ -177,5 +222,5 @@ async function curriculum(courseId) {
 
 module.exports = {
   createSubject, updateSubject, deleteSubject, createModule, updateModule, deleteModule,
-  createContent, updateContent, deleteContent, curriculum, reorder,
+  createContent, updateContent, deleteContent, setRecording, clearRecording, curriculum, reorder,
 };

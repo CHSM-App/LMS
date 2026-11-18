@@ -63,26 +63,37 @@ async function parse(teacherId, b) {
   return { courseId: course.id, batchId, topic, startsAt, durationMin, meetLink, status: b.status || 'scheduled' };
 }
 
+// Insert a parsed live class (from parse) and return its id. Used by standalone classes and live lessons.
+async function insertLiveClass(f, tx) {
+  const row = await one(
+    `INSERT INTO dbo.live_classes (course_id, batch_id, topic, starts_at, duration_min, meet_link)
+     OUTPUT INSERTED.live_class_id VALUES (@c, @b, @t, @s, @d, @l)`,
+    { c: T.int(f.courseId), b: T.int(f.batchId), t: T.nvarchar(f.topic, 200), s: T.datetime(f.startsAt), d: T.int(f.durationMin), l: T.varchar(f.meetLink, 300) },
+    tx,
+  );
+  return row.live_class_id;
+}
+
+// "New class" notification to the students the class is for (WhatsApp to opted-in students).
+async function notifyNewClass(f, link, tx) {
+  const { date, time } = istParts(f.startsAt);
+  const students = await targetStudents(f.courseId, f.batchId, tx);
+  const course = await one('SELECT title FROM dbo.courses WHERE course_id = @c', { c: T.int(f.courseId) }, tx);
+  await notifyMany(students.map((s) => s.user_id), {
+    key: 'liveClass.new',
+    vars: { topic: f.topic, date, time },
+    link,
+    whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: f.topic, course: course.title, date, time, link: f.meetLink } },
+  }, tx);
+}
+
 async function create(teacherId, body) {
   const f = await parse(teacherId, body);
   if (f.startsAt <= clock.now()) throw badRequest('Choose a time in the future');
   const id = await withTransaction(async (tx) => {
-    const row = await one(
-      `INSERT INTO dbo.live_classes (course_id, batch_id, topic, starts_at, duration_min, meet_link)
-       OUTPUT INSERTED.live_class_id VALUES (@c, @b, @t, @s, @d, @l)`,
-      { c: T.int(f.courseId), b: T.int(f.batchId), t: T.nvarchar(f.topic, 200), s: T.datetime(f.startsAt), d: T.int(f.durationMin), l: T.varchar(f.meetLink, 300) },
-      tx,
-    );
-    const { date, time } = istParts(f.startsAt);
-    const students = await targetStudents(f.courseId, f.batchId, tx);
-    const course = await one('SELECT title FROM dbo.courses WHERE course_id = @c', { c: T.int(f.courseId) }, tx);
-    await notifyMany(students.map((s) => s.user_id), {
-      key: 'liveClass.new',
-      vars: { topic: f.topic, date, time },
-      link: '/student/live-classes',
-      whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: f.topic, course: course.title, date, time, link: f.meetLink } },
-    }, tx);
-    return row.live_class_id;
+    const lcId = await insertLiveClass(f, tx);
+    await notifyNewClass(f, '/student/live-classes', tx);
+    return lcId;
   });
   return out(await get(id));
 }
@@ -93,7 +104,8 @@ async function update(id, teacherId, body) {
   if (!['scheduled', 'live', 'completed', 'cancelled'].includes(f.status)) throw badRequest('status: scheduled, live, completed or cancelled');
   await query(
     `UPDATE dbo.live_classes SET course_id = @c, batch_id = @b, topic = @t, starts_at = @s, duration_min = @d, meet_link = @l, status = @st,
-       reminder_sent_at = CASE WHEN starts_at <> @s THEN NULL ELSE reminder_sent_at END WHERE live_class_id = @id`,
+       reminder_sent_at = CASE WHEN starts_at <> @s THEN NULL ELSE reminder_sent_at END,
+       reminder2_sent_at = CASE WHEN starts_at <> @s THEN NULL ELSE reminder2_sent_at END WHERE live_class_id = @id`,
     { c: T.int(f.courseId), b: T.int(f.batchId), t: T.nvarchar(f.topic, 200), s: T.datetime(f.startsAt), d: T.int(f.durationMin), l: T.varchar(f.meetLink, 300), st: T.varchar(f.status, 10), id: T.int(Number(id)) },
   );
   return out(await get(id));
@@ -148,29 +160,48 @@ async function saveAttendance(id, teacherId, records) {
   return attendanceSheet(id, teacherId);
 }
 
-// Job: 30 minutes before a class, notify its students once (WhatsApp too if they opted in).
+// Job. Standalone classes: one reminder 30 minutes before (reminder_sent_at).
+// Live lessons (linked to a content row): 60 minutes before (reminder_sent_at) and 15 minutes before
+// (reminder2_sent_at). A lesson already inside 15 minutes gets only the second one.
+// Each reminder is claimed with a conditional UPDATE so it is sent once even if two jobs overlap.
+const lessonLink = (courseId, contentId) => `/student/courses/${courseId}?lesson=${contentId}`;
+
 async function runLiveClassReminders() {
   const now = clock.now();
+  const at = (min) => T.datetime(new Date(now.getTime() + min * 60000));
   const due = await query(
-    `${SELECT} WHERE l.status = 'scheduled' AND l.reminder_sent_at IS NULL AND l.starts_at > @now AND l.starts_at <= @soon`,
-    { now: T.datetime(now), soon: T.datetime(new Date(now.getTime() + 30 * 60000)) },
+    `SELECT l.*, c.title AS course_title, x.content_id FROM dbo.live_classes l
+     JOIN dbo.courses c ON c.course_id = l.course_id
+     LEFT JOIN dbo.contents x ON x.live_class_id = l.live_class_id
+     WHERE l.status = 'scheduled' AND l.starts_at > @now AND (
+       (x.content_id IS NULL AND l.reminder_sent_at IS NULL AND l.starts_at <= @in30) OR
+       (x.content_id IS NOT NULL AND l.reminder2_sent_at IS NULL AND l.starts_at <= @in15) OR
+       (x.content_id IS NOT NULL AND l.reminder_sent_at IS NULL AND l.starts_at <= @in60))`,
+    { now: T.datetime(now), in15: at(15), in30: at(30), in60: at(60) },
   );
+  let sent = 0;
   for (const lc of due) {
-    const claimed = await query(
-      'UPDATE dbo.live_classes SET reminder_sent_at = @now OUTPUT INSERTED.live_class_id WHERE live_class_id = @id AND reminder_sent_at IS NULL',
-      { now: T.datetime(now), id: T.int(lc.live_class_id) },
-    );
+    const second = lc.content_id && new Date(lc.starts_at).getTime() <= now.getTime() + 15 * 60000;
+    const claimSql = second
+      ? `UPDATE dbo.live_classes SET reminder2_sent_at = @now, reminder_sent_at = ISNULL(reminder_sent_at, @now)
+         OUTPUT INSERTED.live_class_id WHERE live_class_id = @id AND reminder2_sent_at IS NULL`
+      : 'UPDATE dbo.live_classes SET reminder_sent_at = @now OUTPUT INSERTED.live_class_id WHERE live_class_id = @id AND reminder_sent_at IS NULL';
+    const claimed = await query(claimSql, { now: T.datetime(now), id: T.int(lc.live_class_id) });
     if (!claimed.length) continue;
+    sent += 1;
     const { date, time } = istParts(lc.starts_at);
     const students = await targetStudents(lc.course_id, lc.batch_id);
     await notifyMany(students.map((s) => s.user_id), {
       key: 'liveClass.reminder',
       vars: { topic: lc.topic, time },
-      link: '/student/live-classes',
+      link: lc.content_id ? lessonLink(lc.course_id, lc.content_id) : '/student/live-classes',
       whatsapp: { key: 'wa.liveClass', template: 'live_class', vars: { topic: lc.topic, course: lc.course_title, date, time, link: lc.meet_link } },
     });
   }
-  return due.length;
+  return sent;
 }
 
-module.exports = { create, update, cancel, list, get, out, attendanceSheet, saveAttendance, runLiveClassReminders, targetStudents };
+module.exports = {
+  create, update, cancel, list, get, out, attendanceSheet, saveAttendance, runLiveClassReminders, targetStudents,
+  parse, insertLiveClass, notifyNewClass, lessonLink,
+};

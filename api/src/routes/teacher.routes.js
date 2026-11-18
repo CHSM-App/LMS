@@ -45,6 +45,8 @@ router.put('/teacher/subjects/:subjectId/modules/order', owns('subject', 'subjec
 router.post('/teacher/modules/:moduleId/contents', owns('module', 'moduleId'), h((req) => cur.createContent(req.user.id, req.owned.module, req.body), 201));
 router.put('/teacher/contents/:contentId', owns('content', 'contentId'), h((req) => cur.updateContent(req.user.id, req.owned.content.id, req.body)));
 router.delete('/teacher/contents/:contentId', owns('content', 'contentId'), h((req) => cur.deleteContent(req.owned.content.id)));
+router.put('/teacher/contents/:contentId/recording', owns('content', 'contentId'), h((req) => cur.setRecording(req.user.id, req.owned.content.id, req.body)));
+router.delete('/teacher/contents/:contentId/recording', owns('content', 'contentId'), h((req) => cur.clearRecording(req.owned.content.id)));
 router.put('/teacher/modules/:moduleId/contents/order', owns('module', 'moduleId'), h((req) =>
   cur.reorder({ table: 'contents', idCol: 'content_id', parentCol: 'module_id', parentId: req.owned.module.id, ids: req.body.contentIds })));
 
