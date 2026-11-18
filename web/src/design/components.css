@@ -33,7 +33,7 @@
 .btn--ghost:hover:not(:disabled) { background: var(--color-hover-bg); }
 .btn--link { background: none; border: 0; padding: 0; min-height: auto; color: var(--color-link); text-decoration: underline; text-decoration-color: var(--color-link-underline); text-decoration-thickness: 2px; font-size: var(--text-base); }
 .btn--compact:disabled, .btn--secondary:disabled, .btn--ghost:disabled, .btn--danger:disabled { opacity: 1; background: var(--color-disabled-bg); color: var(--color-text-disabled); border-color: transparent; }
-.btn--sm { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-sm); }
+.btn--sm { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-sm); white-space: nowrap; }
 .btn--primary.btn--sm { font-size: var(--size-button-label-min); min-height: var(--size-tap-target); }
 .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: var(--size-tap-target); height: var(--size-tap-target); border: 0; background: transparent; border-radius: var(--radius-md); cursor: pointer; color: inherit; font-size: var(--text-md); }
 .icon-btn:hover { background: var(--color-hover-bg); }
