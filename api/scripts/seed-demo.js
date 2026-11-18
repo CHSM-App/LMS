@@ -15,6 +15,7 @@ const { clock } = require('../src/utils/clock');
 
 const DEMO = {
   teacher: { mobile: '+919999900002', name: 'Priya Deshmukh', slug: 'priya-deshmukh' },
+  liveNowTitle: 'Demo live class: try the Join button',
   // skill = how many of every 10 answers the student gets right.
   students: [
     { mobile: '+919999900003', name: 'Rohan Kulkarni', batch: 'Morning Batch', skill: 9, final: true },
@@ -341,13 +342,18 @@ async function ensureLiveClasses(teacher, courseId, batches, students, today) {
   if (!row) await teacher.post('/api/v1/teacher/live-classes', { courseId, batchId: batches['Morning Batch'], topic: next, startsAt: at(addDays(today, 1), 1).toISOString(), durationMin: 60, meetLink: MEET });
 }
 
-// Live lessons inside modules: one held three days ago (with a YouTube recording) and one tomorrow 18:00 IST.
-async function ensureLiveLessons(teacher, mods, today) {
-  const has = async (moduleId, title) => one("SELECT 1 AS y FROM dbo.contents WHERE module_id = @m AND title = @t AND type = 'live'", {
-    m: T.int(moduleId), t: T.nvarchar(title, 200),
-  });
+// Live lessons inside modules, one per stage:
+//  - held three days ago: attendance taken, YouTube recording added (stage "recorded")
+//  - the demo class: live right now for 2 hours, so the Join button can be tried (re-seeding re-opens it)
+//  - tomorrow 18:00 IST (stage "upcoming")
+async function ensureLiveLessons(teacher, mods, today, students) {
+  const find = async (moduleId, title) => one(
+    "SELECT x.content_id, x.live_class_id, l.starts_at, l.duration_min FROM dbo.contents x JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id WHERE x.module_id = @m AND x.title = @t AND x.type = 'live'",
+    { m: T.int(moduleId), t: T.nvarchar(title, 200) },
+  );
   const held = 'Live: linear equations recap';
-  if (!(await has(mods.linear, held))) {
+  let h = await find(mods.linear, held);
+  if (!h) {
     // The API only accepts future times, so the lesson is created ahead and then moved into the past with SQL.
     const x = await teacher.post(`/api/v1/teacher/modules/${mods.linear}/contents`, {
       title: held, type: 'live', startsAt: addDays(today, 1).toISOString(), durationMin: 60, meetLink: MEET,
@@ -356,9 +362,28 @@ async function ensureLiveLessons(teacher, mods, today) {
       s: T.datetime(at(addDays(today, -3), 12)), id: T.int(x.live.liveClassId),
     });
     await teacher.put(`/api/v1/teacher/contents/${x.id}/recording`, { videoSource: 'youtube', url: 'https://youtu.be/abcdefgh129' });
+    h = { live_class_id: x.live.liveClassId };
+  }
+  const marked = await one('SELECT TOP 1 1 AS y FROM dbo.attendance WHERE live_class_id = @l', { l: T.int(h.live_class_id) });
+  if (!marked) {
+    await teacher.put(`/api/v1/teacher/live-classes/${h.live_class_id}/attendance`, {
+      records: students.map(({ user, s }) => ({ studentPublicId: user.public_id, present: !s.absent })),
+    });
+  }
+
+  const demo = await find(mods.similarity, DEMO.liveNowTitle);
+  if (!demo) {
+    await teacher.post(`/api/v1/teacher/modules/${mods.similarity}/contents`, {
+      title: DEMO.liveNowTitle, type: 'live', startsAt: new Date(today.getTime() + 60000).toISOString(), durationMin: 120, meetLink: MEET,
+    });
+  } else if (new Date(demo.starts_at).getTime() + demo.duration_min * 60000 < today.getTime() + 60 * 60000) {
+    // Less than an hour left (or already over): start it again now.
+    await query("UPDATE dbo.live_classes SET starts_at = @s, status = 'scheduled', reminder_sent_at = NULL, reminder2_sent_at = NULL WHERE live_class_id = @id", {
+      s: T.datetime(today), id: T.int(demo.live_class_id),
+    });
   }
   const next = 'Live: solving quadratics together';
-  if (!(await has(mods.quadratic, next))) {
+  if (!(await find(mods.quadratic, next))) {
     await teacher.post(`/api/v1/teacher/modules/${mods.quadratic}/contents`, {
       title: next, type: 'live', startsAt: at(addDays(today, 1), 12).toISOString(), durationMin: 60, meetLink: MEET,
     });
@@ -429,7 +454,7 @@ async function seedDemo({ admin, log = console.log }) {
   await ensureStudent(app, anon, DEMO.pendingStudent, course);
 
   await ensureLiveClasses(teacher, course.id, batches, students, today);
-  await ensureLiveLessons(teacher, mods, today);
+  await ensureLiveLessons(teacher, mods, today, students);
   await ensureDoubts(app, teacher, course.id, students);
   await ensureDemoRequests(anon, teacher, course, today);
   await ensureProgram(teacher, user, course.id, batches, today);

@@ -48,13 +48,21 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(await count(`SELECT COUNT(*) n FROM dbo.live_classes l WHERE course_id = @c AND status = 'completed' AND ${standalone}`, c)).toBe(1);
   expect(await count(`SELECT COUNT(*) n FROM dbo.live_classes l WHERE course_id = @c AND status = 'scheduled' AND ${standalone}`, c)).toBe(1);
 
-  // Live lessons inside modules: one upcoming, one held with a YouTube recording.
-  expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live'", c)).toBe(2);
+  // Live lessons inside modules: one held (recording + attendance), one live right now, one tomorrow.
+  expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live'", c)).toBe(3);
   expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live' AND video_source = 'youtube'", c)).toBe(1);
+  const liveNow = await one(
+    `SELECT x.content_id, l.starts_at, l.duration_min FROM dbo.contents x JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
+     WHERE x.course_id = @c AND x.title = @t`,
+    { ...c, t: T.nvarchar(DEMO.liveNowTitle, 200) },
+  );
+  const now = Date.now();
+  expect(new Date(liveNow.starts_at).getTime() - 10 * 60000).toBeLessThanOrEqual(now); // Join window already open
+  expect(new Date(liveNow.starts_at).getTime() + liveNow.duration_min * 60000).toBeGreaterThan(now + 60 * 60000); // open for 1h+
   expect(await count(
-    "SELECT COUNT(*) n FROM dbo.contents x JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id WHERE x.course_id = @c AND l.starts_at > SYSUTCDATETIME()", c,
-  )).toBe(1);
-  expect(await count('SELECT COUNT(*) n FROM dbo.attendance')).toBe(4);
+    "SELECT COUNT(*) n FROM dbo.attendance a JOIN dbo.contents x ON x.live_class_id = a.live_class_id WHERE x.course_id = @c AND x.video_source = 'youtube'", c,
+  )).toBe(4);
+  expect(await count('SELECT COUNT(*) n FROM dbo.attendance')).toBe(8);
   expect(await count("SELECT COUNT(*) n FROM dbo.doubts WHERE course_id = @c AND reply IS NOT NULL", c)).toBe(1);
   expect(await count("SELECT COUNT(*) n FROM dbo.doubts WHERE course_id = @c AND reply IS NULL", c)).toBe(1);
   expect(await count('SELECT COUNT(*) n FROM dbo.demo_requests WHERE course_id = @c', c)).toBe(2);
@@ -66,6 +74,11 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
     (SELECT COUNT(*) FROM dbo.exams) e, (SELECT COUNT(*) FROM dbo.exam_attempts) a, (SELECT COUNT(*) FROM dbo.live_classes) l,
     (SELECT COUNT(*) FROM dbo.doubts) d, (SELECT COUNT(*) FROM dbo.demo_requests) dr, (SELECT COUNT(*) FROM dbo.class_programs) cp`);
   const before = await snapshot();
+  // Re-seeding later (after the demo class ended) re-opens it so Join works again.
+  await one("UPDATE dbo.live_classes SET starts_at = DATEADD(DAY, -1, starts_at) OUTPUT INSERTED.live_class_id FROM dbo.live_classes l JOIN dbo.contents x ON x.live_class_id = l.live_class_id WHERE x.content_id = @id", { id: T.int(liveNow.content_id) });
   await seedDemo({ admin, log: () => {} });
   expect(await snapshot()).toEqual(before);
+  const reopened = await one('SELECT l.starts_at FROM dbo.live_classes l JOIN dbo.contents x ON x.live_class_id = l.live_class_id WHERE x.content_id = @id', { id: T.int(liveNow.content_id) });
+  expect(new Date(reopened.starts_at).getTime() - 10 * 60000).toBeLessThanOrEqual(Date.now());
+  expect(new Date(reopened.starts_at).getTime()).toBeGreaterThan(Date.now() - 60 * 60000);
 });
