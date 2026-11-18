@@ -6,34 +6,58 @@ afterAll(closeAll);
 
 const count = async (sql, params) => (await one(sql, params)).n;
 
-test('seedDemo builds a full demo teacher through the real API, and a re-run adds nothing', async () => {
+test('seedDemo builds a complete demo teacher through the real API, and a re-run adds nothing', async () => {
   const admin = await createUser({ role: 'admin', name: 'Super Admin' });
 
   const out = await seedDemo({ admin, log: () => {} });
-  expect(out).toMatchObject({ created: true, teacher: { mobile: DEMO.teacher.mobile }, student: { mobile: DEMO.student.mobile } });
+  expect(out).toMatchObject({ teacher: { mobile: DEMO.teacher.mobile } });
 
+  // Teacher: approved request, active subscription, full public profile.
   const t = await one("SELECT * FROM dbo.users WHERE mobile = @m AND role = 'teacher' AND status = 'approved'", { m: T.varchar(DEMO.teacher.mobile, 20) });
   expect(t).toBeTruthy();
-  expect(await one("SELECT status FROM dbo.teacher_requests WHERE mobile = @m", { m: T.varchar(DEMO.teacher.mobile, 20) })).toEqual({ status: 'approved' });
+  expect(t.photo_key).toBeTruthy();
+  expect(await one('SELECT status FROM dbo.teacher_requests WHERE mobile = @m', { m: T.varchar(DEMO.teacher.mobile, 20) })).toEqual({ status: 'approved' });
   expect(await count('SELECT COUNT(*) n FROM dbo.teacher_subscriptions WHERE teacher_id = @t AND end_date >= CAST(SYSUTCDATETIME() AS DATE)', { t: T.int(t.user_id) })).toBe(1);
+  const p = await one('SELECT * FROM dbo.teacher_profiles WHERE user_id = @t', { t: T.int(t.user_id) });
+  expect(p).toMatchObject({ public_slug: DEMO.teacher.slug });
+  expect(p.bio).toBeTruthy();
+  expect(p.social_links_json).toBeTruthy();
 
+  // Course: published, 2 subjects, 4 modules, lessons in every module, 2 batches.
   const course = await one("SELECT * FROM dbo.courses WHERE teacher_id = @t AND status = 'published'", { t: T.int(t.user_id) });
-  expect(course).toBeTruthy();
-  expect(await count('SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c', { c: T.int(course.course_id) })).toBeGreaterThanOrEqual(3);
-  expect(await count('SELECT COUNT(*) n FROM dbo.batches WHERE course_id = @c', { c: T.int(course.course_id) })).toBe(1);
+  const c = { c: T.int(course.course_id) };
+  expect(await count('SELECT COUNT(*) n FROM dbo.subjects WHERE course_id = @c', c)).toBe(2);
+  expect(await count('SELECT COUNT(*) n FROM dbo.modules WHERE course_id = @c', c)).toBe(4);
+  expect(await count('SELECT COUNT(*) n FROM dbo.modules m WHERE m.course_id = @c AND NOT EXISTS (SELECT 1 FROM dbo.contents x WHERE x.module_id = m.module_id)', c)).toBe(0);
+  expect(await count('SELECT COUNT(*) n FROM dbo.batches WHERE course_id = @c', c)).toBe(2);
 
-  const s = await one("SELECT * FROM dbo.users WHERE mobile = @m AND role = 'student'", { m: T.varchar(DEMO.student.mobile, 20) });
-  const e = await one("SELECT * FROM dbo.enrollments WHERE student_id = @s AND course_id = @c AND status = 'approved' AND batch_id IS NOT NULL", {
-    s: T.int(s.user_id), c: T.int(course.course_id),
-  });
-  expect(e).toBeTruthy();
-  expect(await count('SELECT COUNT(*) n FROM dbo.student_subscriptions WHERE enrollment_id = @e AND access_enabled = 1', { e: T.int(e.enrollment_id) })).toBe(1);
+  // Question bank with every type, and all four exam categories published.
+  expect(await count('SELECT COUNT(DISTINCT type) n FROM dbo.questions WHERE course_id = @c', c)).toBe(4);
+  const cats = await one("SELECT STRING_AGG(category, ',') WITHIN GROUP (ORDER BY category) AS v FROM dbo.exams WHERE course_id = @c AND status = 'published'", c);
+  expect(cats.v).toBe('final,practice,unit_test_1,unit_test_2');
 
-  expect(await count("SELECT COUNT(*) n FROM dbo.exams WHERE course_id = @c AND status = 'published'", { c: T.int(course.course_id) })).toBe(1);
-  expect(await count('SELECT COUNT(*) n FROM dbo.questions WHERE course_id = @c', { c: T.int(course.course_id) })).toBeGreaterThanOrEqual(5);
+  // Students: 4 enrolled (results + progress), 1 waiting for approval.
+  expect(await count("SELECT COUNT(*) n FROM dbo.enrollments WHERE course_id = @c AND status = 'approved'", c)).toBe(4);
+  expect(await count("SELECT COUNT(*) n FROM dbo.enrollments WHERE course_id = @c AND status = 'pending'", c)).toBe(1);
+  expect(await count('SELECT COUNT(DISTINCT a.student_id) n FROM dbo.exam_attempts a JOIN dbo.exams e ON e.exam_id = a.exam_id WHERE e.course_id = @c AND a.submitted_at IS NOT NULL', c)).toBe(4);
+  expect(await count("SELECT COUNT(*) n FROM dbo.exam_attempts a JOIN dbo.exams e ON e.exam_id = a.exam_id WHERE e.course_id = @c AND e.category = 'final' AND a.submitted_at IS NOT NULL", c)).toBeGreaterThanOrEqual(1);
+  expect(await count('SELECT COUNT(*) n FROM dbo.content_progress')).toBeGreaterThan(0);
 
-  const again = await seedDemo({ admin, log: () => {} });
-  expect(again.created).toBe(false);
-  expect(await count("SELECT COUNT(*) n FROM dbo.users WHERE role IN ('teacher', 'student')")).toBe(2);
-  expect(await count('SELECT COUNT(*) n FROM dbo.courses')).toBe(1);
+  // Operations: a held class with attendance and an upcoming one, doubts, demo requests, a class program.
+  expect(await count("SELECT COUNT(*) n FROM dbo.live_classes WHERE course_id = @c AND status = 'completed'", c)).toBe(1);
+  expect(await count("SELECT COUNT(*) n FROM dbo.live_classes WHERE course_id = @c AND status = 'scheduled'", c)).toBe(1);
+  expect(await count('SELECT COUNT(*) n FROM dbo.attendance')).toBe(4);
+  expect(await count("SELECT COUNT(*) n FROM dbo.doubts WHERE course_id = @c AND reply IS NOT NULL", c)).toBe(1);
+  expect(await count("SELECT COUNT(*) n FROM dbo.doubts WHERE course_id = @c AND reply IS NULL", c)).toBe(1);
+  expect(await count('SELECT COUNT(*) n FROM dbo.demo_requests WHERE course_id = @c', c)).toBe(2);
+  expect(await count('SELECT COUNT(*) n FROM dbo.class_programs WHERE teacher_id = @t', { t: T.int(t.user_id) })).toBe(1);
+
+  // Re-run: nothing new.
+  const snapshot = async () => one(`SELECT
+    (SELECT COUNT(*) FROM dbo.users) u, (SELECT COUNT(*) FROM dbo.contents) ct, (SELECT COUNT(*) FROM dbo.questions) q,
+    (SELECT COUNT(*) FROM dbo.exams) e, (SELECT COUNT(*) FROM dbo.exam_attempts) a, (SELECT COUNT(*) FROM dbo.live_classes) l,
+    (SELECT COUNT(*) FROM dbo.doubts) d, (SELECT COUNT(*) FROM dbo.demo_requests) dr, (SELECT COUNT(*) FROM dbo.class_programs) cp`);
+  const before = await snapshot();
+  await seedDemo({ admin, log: () => {} });
+  expect(await snapshot()).toEqual(before);
 });
