@@ -143,9 +143,10 @@ class _LessonPanelState extends ConsumerState<_LessonPanel> {
               if (x.type == 'link' && x.url != null) AppButton(label: l.sOpenLink, variant: AppButtonVariant.secondary, icon: Icons.open_in_new, onPressed: () => openExternal(x.url!)),
               const SizedBox(height: AppTokens.spaceS3),
               if (_error != null) Padding(padding: const EdgeInsets.only(bottom: AppTokens.spaceS2), child: AppBanner(kind: 'error', message: _error!)),
-              x.completed
-                  ? Align(alignment: Alignment.centerLeft, child: StatusBadge(status: 'completed', label: l.sCompleted))
-                  : AppButton(label: l.sMarkComplete, variant: AppButtonVariant.compact, loading: _busy, onPressed: _complete),
+              if (x.completed)
+                Align(alignment: Alignment.centerLeft, child: StatusBadge(status: 'completed', label: l.sCompleted))
+              else if (x.canComplete)
+                AppButton(label: l.sMarkComplete, variant: AppButtonVariant.compact, loading: _busy, onPressed: _complete),
             ],
           ),
         ),

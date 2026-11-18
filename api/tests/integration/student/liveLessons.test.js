@@ -108,6 +108,46 @@ test('a live lesson without a recording cannot be downloaded', async () => {
   expect(r.status).toBe(409);
 });
 
+test('a live lesson can be marked complete only after it has ended', async () => {
+  const w = await withLive();
+  const tryComplete = () => w.s.post(`/api/v1/student/contents/${w.live.id}/progress`, { completed: true });
+
+  expect((await w.s.get(`/api/v1/student/contents/${w.live.id}`)).body.data.canComplete).toBe(false);
+  const early = await tryComplete();
+  expect(early.status).toBe(409);
+  expect(early.body.code).toBe('LIVE_NOT_FINISHED');
+
+  clock.set(new Date('2026-06-15T12:45:00Z')); // class is live
+  expect((await w.s.get(`/api/v1/student/contents/${w.live.id}`)).body.data.canComplete).toBe(false);
+  expect((await tryComplete()).status).toBe(409);
+
+  clock.set(new Date('2026-06-15T13:31:00Z')); // ended
+  expect((await w.s.get(`/api/v1/student/contents/${w.live.id}`)).body.data.canComplete).toBe(true);
+  expect((await tryComplete()).status).toBe(200);
+  expect((await w.s.get(`/api/v1/student/contents/${w.live.id}`)).body.data.completed).toBe(true);
+});
+
+test('a live lesson the teacher marked completed can be completed before its end time', async () => {
+  const w = await withLive();
+  clock.set(new Date('2026-06-15T12:45:00Z'));
+  await query("UPDATE dbo.live_classes SET status = 'completed' WHERE live_class_id = (SELECT live_class_id FROM dbo.contents WHERE content_id = @c)", { c: T.int(w.live.id) });
+  expect((await w.s.post(`/api/v1/student/contents/${w.live.id}/progress`, { completed: true })).status).toBe(200);
+});
+
+test('offline sync does not complete a live lesson that has not ended', async () => {
+  const w = await withLive();
+  await w.s.post('/api/v1/student/progress/sync', { items: [{ contentId: w.live.id, completedAt: '2026-06-15T09:00:00Z' }] });
+  expect((await w.s.get(`/api/v1/student/contents/${w.live.id}`)).body.data.completed).toBe(false);
+});
+
+test('other lessons can always be completed', async () => {
+  const w = await withLive();
+  const view = await w.s.get(`/api/v1/student/courses/${w.courseId}`);
+  const other = view.body.data.subjects.flatMap((s) => s.modules).flatMap((m) => m.contents).find((x) => x.type !== 'live');
+  expect((await w.s.get(`/api/v1/student/contents/${other.id}`)).body.data.canComplete).toBe(true);
+  expect((await w.s.post(`/api/v1/student/contents/${other.id}/progress`, { completed: true })).status).toBe(200);
+});
+
 test('student live classes list links live lessons to their content', async () => {
   const w = await withLive();
   const list = await w.s.get('/api/v1/student/live-classes');

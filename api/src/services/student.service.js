@@ -194,6 +194,9 @@ function liveSummary(x) {
   return { startsAt: x.live_starts_at, durationMin: x.live_duration_min, stage };
 }
 
+// A live lesson can be completed only once it has ended or has a recording; other lessons always.
+const canComplete = (x) => x.type !== 'live' || ['ended', 'recorded'].includes(liveSummary(x).stage);
+
 async function contentView(studentId, contentId) {
   const { content: x, progress } = await contentWithAccess(studentId, contentId);
   const out = {
@@ -206,6 +209,7 @@ async function contentView(studentId, contentId) {
     lastPositionSec: progress ? progress.last_position_sec : 0,
     completed: !!(progress && progress.completed_at),
     downloadable: isDownloadable(x),
+    canComplete: canComplete(x),
   };
   if (x.type === 'live') {
     out.live = liveSummary(x);
@@ -240,6 +244,7 @@ async function saveProgress(studentId, contentId, body) {
   if (!c) throw new APIError(404, 'Lesson not found');
   const { enrollment } = await requireWritable(studentId, c.course_id);
   if (!isVisible(c, enrollment)) throw new APIError(404, 'Lesson not found');
+  if (body.completed === true && !canComplete(c)) throw conflict('You can mark this class complete after it ends', 'LIVE_NOT_FINISHED');
   await upsertProgress(studentId, c.content_id, { positionSec: body.positionSec, completed: body.completed === true });
   return { saved: true };
 }
@@ -257,7 +262,7 @@ async function syncProgress(studentId, items) {
     } catch {
       continue;
     }
-    await upsertProgress(studentId, c.content_id, { positionSec: it.positionSec, completedAt: it.completedAt });
+    await upsertProgress(studentId, c.content_id, { positionSec: it.positionSec, completedAt: canComplete(c) ? it.completedAt : null });
     applied += 1;
   }
   return { applied };

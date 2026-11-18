@@ -80,6 +80,26 @@ test('player: Mark complete updates the progress bar', async () => {
   await waitFor(() => expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50'));
 });
 
+test.each([
+  ['upcoming', false, false],
+  ['live', false, false],
+  ['ended', true, true],
+])('player: a %s live lesson shows Mark as complete = %s', async (stage, canComplete, shown) => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/student/courses/3') {
+      return { data: { courseId: 3, title: 'Maths', readOnly: false, progressPct: 0, subjects: [{ id: 1, name: 'Algebra', modules: [{ id: 1, name: 'M1', contents: [
+        { id: 7, title: 'Live doubt session', type: 'live', completed: false, locked: false, live: { stage, startsAt: '2026-06-15T12:30:00Z', durationMin: 60 } },
+      ] }] }] } };
+    }
+    return { data: { id: 7, title: 'Live doubt session', type: 'live', url: null, lastPositionSec: 0, completed: false, canComplete,
+      live: { stage, startsAt: '2026-06-15T12:30:00Z', durationMin: 60, meetLink: stage === 'ended' ? undefined : 'https://meet.google.com/abc-defg-hij' } } };
+  });
+  wrap(<CoursePlayerPage />, { path: '/student/courses/3', route: '/student/courses/:courseId' });
+  expect(await screen.findByRole('heading', { name: 'Live doubt session' })).toBeInTheDocument();
+  if (shown) expect(await screen.findByRole('button', { name: 'Mark as complete' })).toBeInTheDocument();
+  else expect(screen.queryByRole('button', { name: 'Mark as complete' })).not.toBeInTheDocument();
+});
+
 test('exams: a locked Final explains how to unlock it', async () => {
   vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
     if (path === '/student/dashboard') return { data: { myCourses: [{ courseId: 3, title: 'Maths', readOnly: false }], upcomingLiveClasses: [], requests: [] } };

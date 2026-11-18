@@ -240,7 +240,7 @@ class CourseView {
 
 @immutable
 class LessonDetail {
-  const LessonDetail({required this.id, required this.courseId, required this.title, required this.type, this.videoSource, this.url, this.lastPositionSec = 0, this.completed = false, this.downloadable = false, this.live});
+  const LessonDetail({required this.id, required this.courseId, required this.title, required this.type, this.videoSource, this.url, this.lastPositionSec = 0, this.completed = false, this.downloadable = false, this.canComplete = true, this.live});
   final int id;
   final int courseId;
   final String title;
@@ -250,6 +250,9 @@ class LessonDetail {
   final int lastPositionSec;
   final bool completed;
   final bool downloadable;
+
+  /// False for a live lesson until it has ended or has a recording.
+  final bool canComplete;
   final LessonLive? live;
 
   factory LessonDetail.fromJson(Json j) => LessonDetail(
@@ -262,6 +265,7 @@ class LessonDetail {
         lastPositionSec: _int(j['lastPositionSec']),
         completed: j['completed'] == true,
         downloadable: j['downloadable'] == true,
+        canComplete: j['canComplete'] != false,
         live: LessonLive.fromJson(j['live']),
       );
 }

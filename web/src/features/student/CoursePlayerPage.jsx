@@ -39,7 +39,7 @@ function Lesson({ contentId, onCompleted }) {
       )}
       {c.type === 'link' && <p><a href={c.url} target="_blank" rel="noreferrer noopener">{t('player.openLink')}</a></p>}
       <div className="row" style={{ marginTop: 'var(--space-4)' }}>
-        {c.completed ? <span className="badge badge--approved">✓ {t('player.completed')}</span> : (
+        {c.completed ? <span className="badge badge--approved">✓ {t('player.completed')}</span> : c.canComplete !== false && (
           <Button variant="compact" loading={complete.isPending} onClick={() => complete.mutate()}>{t('player.markComplete')}</Button>
         )}
       </div>

@@ -39,6 +39,11 @@ void main() {
       final e = LessonDetail.fromJson({'id': 5, 'courseId': 3, 'title': 'Live', 'type': 'live', 'live': {..._live, 'stage': 'ended'}});
       expect(e.live!.meetLink, isNull);
     });
+
+    test('LessonDetail parses canComplete; missing means true', () {
+      expect(LessonDetail.fromJson({'id': 5, 'courseId': 3, 'title': 'Live', 'type': 'live', 'canComplete': false, 'live': _live}).canComplete, isFalse);
+      expect(LessonDetail.fromJson({'id': 6, 'courseId': 3, 'title': 'Notes', 'type': 'pdf'}).canComplete, isTrue);
+    });
   });
 
   group('lesson row stage chip', () {
@@ -76,8 +81,8 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    LessonDetail detail(String stage, {String? meetLink, String? videoSource, String? url}) => LessonDetail(
-          id: 7, courseId: 3, title: 'Live', type: 'live', videoSource: videoSource, url: url,
+    LessonDetail detail(String stage, {String? meetLink, String? videoSource, String? url, bool canComplete = true}) => LessonDetail(
+          id: 7, courseId: 3, title: 'Live', type: 'live', videoSource: videoSource, url: url, canComplete: canComplete,
           live: LessonLive(startsAt: DateTime.utc(2099, 6, 15, 12, 30), durationMin: 60, stage: stage, meetLink: meetLink),
         );
 
@@ -94,6 +99,18 @@ void main() {
     testWidgets('ended shows Recording coming soon', (tester) async {
       await pumpPlayer(tester, detail('ended'));
       expect(find.text('Recording coming soon'), findsOneWidget);
+    });
+
+    testWidgets('no Mark as complete while upcoming or live', (tester) async {
+      await pumpPlayer(tester, detail('upcoming', canComplete: false));
+      expect(find.text('Mark as complete'), findsNothing);
+      await pumpPlayer(tester, detail('live', meetLink: 'https://meet.google.com/abc-defg-hij', canComplete: false));
+      expect(find.text('Mark as complete'), findsNothing);
+    });
+
+    testWidgets('Mark as complete once the class has ended', (tester) async {
+      await pumpPlayer(tester, detail('ended'));
+      expect(find.text('Mark as complete'), findsOneWidget);
     });
 
     testWidgets('YouTube recording opens online, no Join', (tester) async {

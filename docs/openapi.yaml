@@ -1316,7 +1316,7 @@ paths:
       tags: [student]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Lesson with signed URL and last position }
+        '200': { description: 'Lesson with signed URL, last position and canComplete (false for a live lesson until it has ended or has a recording)' }
   /student/contents/{contentId}/progress:
     parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
     post:
@@ -1328,6 +1328,7 @@ paths:
             schema: { type: object, properties: { positionSec: { type: integer }, completed: { type: boolean } } }
       responses:
         '200': { description: Saved }
+        '409': { description: 'LIVE_NOT_FINISHED: a live lesson can be completed only after it has ended or has a recording' }
   /student/progress/sync:
     post:
       tags: [student]
