@@ -9,7 +9,7 @@ import { ExamRunner } from './ExamTakePage';
 import CoursePlayerPage from './CoursePlayerPage';
 import StudentExamsPage from './StudentExamsPage';
 import EnrollPage from './EnrollPage';
-import { StudentDashboard, StudentLiveClassesPage } from './StudentPages';
+import { StudentDashboard, StudentLiveClassesPage, StudentMyCoursesPage } from './StudentPages';
 
 function wrap(ui, { path = '/', route = '/', user = { role: 'student', name: 'Meera' } } = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -152,4 +152,21 @@ test('live classes page: class time without a link says the teacher will share i
   wrap(<StudentLiveClassesPage />);
   expect(await screen.findByText('The teacher will share the link soon')).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Join' })).not.toBeInTheDocument();
+});
+
+test('My courses lists every enrolled course with progress and an Open link', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: {
+    myCourses: [{ courseId: 3, title: 'Maths', teacher: 'Suresh', batch: 'Morning', progressPct: 40, endDate: '2027-03-31', accessStatus: 'active', readOnly: false }],
+    upcomingLiveClasses: [], requests: [],
+  } });
+  wrap(<StudentMyCoursesPage />);
+  expect(await screen.findByRole('heading', { level: 1, name: 'My courses' })).toBeInTheDocument();
+  expect(screen.getByText('Maths')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /open/i })).toHaveAttribute('href', '/student/courses/3');
+});
+
+test('My courses with no enrollment points to Browse courses', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: { myCourses: [], upcomingLiveClasses: [], requests: [] } });
+  wrap(<StudentMyCoursesPage />);
+  expect(await screen.findByRole('button', { name: 'Browse courses' })).toBeInTheDocument();
 });

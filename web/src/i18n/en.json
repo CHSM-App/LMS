@@ -737,6 +737,9 @@
     "back": "Back to exams",
     "passMark": "Pass mark: {{pct}}%"
   },
+  "studentCourses": {
+    "subtitle": "Every course you're enrolled in, with your progress."
+  },
   "studentDash": {
     "subtitle": "Here's what to study next.",
     "nextUp": "Next up",

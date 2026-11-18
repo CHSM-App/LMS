@@ -24,6 +24,7 @@ export const TEACHER_NAV = [
 
 export const STUDENT_NAV = [
   { to: '/student', label: 'common.dashboard', end: true },
+  { to: '/student/courses', label: 'nav.myCourses' },
   { to: '/student/exams', label: 'nav.exams' },
   { to: '/student/live-classes', label: 'nav.liveClasses' },
   { to: '/student/doubts', label: 'nav.doubts' },

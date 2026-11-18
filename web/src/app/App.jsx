@@ -47,6 +47,7 @@ const FinalResultPage = sp('FinalResultPage');
 const StudentDoubtsPage = sp('StudentDoubtsPage');
 const StudentLiveClassesPage = sp('StudentLiveClassesPage');
 const StudentProgressPage = sp('StudentProgressPage');
+const StudentMyCoursesPage = sp('StudentMyCoursesPage');
 const StudentProfilePage = sp('StudentProfilePage');
 const StyleGuide = lazy(() => import('./StyleGuide'));
 
@@ -114,6 +115,7 @@ export default function App() {
                   <Route path="browse/teachers/:slug" element={<TeacherPublicPage />} />
                   <Route path="browse/:slug" element={<CourseDetailsPage />} />
                   <Route path="enroll/:slug" element={<EnrollPage />} />
+                  <Route path="courses" element={<StudentMyCoursesPage />} />
                   <Route path="courses/:courseId" element={<CoursePlayerPage />} />
                   <Route path="courses/:courseId/final-result" element={<FinalResultPage />} />
                   <Route path="exams" element={<StudentExamsPage />} />

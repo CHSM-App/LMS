@@ -16,10 +16,47 @@ function JoinOrWait({ c, className }) {
   return <span className="muted">{t(c.waitingForLink ? 'liveClasses.waitingForLink' : 'liveClasses.joinSoon')}</span>;
 }
 
+// Enrolled courses as cards; shared by the dashboard and the My courses page.
+function MyCourseCards({ courses }) {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  if (courses.length === 0) {
+    return <EmptyState title={t('studentDash.noCourses')} action={{ label: t('nav.browse'), onClick: () => navigate('/student/browse') }} />;
+  }
+  return (
+    <div className="grid grid--2">
+      {courses.map((c) => (
+        <Card key={c.courseId} title={c.title}>
+          <p className="muted">{c.teacher}{c.batch ? ` · ${c.batch}` : ''}</p>
+          <ProgressBar value={c.progressPct} label={c.title} />
+          <p className="row row--between">
+            <span>{t('studentDash.until', { date: formatDate(c.endDate, i18n.language) })}</span>
+            <StatusBadge status={c.readOnly ? 'paused' : c.accessStatus} />
+          </p>
+          {c.readOnly && <p className="field__hint">{t('player.readOnly')}</p>}
+          <Link to={`/student/courses/${c.courseId}`}>{t('studentDash.open')}</Link>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function StudentMyCoursesPage() {
+  const { t } = useTranslation();
+  const q = useQuery({ queryKey: ['student', 'dashboard'], queryFn: () => api.get('/student/dashboard') });
+  if (q.isLoading) return <Spinner label={t('common.loading')} />;
+  if (q.error) return <EmptyState title={q.error.message} action={{ label: t('common.retry'), onClick: q.refetch }} />;
+  return (
+    <div className="stack">
+      <PageHeader title={t('nav.myCourses')} subtitle={t('studentCourses.subtitle')} />
+      <MyCourseCards courses={q.data.data.myCourses} />
+    </div>
+  );
+}
+
 export function StudentDashboard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const q = useQuery({ queryKey: ['student', 'dashboard'], queryFn: () => api.get('/student/dashboard') });
   if (q.isLoading) return <Spinner label={t('common.loading')} />;
   if (q.error) return <EmptyState title={q.error.message} action={{ label: t('common.retry'), onClick: q.refetch }} />;
@@ -37,24 +74,7 @@ export function StudentDashboard() {
         </Card>
       )}
       <h2>{t('nav.myCourses')}</h2>
-      {d.myCourses.length === 0 ? (
-        <EmptyState title={t('studentDash.noCourses')} action={{ label: t('nav.browse'), onClick: () => navigate('/student/browse') }} />
-      ) : (
-        <div className="grid grid--2">
-          {d.myCourses.map((c) => (
-            <Card key={c.courseId} title={c.title}>
-              <p className="muted">{c.teacher}{c.batch ? ` · ${c.batch}` : ''}</p>
-              <ProgressBar value={c.progressPct} label={c.title} />
-              <p className="row row--between">
-                <span>{t('studentDash.until', { date: formatDate(c.endDate, i18n.language) })}</span>
-                <StatusBadge status={c.readOnly ? 'paused' : c.accessStatus} />
-              </p>
-              {c.readOnly && <p className="field__hint">{t('player.readOnly')}</p>}
-              <Link to={`/student/courses/${c.courseId}`}>{t('studentDash.open')}</Link>
-            </Card>
-          ))}
-        </div>
-      )}
+      <MyCourseCards courses={d.myCourses} />
       <Card title={t('nav.liveClasses')}>
         {d.upcomingLiveClasses.length === 0 ? <p className="muted">{t('studentDash.noClasses')}</p> : (
           <ul className="stack" style={{ listStyle: 'none', padding: 0, margin: 0, gap: 'var(--space-2)' }}>
