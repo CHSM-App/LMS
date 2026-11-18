@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
@@ -7,11 +7,14 @@ import { Button, Card, EmptyState, Modal, Spinner, VideoFrame } from '../../comp
 import { Markdown } from '../../components/Markdown';
 import { formatDate } from '../../utils/format';
 import { LiveDemoForm } from './LiveDemoForm';
+import { useBrowsePaths } from './browsePaths';
 
 export default function CourseDetailsPage() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
   const [demoOpen, setDemoOpen] = useState(false);
+  const paths = useBrowsePaths();
+  const navigate = useNavigate();
   const q = useQuery({ queryKey: ['public', 'course', slug], queryFn: () => api.get(`/public/courses/${slug}`) });
   const c = q.data?.data;
 
@@ -23,10 +26,10 @@ export default function CourseDetailsPage() {
   }, [c]);
 
   if (q.isLoading) return <Spinner label={t('common.loading')} />;
-  if (q.error) return <EmptyState title={q.error.status === 404 ? t('courseDetails.notFound') : q.error.message} action={{ label: t('courseDetails.browse'), onClick: () => { window.location.href = '/'; } }} />;
+  if (q.error) return <EmptyState title={q.error.status === 404 ? t('courseDetails.notFound') : q.error.message} action={{ label: t('courseDetails.browse'), onClick: () => navigate(paths.list) }} />;
 
   return (
-    <div className="container course-details">
+    <div className={paths.inStudent ? 'course-details' : 'container course-details'}>
       <div className="course-details__main stack">
         <p className="muted">{c.subject} · {t(`courses.lang.${c.language}`)}{c.durationText ? ` · ${c.durationText}` : ''}</p>
         <h1>{c.title}</h1>
@@ -69,7 +72,7 @@ export default function CourseDetailsPage() {
           <p className="muted">{t('courseDetails.noPayment')}</p>
           <div className="stack" style={{ gap: 'var(--space-2)' }}>
             <Button block onClick={() => setDemoOpen(true)}>{t('courseDetails.bookDemo')}</Button>
-            <Link className="btn btn--compact btn--block" to={`/enroll/${c.slug}`}><span className="btn__label">{t('courseDetails.enroll')}</span></Link>
+            <Link className="btn btn--compact btn--block" to={paths.enroll(c.slug)}><span className="btn__label">{t('courseDetails.enroll')}</span></Link>
           </div>
           {c.batches.length > 0 && (
             <>
@@ -87,7 +90,7 @@ export default function CourseDetailsPage() {
             </div>
           </div>
           {c.teacher.bio && <p>{c.teacher.bio.replace(/<[^>]+>/g, '')}</p>}
-          {c.teacher.slug && <Link to={`/teachers/${c.teacher.slug}`}>{t('courseDetails.moreFromTeacher')}</Link>}
+          {c.teacher.slug && <Link to={paths.teacher(c.teacher.slug)}>{t('courseDetails.moreFromTeacher')}</Link>}
         </Card>
       </aside>
       <Modal open={demoOpen} size="lg" title={t('courseDetails.bookDemoTitle', { course: c.title })} onClose={() => setDemoOpen(false)}>

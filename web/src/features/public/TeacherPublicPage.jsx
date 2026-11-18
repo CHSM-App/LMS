@@ -5,8 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { Card, EmptyState, Spinner } from '../../components';
 import { CourseCard } from './CourseCard';
+import { useBrowsePaths } from './browsePaths';
 
 export default function TeacherPublicPage() {
+  const { inStudent } = useBrowsePaths();
   const { slug } = useParams();
   const { t } = useTranslation();
   const q = useQuery({ queryKey: ['public', 'teacher', slug], queryFn: () => api.get(`/public/teachers/${slug}`) });
@@ -18,7 +20,7 @@ export default function TeacherPublicPage() {
   if (q.error) return <EmptyState title={q.error.status === 404 ? t('teacherPage.notFound') : q.error.message} />;
   const social = Object.entries(d.socialLinks || {});
   return (
-    <div className="container stack">
+    <div className={inStudent ? 'stack' : 'container stack'}>
       <Card>
         <div className="row" style={{ alignItems: 'flex-start' }}>
           {d.photoUrl && <img src={fileUrl(d.photoUrl)} alt="" className="avatar-lg" />}

@@ -183,6 +183,12 @@
 .home-search { margin: var(--space-5) 0 var(--space-6); }
 .home-search__input { min-height: 56px; padding: 0 var(--space-5); font-size: var(--text-base); border-width: 2px; border-color: var(--color-action-primary); border-radius: var(--radius-md); max-width: 720px; box-shadow: var(--shadow-raised); }
 .home-search__input:hover:not(:disabled) { border-color: var(--color-action-primary); }
+/* Browse inside the student area: search + filters sit in one toolbar card under the page header. */
+.browse-tools { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-card); }
+.browse-tools .home-search { margin: 0 0 var(--space-4); }
+.browse-tools .home-search__input { min-height: var(--size-tap-target); max-width: none; box-shadow: none; border-width: 1px; border-color: var(--color-input-border); }
+.browse-tools .home-search__input:hover:not(:disabled) { border-color: var(--color-input-border); }
+.browse-tools .filters { margin-bottom: 0; }
 .course-grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .course-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-card); transition: box-shadow .2s ease, transform .2s ease; }
 .course-card:hover { box-shadow: var(--shadow-raised); transform: translateY(-2px); }

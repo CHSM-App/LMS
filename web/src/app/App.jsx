@@ -110,6 +110,10 @@ export default function App() {
 
                 <Route path="student" element={<RoleShell roles={['student']} />}>
                   <Route index element={<StudentDashboard />} />
+                  <Route path="browse" element={<HomePage />} />
+                  <Route path="browse/teachers/:slug" element={<TeacherPublicPage />} />
+                  <Route path="browse/:slug" element={<CourseDetailsPage />} />
+                  <Route path="enroll/:slug" element={<EnrollPage />} />
                   <Route path="courses/:courseId" element={<CoursePlayerPage />} />
                   <Route path="courses/:courseId/final-result" element={<FinalResultPage />} />
                   <Route path="exams" element={<StudentExamsPage />} />

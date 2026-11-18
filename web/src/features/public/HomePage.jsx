@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
-import { EmptyState, Select, Spinner } from '../../components';
+import { EmptyState, PageHeader, Select, Spinner } from '../../components';
 import { Pager } from '../../components/Pager';
 import { CourseCard } from './CourseCard';
+import { useBrowsePaths } from './browsePaths';
 
 function useDebounced(value, ms = 350) {
   const [v, setV] = useState(value);
@@ -23,10 +24,11 @@ export default function HomePage() {
   const [subject, setSubject] = useState('');
   const [page, setPage] = useState(1);
   const search = useDebounced(q);
+  const { inStudent } = useBrowsePaths();
 
   useEffect(() => {
-    document.title = `${t('app.name')} — ${t('home.title')}`;
-  }, [t]);
+    document.title = `${t('app.name')} — ${inStudent ? t('nav.browse') : t('home.title')}`;
+  }, [t, inStudent]);
   useEffect(() => setPage(1), [search, language, subject]);
 
   const filters = useQuery({ queryKey: ['public', 'filters'], queryFn: () => api.get('/public/filters'), staleTime: 300000 });
@@ -37,10 +39,11 @@ export default function HomePage() {
   const filtered = search || language || subject;
 
   return (
-    <div className="container stack">
-      <section className="home-hero">
-        <h1 className="home-hero__title">{t('home.title')}</h1>
-        <p className="home-hero__lead">{t('home.lead')}</p>
+    <div className={inStudent ? 'stack' : 'container stack'}>
+      {inStudent && <PageHeader title={t('nav.browse')} subtitle={t('home.lead')} />}
+      <section className={inStudent ? 'browse-tools' : 'home-hero'}>
+        {!inStudent && <h1 className="home-hero__title">{t('home.title')}</h1>}
+        {!inStudent && <p className="home-hero__lead">{t('home.lead')}</p>}
         <form role="search" className="home-search" onSubmit={(e) => e.preventDefault()}>
           <label htmlFor="course-search" className="visually-hidden">{t('common.search')}</label>
           <input id="course-search" type="search" className="input home-search__input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('home.searchPlaceholder')} />

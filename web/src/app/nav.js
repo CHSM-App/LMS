@@ -28,7 +28,7 @@ export const STUDENT_NAV = [
   { to: '/student/live-classes', label: 'nav.liveClasses' },
   { to: '/student/doubts', label: 'nav.doubts' },
   { to: '/student/progress', label: 'nav.progress' },
-  { to: '/courses', label: 'nav.browse' },
+  { to: '/student/browse', label: 'nav.browse' },
   { to: '/student/profile', label: 'nav.profile' },
   { to: '/notifications', label: 'nav.notifications' },
 ];

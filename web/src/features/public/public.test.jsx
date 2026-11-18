@@ -83,3 +83,18 @@ test('live demo form: required fields, OTP step keeps values on Back, success me
   expect(await screen.findByText('Request sent. Suresh will message you on WhatsApp with the date and time.')).toBeInTheDocument();
   expect(post).toHaveBeenLastCalledWith('/public/demo-requests', expect.objectContaining({ courseSlug: 'maths-10', name: 'Ravi', otp: '123456', acceptTerms: true, whatsappOptIn: true }));
 });
+
+test('signed-in student browses inside the student area: cards and Enroll stay under /student', async () => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/public/filters') return { data: { languages: ['mr'], subjects: ['Maths'] } };
+    if (path === '/public/courses') return { data: [card], pagination: { page: 1, limit: 12, total: 1 } };
+    return { data: details };
+  });
+  const { unmount } = wrap(<HomePage />, '/student/browse', '/student/browse');
+  expect(await screen.findByRole('link', { name: /class 10 maths/i })).toHaveAttribute('href', '/student/browse/maths-10');
+  expect(screen.getByRole('heading', { level: 1, name: 'Browse courses' })).toBeInTheDocument();
+  unmount();
+  wrap(<CourseDetailsPage />, '/student/browse/maths-10', '/student/browse/:slug');
+  expect(await screen.findByRole('link', { name: 'Enroll now' })).toHaveAttribute('href', '/student/enroll/maths-10');
+  expect(screen.getByRole('link', { name: /more from/i })).toHaveAttribute('href', '/student/browse/teachers/suresh');
+});

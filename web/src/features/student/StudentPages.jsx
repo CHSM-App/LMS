@@ -38,7 +38,7 @@ export function StudentDashboard() {
       )}
       <h2>{t('nav.myCourses')}</h2>
       {d.myCourses.length === 0 ? (
-        <EmptyState title={t('studentDash.noCourses')} action={{ label: t('nav.browse'), onClick: () => navigate('/courses') }} />
+        <EmptyState title={t('studentDash.noCourses')} action={{ label: t('nav.browse'), onClick: () => navigate('/student/browse') }} />
       ) : (
         <div className="grid grid--2">
           {d.myCourses.map((c) => (

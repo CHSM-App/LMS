@@ -15,7 +15,7 @@ export function PublicLayout() {
         <div className="container public-header__inner">
           <Link to="/" className="public-header__brand">{t('app.name')}</Link>
           <nav className="public-header__nav" aria-label={t('shell.navigation')}>
-            <NavLink to="/courses">{t('nav.browse')}</NavLink>
+            <NavLink to={user && user.role === 'student' ? '/student/browse' : '/courses'}>{t('nav.browse')}</NavLink>
             <NavLink to="/become-teacher">{t('nav.becomeTeacher')}</NavLink>
             <LanguageSwitcher />
             {user ? (
