@@ -108,6 +108,10 @@ test('practice shows correctness straight away; Final locked until Unit Tests ar
   const q = a.questions[0];
   const saved = await w.s.put(`/api/v1/student/attempts/${a.attemptId}/answers/${q.id}`, { optionId: await rightOption(q.id) });
   expect(saved.body.data).toMatchObject({ correct: true, explanation: expect.any(String) });
+  // No timer: submitting is a normal (not auto) submit.
+  const done = await w.s.post(`/api/v1/student/attempts/${a.attemptId}/submit`);
+  expect(done.status).toBe(200);
+  expect(done.body.data).toMatchObject({ score: 1, autoSubmitted: false });
   const ut = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/exams`, { title: 'UT1', scope: 'module', moduleIds: [w.moduleId], mode: 'mock', selection: 'random', randomMix: [{ moduleId: w.moduleId, easy: 1 }], category: 'unit_test_1', weightage: 40, timeLimitMin: 10, passingPct: 40 })).body.data;
   await w.t.post(`/api/v1/teacher/exams/${ut.id}/publish`);
   const fin = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/exams`, { title: 'Final', scope: 'module', moduleIds: [w.moduleId], mode: 'mock', selection: 'random', randomMix: [{ moduleId: w.moduleId, easy: 1 }], category: 'final', weightage: 60, timeLimitMin: 10, passingPct: 40 })).body.data;

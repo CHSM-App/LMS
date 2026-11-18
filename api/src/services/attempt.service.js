@@ -96,7 +96,8 @@ async function createAttempt(exam, studentId, attemptNo) {
   });
 }
 
-const expired = (a) => a.deadline_at && !a.submitted_at && new Date(a.deadline_at) <= clock.now();
+// Always a boolean: practice attempts have no deadline, and auto_submitted is NOT NULL.
+const expired = (a) => Boolean(a.deadline_at && !a.submitted_at && new Date(a.deadline_at) <= clock.now());
 
 async function startOrResume(examId, studentId) {
   const exam = await examForStudent(examId, studentId);
