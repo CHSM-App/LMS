@@ -98,7 +98,7 @@ web/src/features/teacher/{requests,students,live-classes,attendance,doubts,progr
 - `demoRequestService.schedule(id, teacherId, {scheduledAt, meetLink?})` and `.sendWhatsApp(id, teacherId)`.
 - Message text (i18n key `wa.demo_scheduled`): "Hello {name}, your live demo for {course} is on {date} at {time}. Join: {link}"
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Schedule with no link → the link is generated and the status is `scheduled`.
   - Schedule with a pasted link → it must match `^https://meet\.google\.com/` and is stored.
   - A date in the past → 400.
@@ -106,7 +106,7 @@ web/src/features/teacher/{requests,students,live-classes,attendance,doubts,progr
   - A student without WhatsApp opt-in → 409 "This student hasn't agreed to WhatsApp messages", plus the `fallbackUrl`.
   - `MEET_PROVIDER=manual` and no link given → 400 "Paste a Meet link".
   - Another teacher's request → 404.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): demo requests with Meet link and WhatsApp`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): demo requests with Meet link and WhatsApp`.
 
 ### Task 2: Enrollments, access, student count
 
@@ -115,7 +115,7 @@ web/src/features/teacher/{requests,students,live-classes,attendance,doubts,progr
 - `requireActiveEnrollment(courseParam)`: passes only when the enrollment is `approved`, `access_enabled = 1` and today (IST) is within the dates. It also handles the blocked-teacher read-only rule, which Phase 9 adds.
 - The real `studentCountRepo.countActiveByTeacher`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Approve → the enrollment is `approved` with a `batch_id`, a subscription is created, and the student gets the notification "You're enrolled in {course} ({batch})".
   - Approve without a batch → 400. A closed batch → 409 "This batch is closed". A full batch → 409 "This batch is full ({max} students)".
   - Move batch → updated, and the student is notified.
@@ -128,52 +128,52 @@ web/src/features/teacher/{requests,students,live-classes,attendance,doubts,progr
     - Ended yesterday → 403 "Your access to this course has ended".
     - `access_enabled=0` → 403 "Your access to this course is paused".
   - **The Phase 4 test:** teacher A has 2 active, 1 pending and 1 expired → `studentCount=2`.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): enrollment approval and student access`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): enrollment approval and student access`.
 
 ### Task 3: Student list
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Only the teacher's own students are listed.
   - A student enrolled with two teachers appears to each teacher with only that teacher's courses.
   - Filtering by course and searching by name work.
   - The subscription status is computed as active / expired / paused.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): student list`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): student list`.
 
 ### Task 4: Live classes + attendance
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Create a live class for batch A → only batch A students get a notification. "All batches" → every enrolled student is notified.
   - The attendance sheet for a batch-A class lists only batch A students.
   - A missing Meet link → generate one (or 400 when the provider is `manual`).
   - Attendance PUT is an upsert: running it twice gives no duplicates.
   - A non-enrolled student → 400.
   - The reminder job notifies students 30 minutes before the start, exactly once (`reminder_sent_at`).
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): live classes and attendance`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): live classes and attendance`.
 
 ### Task 5: Doubts, programs, public profile
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - A reply sets the status to `answered` and notifies the student.
   - A reply over 2,000 characters → 400.
   - Programs CRUD works.
   - Profile update works. `publicSlug` must be unique (409) and match `^[a-z0-9-]{3,60}$`.
   - The bio is sanitized: a `<script>` tag is stripped.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): doubts, programs, public profile`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): doubts, programs, public profile`.
 
 ### Task 6: Teacher web screens
 
-- [ ] **Step 1:** Write failing Vitest tests:
+- [x] **Step 1:** Write failing Vitest tests:
   - The Requests page has Demo and Enrollment tabs.
   - The schedule dialog requires a date/time.
   - "Send on WhatsApp" shows Sent ✓ or Not sent with a Retry button.
   - The approve dialog requires start and end dates.
   - The attendance sheet has a "Mark all present" toggle.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Build the pages for Requests, Students (with an access editor drawer), Live classes, Attendance, Doubts, Programs and Profile (with a live public profile preview). Add a teacher dashboard with tiles: pending requests, today's classes, open doubts, active students.
-- [ ] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): teacher operations`.
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Build the pages for Requests, Students (with an access editor drawer), Live classes, Attendance, Doubts, Programs and Profile (with a live public profile preview). Add a teacher dashboard with tiles: pending requests, today's classes, open doubts, active students.
+- [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): teacher operations`.
 
 ### Task 7: Light teacher screens in Flutter (DECISIONS.md)
-- [ ] Teacher app screens: dashboard, requests (schedule, send WhatsApp, approve with a batch picker), students (batch filter, access toggle), live classes + attendance, doubts, notifications, profile. Each one gets a ViewModel test + a widget test. Commit `feat(mobile): light teacher app`.
+- [x] Teacher app screens: dashboard, requests (schedule, send WhatsApp, approve with a batch picker), students (batch filter, access toggle), live classes + attendance, doubts, notifications, profile. Each one gets a ViewModel test + a widget test. Commit `feat(mobile): light teacher app`.
 
 ## Open questions
 - Meet link generation needs a Google Workspace account and OAuth (see BACKEND_NEEDS). Until then the teacher pastes the link.
@@ -181,5 +181,5 @@ web/src/features/teacher/{requests,students,live-classes,attendance,doubts,progr
 - The batch rules are assumed (DECISIONS.md) and still need confirmation.
 
 ## Phase done when
-- [ ] Tests pass. Manual run with seeded requests: schedule a demo → console shows the WhatsApp message; approve an enrollment → the student list shows active; take attendance; answer a doubt.
-- [ ] Review Focus is covered and `/security-review` is clean.
+- [x] Tests pass. Manual run with seeded requests: schedule a demo → console shows the WhatsApp message; approve an enrollment → the student list shows active; take attendance; answer a doubt. — **Automated** in `web/e2e/` (23 Playwright specs, 2026-11-18).
+- [x] Review Focus is covered and `/security-review` is clean. — **Self-review** 2026-11-18 (the `/security-review` command needs a git remote; findings fixed: auth before validation, role matrix, security logging, token grace).

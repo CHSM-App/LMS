@@ -1,6 +1,6 @@
 # Release Checklist (v1)
 
-Status as of **2026-11-17** (end of Phase 10). Legend:
+Status as of **2026-11-18** (end of Phase 10, after the phase-by-phase review). Legend:
 - ✅ done, with evidence
 - ⏳ needs the owner, a provider approval or the staging server
 - ⚠️ known gap, decided and documented
@@ -10,10 +10,12 @@ Deployment steps: [DEPLOY.md](DEPLOY.md). Services and approvals: [BACKEND_NEEDS
 ## 1. Tests and builds
 | | Item | Status / evidence |
 |---|---|---|
-| ✅ | API tests | `cd api && npm test` → 215/215 (27 suites), including the new route × role matrix and security-log tests |
+| ✅ | API tests | `cd api && npm test` → 217/217 (27 suites), including the route × role matrix, security-log, IST end-of-day and two-tab exam tests |
 | ✅ | Website unit tests | `cd web && npm test` → 44/44 |
-| ✅ | End-to-end (Playwright) | `cd web && npm run e2e` → 15/15 on the built `dist/`: admin approves teacher, teacher builds and publishes a course, demo request → WhatsApp, student register/enroll/learn/exam/result, blocked teacher read-only, deep-link refresh (desktop + phone) |
+| ✅ | End-to-end (Playwright) | `cd web && npm run e2e` → **23/23** (twice) on the built `dist/`. Every phase's "manual run" is automated: teacher apply/accept/reject→reapply, block a live session, subscriptions + audit log, course builder, Excel import + exam builder validation, operations (approve, class, attendance, doubt), Marathi search + demo videos, student journey (UT1/UT2 → Final, offline sync, resume, auto-submit, weighted final), blocked-teacher read-only, deep links (desktop + phone), 360 px Marathi layout, keyboard focus |
 | ✅ | Flutter tests + analyze | `cd mobile && flutter analyze && flutter test` → no issues, 58/58 |
+| ⏳ | Flutter on-device test | `integration_test/student_flow_test.dart` (OTP login, encrypted download, unit test result) compiles; run it on a phone/emulator against `api/scripts/e2e-server.js` (instructions in the file). This PC has no hypervisor for the emulator. |
+| ✅ | Design-token tests | `cd design-tokens && npm test` → 25/25 (palette lock, contrast, raw-colour guard) |
 | ✅ | Website production build | `npm run build` ok; `dist/` contains `.htaccess` + `web.config` |
 | ✅ | Android release build | `flutter build apk --release --obfuscate --split-debug-info=build/symbols` ok (53 MB); the manifest has INTERNET, a loopback-only cleartext rule and `allowBackup=false` |
 | ⏳ | Android **signed** bundle | Needs the upload key in `android/key.properties` (DEPLOY.md §4). Without it, the build uses the debug key and warns. |
@@ -40,7 +42,7 @@ Deployment steps: [DEPLOY.md](DEPLOY.md). Services and approvals: [BACKEND_NEEDS
 | ✅ | §10 Secrets: only `.env.example` files are committed; no secrets in web/Flutter builds | `git ls-files` shows only `api/.env.example`, `web/.env.production.example`; grep of `web/src`, `mobile/lib` is clean |
 | ✅ | §11 Exams: server timer, answers hidden until submit, frozen paper, limits enforced server-side | Phase 6/9 tests; Flutter resume uses the server deadline |
 | ✅ | §12 Mobile: obfuscated release with split debug info; single in-flight refresh | Release build above; `auth_test.dart` |
-| ⏳ | `/security-review` on the whole repo | Run `/security-review` in Claude Code, then fix or accept each finding |
+| ⏳ | `/security-review` on the whole repo | A **self-review** was done on 2026-11-18 (SQL parameters, file keys, signed links, video/link URLs, auth order, logging): no open findings. The `/security-review` command needs a git remote (`origin`), so run it once the repo is pushed, then fix or accept each finding. |
 
 ## 3. Dependencies
 | | Item | Status / evidence |

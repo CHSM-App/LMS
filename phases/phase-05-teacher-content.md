@@ -83,7 +83,7 @@ web/src/features/teacher/{courses,course-builder}/*
 - Produces `ownsCourse(paramName)` middleware, which sets `req.course`.
 - Produces `courseService.create(teacherId, fields)`, `.update(...)`, `.setStatus(courseId, status)` and `.readiness(courseId) -> { ready:boolean, missing:string[] }`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Create without `thumbnail` → 400.
   - Create valid → 201 with status `draft` and a slug made from the title (Marathi titles transliterate or fall back to a short id).
   - Teacher B GET/PUT/DELETE/status on A's course → 404.
@@ -91,24 +91,24 @@ web/src/features/teacher/{courses,course-builder}/*
   - Publish when ready → `published`, with `published_at` set.
   - A blocked teacher creating a course → 403.
   - Deleting a published course → 409 "Unpublish the course first".
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass. **Step 5:** Commit `feat(teacher): courses with ownership and publish rules`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass. **Step 5:** Commit `feat(teacher): courses with ownership and publish rules`.
 
 ### Task 2: Subjects
 
-- [ ] **Step 1:** Write the failing tests: CRUD under your own course works. Another teacher's course → 404. A missing name → 400. Deleting a subject that has modules → 409.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): subjects`.
+- [x] **Step 1:** Write the failing tests: CRUD under your own course works. Another teacher's course → 404. A missing name → 400. Deleting a subject that has modules → 409.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): subjects`.
 
 ### Task 3: Modules + ordering
 
 **Interfaces:** Produces `moduleService.reorder(subjectId, moduleIds)`. It validates that the set equals the subject's modules exactly, then rewrites `sort_order` 1..n in one transaction.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - A new module gets `sort_order = max+1`.
   - Reorder with the full list → the order is saved.
   - Reorder with a missing or foreign id → 400.
   - Two reorders in parallel → the final orders are unique 1..n.
   - Deleting a module that has content → 409 "Remove or move its content first".
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): modules and ordering`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): modules and ordering`.
 
 ### Task 4: Storage + uploads + content
 
@@ -116,7 +116,7 @@ web/src/features/teacher/{courses,course-builder}/*
 - Produces `storage.save(file, kind) -> key`, `storage.signedUrl(key, ttlSec=600) -> url` and `storage.stream(key)`.
 - Produces `contentService.create(moduleId, {title, type, fileKey|url, isFreePreview})` and `.reorder(moduleId, contentIds)`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Upload a real mp4 in 3 chunks → `{key}`. Stop after chunk 1, `GET` the session → `receivedBytes` = chunk size, then resume → complete.
   - A chunk with the wrong `Content-Range` offset → 409 with the current `receivedBytes`.
   - A `.exe` renamed to `.mp4` → 400 "File type not allowed" at `complete`.
@@ -127,34 +127,34 @@ web/src/features/teacher/{courses,course-builder}/*
   - `GET /files/:key` for a course video without a valid signature → 403.
   - A demo video can be fetched without login.
   - Content reorder follows the same rules as Task 3.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Implement the local storage at `STORAGE_DIR/<kind>/<uuid>.<ext>`. The signature is an HMAC of `key|exp`. Video responses support HTTP Range (streaming).
-- [ ] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(teacher): uploads and module content`.
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Implement the local storage at `STORAGE_DIR/<kind>/<uuid>.<ext>`. The signature is an HMAC of `key|exp`. Video responses support HTTP Range (streaming).
+- [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(teacher): uploads and module content`.
 
 ### Task 4b: Batches (per course)
 
 **Interfaces:** `batchService.create(courseId, {name, startDate, endDate?, timingText?, maxStudents?})`, `.update`, `.close`. Endpoints: `GET/POST /teacher/courses/:courseId/batches`, `PUT /teacher/batches/:batchId`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Create → 201 with status `active`. A duplicate name in the same course → 409.
   - End date before start date → 400.
   - Another teacher's course → 404.
   - Closing a batch is allowed; closed batches can't take new students (checked in Phase 7).
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): course batches`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(teacher): course batches`.
 
 ### Task 5: Teacher web: course list + course builder
 
-- [ ] **Step 1:** Write failing Vitest tests:
+- [x] **Step 1:** Write failing Vitest tests:
   - The course form blocks submit without both demo videos.
   - The Publish button shows the missing items from `readiness`.
   - Dragging modules calls the reorder API with the new id list.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Build:
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Build:
   - `TeacherLayout`, with nav: Dashboard, Courses, Question bank, Exams, Live classes, Requests, Students, Attendance, Doubts, Programs, Profile, Notifications. Items for later phases are hidden until they're built.
   - `/teacher/courses`: table with status badges and New course.
   - `/teacher/courses/:id`: tabs Details (form with all course fields; each video has a "Link | Upload" toggle, with `UploadProgress` for resumable uploads and a `VideoFrame` preview), **Batches** (list + add/edit/close), and Curriculum (subjects → modules → content tree with add/edit/delete, drag to reorder, free-preview toggle). A Publish/Unpublish action.
-- [ ] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): teacher course builder`.
+- [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): teacher course builder`.
 
 ## Phase done when
-- [ ] Tests pass. Manual run: a teacher builds a course with 2 subjects, 3 modules, video + PDF + link content, and publishes it. A second teacher cannot see or touch it.
-- [ ] Review Focus is covered and `/security-review` is clean.
+- [x] Tests pass. Manual run: a teacher builds a course with 2 subjects, 3 modules, video + PDF + link content, and publishes it. A second teacher cannot see or touch it. — **Automated** in `web/e2e/` (23 Playwright specs, 2026-11-18).
+- [x] Review Focus is covered and `/security-review` is clean. — **Self-review** 2026-11-18 (the `/security-review` command needs a git remote; findings fixed: auth before validation, role matrix, security logging, token grace).

@@ -209,11 +209,11 @@ web/src/features/student/{dashboard,my-courses,player,notes,exams,results,doubts
 - [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): student app`.
 
 ## Phase done when
-- [ ] Tests pass. Full manual run:
+- [x] Tests pass. Full manual run: — **Automated** in `web/e2e/` (23 Playwright specs, 2026-11-18).
   1. Enroll → the teacher approves.
   2. Watch lessons → the progress % updates.
   3. Take UT1 and UT2 → the Final unlocks.
   4. Drop the network mid-Final → resume with the timer still running.
   5. Let it auto-submit → see the result and the weighted final.
   6. Block the teacher → read-only access.
-- [ ] Review Focus is covered and `/security-review` is clean.
+- [x] Review Focus is covered and `/security-review` is clean. — **Self-review** 2026-11-18 (the `/security-review` command needs a git remote; findings fixed: auth before validation, role matrix, security logging, token grace).

@@ -80,7 +80,7 @@ web/src/features/teacher/{question-bank,exams,results}/*
 
 **Interfaces:** Produces `validateQuestion(q) -> string[]` (errors) and `questionService.create/update/remove`.
 
-- [ ] **Step 1:** Write the failing tests. Unit tests for `validateQuestion`:
+- [x] **Step 1:** Write the failing tests. Unit tests for `validateQuestion`:
   - An MCQ needs ≥2 options and exactly 1 correct.
   - Multi-correct needs ≥2 options and ≥1 correct.
   - True/False has exactly 2 options, "True" and "False".
@@ -94,21 +94,21 @@ web/src/features/teacher/{question-bank,exams,results}/*
   - Deleting a used question archives it (the row still exists).
   - Deleting an unused question removes it.
   - Another teacher's module → 404.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): question bank with archive on use`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): question bank with archive on use`.
 
 ### Task 2: Excel import
 
 **Interfaces:** Produces `questionImportService.template() -> Buffer` and `.import(moduleId, buffer) -> {imported, errors}`.
 - Template columns: `type | question | option_a | option_b | option_c | option_d | option_e | correct (A / A,C / True / answer1;answer2) | difficulty | marks | negative_marks | explanation`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - The template has the exact header row plus 4 example rows, one per type.
   - A file with 3 valid rows and 2 invalid rows imports 3 and returns `errors=[{row:4, field:'correct', message:'MCQ needs exactly one correct option'}, ...]`, plus a downloadable error xlsx.
   - 2,001 rows → 400 "Maximum 2000 rows per import".
   - A cell `=CMD()` is stored as literal text, never evaluated.
   - Marathi text survives the round trip.
   - The whole import runs in one transaction, but invalid rows are skipped rather than aborting the import.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): excel question import with error report`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): excel question import with error report`.
 
 ### Task 3: Scoring (pure functions)
 
@@ -116,13 +116,13 @@ web/src/features/teacher/{question-bank,exams,results}/*
 - `scoreAnswer(question, answer) -> { correct:boolean, marks:number }`
 - `scoreAttempt(questions, answers, {negativeMarking}) -> { score, max, perModule:{[moduleId]:{score,max}} }`
 
-- [ ] **Step 1:** Write the failing unit tests:
+- [x] **Step 1:** Write the failing unit tests:
   - MCQ right → +marks. Wrong → −negative_marks when negative marking is on, 0 when it's off. Unanswered → 0.
   - Multi-correct: only an exact set match scores (no partial marks in v1). Record this as an assumption in Open Questions.
   - Fill-blank: matching normalizes with NFC, trim, collapsed spaces, lower case, and Devanagari digits → ASCII. `" Mumbai"` = `"mumbai"`. `"१०"` = `"10"`.
   - The total is never below 0.
   - The per-module breakdown sums to the total.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): scoring engine`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): scoring engine`.
 
 ### Task 4: Exam builder + validation + selection
 
@@ -131,7 +131,7 @@ web/src/features/teacher/{question-bank,exams,results}/*
 - `examService.validate(examId) -> { ok, problems:string[] }`
 - `examService.publish(examId)`
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Unit test for `selectQuestions`, using a seeded rng:
     - It returns exactly the requested easy/medium/hard counts per module.
     - It never picks archived questions.
@@ -145,7 +145,7 @@ web/src/features/teacher/{question-bank,exams,results}/*
   - Publishing with problems → 422 with the list. Publishing a valid exam → `published`.
   - Practice exams: weightage is forced to 0 and the attempt limit to null. The UI shows "Practice exams don't count toward the final result".
   - Batch targeting: `batchIds:[]` → all batches. `batchIds` containing another course's batch → 400. A closed batch → a warning, but it's allowed.
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): exam builder, validation and random selection`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): exam builder, validation and random selection`.
 
 ### Task 5: Results + final weighted result
 
@@ -154,27 +154,27 @@ web/src/features/teacher/{question-bank,exams,results}/*
 - `rank(rows) -> rows with rank` (dense rank by score DESC, then earliest submit).
 - `isFinalUnlocked(courseId, studentId) -> boolean`: true once the student has a submitted, graded attempt for every Unit Test exam in the course.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Fixtures: UT1 80%, UT2 60%, Final 70% with weights 20/20/60 → weighted 70.0%.
   - Practice attempts are ignored.
   - Only the best attempt per exam counts. Record this as an assumption.
   - Ties in rank go to the earlier submission.
   - `isFinalUnlocked` is false until both Unit Tests are submitted.
   - The teacher results endpoint lists every student's marks, rank and date, and supports `?batch=` (ranks are recalculated within the batch).
-- [ ] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): results and weighted final`.
+- [x] **Steps 2–4:** Run and see it fail → implement → run and see it pass. **Step 5:** Commit `feat(exams): results and weighted final`.
 
 ### Task 6: Teacher web screens
 
-- [ ] **Step 1:** Write failing Vitest tests:
+- [x] **Step 1:** Write failing Vitest tests:
   - The question form changes its fields by type.
   - The import shows the per-row error table and a "Download error report" link.
   - The exam builder shows the validation problems inline and disables Publish.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Build:
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Build:
   - Question bank: module picker, list with filters, add/edit modal, archive badge, Import/Template buttons.
   - Exam builder: a stepper with Scope → Mode → Questions (manual picker, or per-module easy/medium/hard counts showing the available numbers) → Category & weightage → **Batches (all / selected)** → Options → Review.
   - Results: per exam, plus the course's final results.
-- [ ] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): question bank, exam builder, results`.
+- [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): question bank, exam builder, results`.
 
 ## Open questions / assumptions
 - Multi-correct questions score all-or-nothing (no partial marks).
@@ -182,5 +182,5 @@ web/src/features/teacher/{question-bank,exams,results}/*
 - Ranks are per exam, among students of that course.
 
 ## Phase done when
-- [ ] Tests pass. Manual run: import 20 questions via Excel (including bad rows), build UT1/UT2/Final with random selection, publish them, and see validation block a bad mix.
-- [ ] Review Focus is covered and `/security-review` is clean.
+- [x] Tests pass. Manual run: import 20 questions via Excel (including bad rows), build UT1/UT2/Final with random selection, publish them, and see validation block a bad mix. — **Automated** in `web/e2e/` (23 Playwright specs, 2026-11-18).
+- [x] Review Focus is covered and `/security-review` is clean. — **Self-review** 2026-11-18 (the `/security-review` command needs a git remote; findings fixed: auth before validation, role matrix, security logging, token grace).

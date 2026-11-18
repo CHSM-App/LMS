@@ -43,15 +43,15 @@ mobile/test/widgets/*_test.dart
 
 **Files:** Create `docs/DESIGN.md`
 
-- [ ] **Step 1:** Pass 1. Write the plan:
+- [x] **Step 1:** Pass 1. Write the plan:
   - **Subject:** what the product is, who it's for, and the main job of each role's screens.
   - **Colour:** 4–6 named hex values, plus status colours and dark-mode values.
   - **Type:** one or two families that support Devanagari (e.g. *Mukta*, *Hind*, *Noto Sans Devanagari*, *Baloo 2*), with roles, a type scale (ratio and px values), weights and line-heights. Devanagari needs about 10% more line-height than Latin.
   - **Spacing scale and radius rules:** radius encodes hierarchy, not one value everywhere.
   - **Layout:** ASCII wireframes for the public home page, the course details page and the dashboard shell.
   - **Principles:** 3–5 lines, plus the single "memorable thing".
-- [ ] **Step 2:** Pass 2. Review the plan against frontend.md's list of defaults. Rewrite anything generic, and record **what changed and why** at the bottom of DESIGN.md.
-- [ ] **Step 3:** Commit `docs: design system plan`.
+- [x] **Step 2:** Pass 2. Review the plan against frontend.md's list of defaults. Rewrite anything generic, and record **what changed and why** at the bottom of DESIGN.md.
+- [x] **Step 3:** Commit `docs: design system plan`.
 
 ### Task 2: Central design tokens (web + Flutter)
 
@@ -59,12 +59,12 @@ mobile/test/widgets/*_test.dart
 
 **Interfaces:** CSS variables `--color-<semantic>` (e.g. `--color-bg-page`, `--color-surface`, `--color-text`, `--color-text-secondary`, `--color-action-primary`, `--color-link-underline`, `--color-nav-bg`, `--color-nav-active`, `--color-success`, `--color-error`, `--color-focus`, `--color-border`, `--status-<name>-{bg,fg}`), plus `--font-*`, `--text-*`, `--space-*` and `--radius-*`. Dart: `AppTokens.<name>` constants.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Palette lock: `brand.*` = exactly the 6 BRAND-THEME hex values, and `functional.error` = `#C62828`.
   - Contrast: every pair in the BRAND-THEME table meets its stated ratio.
   - The generator emits CSS, JS and Dart with identical values.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement `build.js` (a small Node generator: tokens.json → 3 outputs). `global.css` sets the reset, base type, `:focus-visible` ring and the reduced-motion rule. **Step 4:** Run and see it pass.
-- [ ] **Step 5:** `check-no-raw-colors.js` fails on a hex or `rgb(` literal in `web/src/**` or `mobile/lib/**` outside the generated files. Commit `feat: central design tokens`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement `build.js` (a small Node generator: tokens.json → 3 outputs). `global.css` sets the reset, base type, `:focus-visible` ring and the reduced-motion rule. **Step 4:** Run and see it pass.
+- [x] **Step 5:** `check-no-raw-colors.js` fails on a hex or `rgb(` literal in `web/src/**` or `mobile/lib/**` outside the generated files. Commit `feat: central design tokens`.
 
 ### Task 3: Web components
 
@@ -83,7 +83,7 @@ mobile/test/widgets/*_test.dart
 - `VideoFrame({ source:{type:'upload'|'youtube'|'vimeo'|'bunny', url} })`: one player frame for uploaded and linked videos.
 - `EmptyState({ title, action })`, `FileUpload({ accept, maxMb, onFile, error })`, `PageHeader({ title, actions })`
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - `Button` with `loading` is disabled and has `aria-busy="true"`.
   - Pasting `"123456"` into `OtpInput` calls `onChange("123456")`. Backspace moves focus back.
   - `Table` with `rows=[]` renders `empty`.
@@ -91,9 +91,9 @@ mobile/test/widgets/*_test.dart
   - `StatusBadge status="rejected"` renders the `t('status.rejected')` text.
   - `FileUpload maxMb={5}` with a 6 MB file shows the error "File is larger than 5 MB".
   - A long Marathi label in `Button` has `overflow-wrap:anywhere`.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass.
-- [ ] **Step 5:** Add a dev-only `/_styleguide` page that shows every component in every state, in both themes. Check it manually at 360 px and 1280 px.
-- [ ] **Step 6:** Commit `feat(web): core components`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass.
+- [x] **Step 5:** Add a dev-only `/_styleguide` page that shows every component in every state, in both themes. Check it manually at 360 px and 1280 px.
+- [x] **Step 6:** Commit `feat(web): core components`.
 
 ### Task 4: Flutter theme + widgets
 
@@ -101,14 +101,14 @@ mobile/test/widgets/*_test.dart
 
 **Interfaces:** Produces `AppTheme.light()` and `AppTheme.dark()` returning `ThemeData`, and `AppColors` as a `ThemeExtension` carrying the status colours. The widgets `AppButton`, `AppTextField`, `OtpInput`, `StatusBadge` and `EmptyState` have the same props as the web components.
 
-- [ ] **Step 1:** Write failing widget tests:
+- [x] **Step 1:** Write failing widget tests:
   - `OtpInput` paste fills 6 boxes and calls `onCompleted`.
   - `StatusBadge('blocked')` uses `AppColors.blockedBg`.
   - `AppButton(loading:true)` is not tappable.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement, using the same hex values and font as `tokens.css` (bundle the fonts under `assets/fonts`). **Step 4:** Run `flutter test` and see it pass.
-- [ ] **Step 5:** Commit `feat(mobile): theme and shared widgets`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement, using the same hex values and font as `tokens.css` (bundle the fonts under `assets/fonts`). **Step 4:** Run `flutter test` and see it pass.
+- [x] **Step 5:** Commit `feat(mobile): theme and shared widgets`.
 
 ## Phase done when
-- [ ] DESIGN.md has both passes and the "what changed" section.
-- [ ] `web: npm test` and `mobile: flutter test` pass. The style guide looks right at 360 px in light and dark.
-- [ ] Every Review Focus item has a passing test.
+- [x] DESIGN.md has both passes and the "what changed" section.
+- [x] `web: npm test` and `mobile: flutter test` pass. The style guide looks right at 360 px in light and dark. — Light only per DECISIONS.md (dark mode removed); 360 px covered by `web/e2e/layout-and-keyboard.spec.js`.
+- [x] Every Review Focus item has a passing test. — mapped 2026-11-18; gaps closed with new tests.

@@ -106,7 +106,7 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
 - [x] **Step 3:** Implement.
   - **Downloads screen:** list grouped by course (title, size, status, licence expiry), per-item pause/resume/delete, "Delete all", total storage bar, Wi-Fi-only toggle, and the registered devices list with Remove.
   - **Player:** a "Downloaded ✓" or download progress chip, and offline playback.
-- [ ] **Step 4:** Run `flutter test`, then check by hand on a real Android phone:
+- [ ] **Step 4:** Run `flutter test`, then check by hand on a real Android phone: — `flutter test` ✅ 58/58; **phone checks pending (owner)** — no device or emulator on the build PC (no hypervisor). See docs/RELEASE-CHECKLIST.md §5.
   - Download on Wi-Fi.
   - Airplane mode → the video plays.
   - A screenshot comes out black.
@@ -120,7 +120,7 @@ Build in this order. Each feature gets a ViewModel test, a repository test with 
   - An unsent answer is retried in memory with exponential backoff (§15.11), and the screen shows "Offline — answers will sync".
   - A 360 dp golden test in `mr` shows no overflow.
   - The role gate sends a student away from teacher routes.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run `flutter test`, then `flutter test integration_test` on an emulator. **Step 5:** Commit per feature: `feat(mobile): <feature>`.
+- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run `flutter test`, then `flutter test integration_test` on an emulator. **Step 5:** Commit per feature: `feat(mobile): <feature>`. — Steps 2–3, 5 ✅ and `flutter test` ✅; `integration_test/student_flow_test.dart` written and compiles, **run pending on a device** (instructions in the file).
 
 ### Task 3: End-to-end tests + web release build
 

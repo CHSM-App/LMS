@@ -76,7 +76,7 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
 - Produces `otpService.send(mobile, purpose) -> { resendAfterSec }` and `otpService.verify(mobile, purpose, code) -> true`. Both throw `APIError` for the cases below.
 - Produces `otpSender.send(mobile, code)`. The console implementation logs `OTP for 98XXXXXX10: 123456` in dev only.
 
-- [ ] **Step 1:** Write the failing tests (`otp.test.js`):
+- [x] **Step 1:** Write the failing tests (`otp.test.js`):
   - send → a row exists, `code_hash` is not equal to the code, and `expires_at` ≈ now + 5 minutes.
   - The 4th send within 15 minutes → 429 "Too many OTP requests. Try again in N minutes."
   - verify with the right code → true, and `consumed_at` is set. Verifying again → 400 "OTP expired or already used".
@@ -84,9 +84,9 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
   - verify after 5 minutes (clock injected) → 400 "OTP expired or already used".
   - Two parallel sends → `resend_count` = 2 (the row is locked with `UPDLOCK, HOLDLOCK`).
   - The responses for unknown and known mobiles are identical.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Implement. The hash is `HMAC_SHA256(OTP_SECRET, mobile|purpose|code)`, compared with `crypto.timingSafeEqual`. Apply `authLimiter` (5 per minute per IP) on `/auth/*`.
-- [ ] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(auth): OTP send/verify with limits`.
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Implement. The hash is `HMAC_SHA256(OTP_SECRET, mobile|purpose|code)`, compared with `crypto.timingSafeEqual`. Apply `authLimiter` (5 per minute per IP) on `/auth/*`.
+- [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(auth): OTP send/verify with limits`.
 
 ### Task 2: Tokens + login/refresh/logout
 
@@ -94,26 +94,26 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
 - Produces `tokenService.issue(user) -> { accessToken, refreshToken }`, `tokenService.rotate(refreshToken) -> { accessToken, refreshToken, user }`, `tokenService.revokeFamily(familyId)` and `tokenService.revokeAllForUser(userId)`.
 - The access JWT payload is `{ sub: user_id, role, pid: public_id }` with an expiry of 15 minutes.
 
-- [ ] **Step 1:** Write the failing tests (`login.test.js`, `refresh.test.js`):
+- [x] **Step 1:** Write the failing tests (`login.test.js`, `refresh.test.js`):
   - Login as an approved teacher → 200, an `accessToken`, and a `Set-Cookie` header with `rt=...; HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth`.
   - Login for a `pending` / `rejected` / `blocked` user → 403 with the exact messages from Global Constraints.
   - Login for a mobile with no account → 404 "No account found for this mobile number".
   - Refresh → a new cookie, and the old token now has `revoked_at` set.
   - Reusing the old refresh token → 401, and every token in the family is revoked.
   - Logout → the cookie is cleared, and a refresh after that → 401.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. Refresh tokens are 48 random bytes, base64url, stored as SHA-256. **Step 4:** Run and see it pass.
-- [ ] **Step 5:** Commit `feat(auth): login, refresh rotation, logout`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. Refresh tokens are 48 random bytes, base64url, stored as SHA-256. **Step 4:** Run and see it pass.
+- [x] **Step 5:** Commit `feat(auth): login, refresh rotation, logout`.
 
 ### Task 3: Guards
 
 **Interfaces:** Produces `authenticate` (sets `req.user = { id, role, publicId, status }` from the DB, cached 60 s) and `authorize(...roles)`.
 
-- [ ] **Step 1:** Write the failing tests (`guards.test.js`):
+- [x] **Step 1:** Write the failing tests (`guards.test.js`):
   - No token → 401.
   - Expired token → 401 with `code:"TOKEN_EXPIRED"`.
   - A student calling `GET /admin/teacher-requests` → 403.
   - A user blocked after the token was issued → 401 on the next call. Clear the cache in the test.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass. **Step 5:** Commit `feat(auth): authenticate and authorize middleware`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass. **Step 5:** Commit `feat(auth): authenticate and authorize middleware`.
 
 ### Task 4: Teacher registration + admin review
 
@@ -121,7 +121,7 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
 - Consumes `otpService.verify`, `notify(userId, {...})` and `audit(...)`.
 - Produces `teacherRequestService.create(fields, files)`, `.accept(requestId, adminId, ip)` and `.reject(requestId, adminId, reason, ip)`.
 
-- [ ] **Step 1:** Write the failing tests (`teacherRequest.test.js`):
+- [x] **Step 1:** Write the failing tests (`teacherRequest.test.js`):
   - Valid registration + OTP → 201 with status `pending`, and every admin gets the notification "New teacher request: <name>".
   - A missing required field (e.g. `subject`) → 400.
   - A wrong OTP → 400 and no row is created.
@@ -130,9 +130,9 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
   - Reject with no reason → 400. Reject with a reason → the request is `rejected` and an audit row is written.
   - After a rejection, the same mobile can submit a new request → 201.
   - Photo and ID upload: wrong type (checked by magic bytes) → 400. Over 5 MB → 413.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. Accept runs inside `withTransaction`. `upload` middleware: multer with disk storage, random names, and `file-type` magic-byte checks. **Step 4:** Run and see it pass.
-- [ ] **Step 5:** `scripts/seed.js` creates the admin user from `SEED_ADMIN_MOBILE`, plus 1 pending request.
-- [ ] **Step 6:** Commit `feat(auth): teacher onboarding and admin review`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. Accept runs inside `withTransaction`. `upload` middleware: multer with disk storage, random names, and `file-type` magic-byte checks. **Step 4:** Run and see it pass.
+- [x] **Step 5:** `scripts/seed.js` creates the admin user from `SEED_ADMIN_MOBILE`, plus 1 pending request.
+- [x] **Step 6:** Commit `feat(auth): teacher onboarding and admin review`.
 
 ### Task 5: Web auth screens
 
@@ -140,29 +140,29 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
 - Produces `apiClient.request(method, path, body)`. It attaches the in-memory access token. On 401 with `TOKEN_EXPIRED` it calls `/auth/refresh` **once** (shared promise) and retries the request.
 - Produces `useAuth() -> { user, login, logout }` and `<RequireRole roles={[...]}>`.
 
-- [ ] **Step 1:** Write failing Vitest tests:
+- [x] **Step 1:** Write failing Vitest tests:
   - Two parallel 401s → only one refresh call.
   - `RequireRole roles={['admin']}` with a teacher user → redirect to `/teacher`.
   - The login form shows the OTP step after a successful send, and a resend countdown.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Implement these routes:
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Implement these routes:
   - `/login`
   - `/become-teacher` (form fields from Global Constraints, photo/ID upload)
   - `/become-teacher/status`
   - `/admin/teacher-requests` (table: name, mobile, course, subject, experience, status, created date; Accept button; Reject opens `RejectDialog` with a required reason)
   - On start-up the app calls `/auth/refresh` to restore the session.
-- [ ] **Step 4:** Run and see it pass. Check manually with console OTPs. **Step 5:** Commit `feat(web): login, teacher registration, admin request review`.
+- [x] **Step 4:** Run and see it pass. Check manually with console OTPs. **Step 5:** Commit `feat(web): login, teacher registration, admin request review`.
 
 ### Task 6: Flutter auth
 
-- [ ] **Step 1:** Write failing tests:
+- [x] **Step 1:** Write failing tests:
   - `TokenInterceptor`: two concurrent 401s → one refresh (§14.3).
   - `isLoggedIn` is false when the role is null (§14.4).
   - `LoginViewModel` moves through `idle → otpSent → verified`, and shows the error message on 429.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Implement per `Flutter_ARCHITECTURE.md` §4–5 with the §14.1–14.4 fixes and §15.1, §15.6, §15.7 (sync `dioProvider`, `sessionProvider`, go_router redirect by role). The mobile app sends the refresh token in the body (`{refreshToken}`), because it doesn't use cookies; the API accepts either.
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Implement per `Flutter_ARCHITECTURE.md` §4–5 with the §14.1–14.4 fixes and §15.1, §15.6, §15.7 (sync `dioProvider`, `sessionProvider`, go_router redirect by role). The mobile app sends the refresh token in the body (`{refreshToken}`), because it doesn't use cookies; the API accepts either.
   - Screens: splash (role gate), login, OTP, become-teacher.
-- [ ] **Step 4:** Run `flutter test` and see it pass. **Step 5:** Commit `feat(mobile): OTP login and teacher registration`.
+- [x] **Step 4:** Run `flutter test` and see it pass. **Step 5:** Commit `feat(mobile): OTP login and teacher registration`.
 
 ### Task 7: Consent, change mobile number, delete account, legal pages
 
@@ -172,7 +172,7 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
 - `accountService.adminChangeMobile(adminId, publicId, newMobile, reason, ip)`
 - `accountService.delete(userId, otp)`
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Teacher registration without `acceptTerms=true` → 400 "Accept the Terms and Privacy Policy to continue". With it → a `legal_consents` row with the current `POLICY_VERSION`.
   - `whatsappOptIn=true` → `users.whatsapp_opt_in=1` and a consent row.
   - Change mobile:
@@ -185,11 +185,11 @@ mobile/lib/screens/auth/{splash_screen,login_screen,otp_screen,become_teacher_sc
     - The old number can register again.
     - The teacher still sees that student's exam rows as "Deleted user".
     - A teacher with students cannot self-delete → 409 "Contact the admin to close a teacher account".
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass.
-- [ ] **Step 5:** Web: consent checkboxes on the registration forms, `/account` settings (change mobile, delete account with an OTP confirm dialog), `/terms` and `/privacy` pages (content in `api/content/legal/{terms,privacy}.{en,mr,hi}.md`, versioned), a support link on the blocked/rejected screens. Flutter: the same account screens.
-- [ ] **Step 6:** Commit `feat(auth): consent, change mobile, account deletion, legal pages`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. **Step 4:** Run and see it pass.
+- [x] **Step 5:** Web: consent checkboxes on the registration forms, `/account` settings (change mobile, delete account with an OTP confirm dialog), `/terms` and `/privacy` pages (content in `api/content/legal/{terms,privacy}.{en,mr,hi}.md`, versioned), a support link on the blocked/rejected screens. Flutter: the same account screens.
+- [x] **Step 6:** Commit `feat(auth): consent, change mobile, account deletion, legal pages`.
 
 ## Phase done when
-- [ ] All API, web and Flutter tests pass.
-- [ ] Manual run: register a teacher → admin accepts → teacher logs in and lands on the empty Teacher Dashboard. Reject → reapply works.
-- [ ] Every Review Focus item has a passing test. `/security-review` is clean.
+- [x] All API, web and Flutter tests pass.
+- [x] Manual run: register a teacher → admin accepts → teacher logs in and lands on the empty Teacher Dashboard. Reject → reapply works. — **Automated** in `web/e2e/` (23 Playwright specs, 2026-11-18).
+- [x] Every Review Focus item has a passing test. — mapped 2026-11-18; gaps closed with new tests. `/security-review` is clean. — **Self-review** 2026-11-18 (the `/security-review` command needs a git remote; findings fixed: auth before validation, role matrix, security logging, token grace).

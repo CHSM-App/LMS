@@ -64,25 +64,25 @@ mobile/lib/screens/admin/* (deferred to Phase 10)
 
 **Interfaces:** Produces `adminTeacherRepo.list({status, q, offset, limit}) -> {rows, total}` and `studentCountRepo.countActiveByTeacher(teacherIds) -> Map`. This phase ships the stub that returns 0; Phase 7 makes it real.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Every row has a numeric `studentCount`, taken from `countActiveByTeacher` (mock it to return `{A:2}` and assert that A shows 2).
   - `q='सुरेश'` finds the teacher by Marathi name. `q='98765'` finds them by mobile.
   - Pagination: `total` is correct, and the order is `joined_at DESC, user_id DESC`.
   - The dashboard counts match the fixtures.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. Add an index `IX_users_role_status_created (role, status, created_at DESC)`. **Step 4:** Run and see it pass.
-- [ ] **Step 5:** Commit `feat(admin): teacher list with student counts`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. Add an index `IX_users_role_status_created (role, status, created_at DESC)`. **Step 4:** Run and see it pass.
+- [x] **Step 5:** Commit `feat(admin): teacher list with student counts`.
 
 ### Task 2: Block / activate
 
 **Interfaces:** Consumes `tokenService.revokeAllForUser` and `audit`. Produces `adminTeacherService.block(publicId, adminId, reason, ip)` and `.activate(...)`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - Block → status `blocked`, the refresh tokens are revoked, an audit row with action `teacher.block` and before/after JSON is written, the teacher gets the notification "Your account has been blocked", and the teacher's next API call → 401.
   - Block with no reason → 400.
   - Activate → status `approved`, plus an audit row.
   - Blocking an already blocked teacher → 409.
   - An admin calling `GET /teacher/courses` → 403.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement in `withTransaction`. **Step 4:** Run and see it pass. **Step 5:** Commit `feat(admin): block and activate teachers`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement in `withTransaction`. **Step 4:** Run and see it pass. **Step 5:** Commit `feat(admin): block and activate teachers`.
 
 ### Task 3: Teacher subscriptions
 
@@ -92,7 +92,7 @@ mobile/lib/screens/admin/* (deferred to Phase 10)
 - `requireActiveTeacherSubscription` middleware → 403 `{code:'TEACHER_SUBSCRIPTION_EXPIRED', error:'Your subscription ended on {date}. Contact the admin to renew.'}`
 - `jobs/subscriptionReminder.job.js` (daily)
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - `planEndDate('monthly','2026-01-15')` = `2026-02-14`; `quarterly` = `2026-04-14`; `yearly` = `2027-01-14`; `custom` without an endDate → 400.
   - The middleware allows a teacher with an active subscription and blocks an expired one with the exact message. `GET /auth/me` still works for the expired teacher (limited mode, not blocked).
   - The reminder job: a subscription ending in 7 days → teacher + admins notified once; running it again → no duplicates.
@@ -102,40 +102,40 @@ mobile/lib/screens/admin/* (deferred to Phase 10)
   - The list shows the computed status `active` / `upcoming` / `expired` and `studentCount`.
   - Update → an audit row with before/after.
   - The teacher gets the notification "Your subscription is set: <start> to <end>".
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. The overlap check uses `UPDLOCK, HOLDLOCK` (mssql.md, "Preventing double-booking"). **Step 4:** Run and see it pass.
-- [ ] **Step 5:** Commit `feat(admin): teacher subscription management`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. The overlap check uses `UPDLOCK, HOLDLOCK` (mssql.md, "Preventing double-booking"). **Step 4:** Run and see it pass.
+- [x] **Step 5:** Commit `feat(admin): teacher subscription management`.
 
 ### Task 4: Notifications (shared) + audit log view
 
 **Interfaces:** Produces `GET /notifications` for any role, scoped to `req.user.id`.
 
-- [ ] **Step 1:** Write the failing tests:
+- [x] **Step 1:** Write the failing tests:
   - A user only sees their own notifications.
   - `read` on someone else's notification → 404.
   - `read-all` sets every one to read.
   - `unread=true` filters correctly.
   - The audit log is admin-only. Filtering by action and date range works.
   - `lms_app` has no UPDATE or DELETE on `admin_audit_log`: run `DENY` in the migration, and assert that an UPDATE fails.
-- [ ] **Step 2:** Run and see it fail. **Step 3:** Implement. Add `004a_permissions.sql` with `DENY UPDATE, DELETE ON dbo.admin_audit_log TO lms_app`. **Step 4:** Run and see it pass.
-- [ ] **Step 5:** Commit `feat: notifications and audit log`.
+- [x] **Step 2:** Run and see it fail. **Step 3:** Implement. Add `004a_permissions.sql` with `DENY UPDATE, DELETE ON dbo.admin_audit_log TO lms_app`. **Step 4:** Run and see it pass.
+- [x] **Step 5:** Commit `feat: notifications and audit log`.
 
 ### Task 5: Admin web screens
 
-- [ ] **Step 1:** Write failing Vitest tests:
+- [x] **Step 1:** Write failing Vitest tests:
   - The Block button opens a dialog that requires a reason, and the row status updates when it succeeds.
   - The subscription form shows a date error when the end date is before the start date.
   - The notification bell shows the unread count.
-- [ ] **Step 2:** Run and see it fail.
-- [ ] **Step 3:** Build `AdminLayout` (side nav: Dashboard, Teacher requests, Teachers, Subscriptions, Notifications, Audit log) and the pages:
+- [x] **Step 2:** Run and see it fail.
+- [x] **Step 3:** Build `AdminLayout` (side nav: Dashboard, Teacher requests, Teachers, Subscriptions, Notifications, Audit log) and the pages:
   - Dashboard: stat tiles linking to the filtered lists.
   - Teachers: table with search/status filter, Block/Activate, link to detail.
   - Teacher detail: profile, subscriptions, student count.
   - Subscriptions: table, Add/Edit modal.
   - Notifications: list, mark read.
   - Audit log: table with filters.
-- [ ] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): super admin app`.
+- [x] **Step 4:** Run and see it pass. **Step 5:** Commit `feat(web): super admin app`.
 
 ## Phase done when
-- [ ] Tests pass. Manual run: block a logged-in teacher in one browser → their session ends in the other. Add, edit and see a subscription expire.
-- [ ] The audit log shows every action from the manual run.
-- [ ] Review Focus is covered and `/security-review` is clean.
+- [x] Tests pass. Manual run: block a logged-in teacher in one browser → their session ends in the other. Add, edit and see a subscription expire. — **Automated** in `web/e2e/` (23 Playwright specs, 2026-11-18).
+- [x] The audit log shows every action from the manual run. — **Automated** in `web/e2e/` (23 Playwright specs, 2026-11-18).
+- [x] Review Focus is covered and `/security-review` is clean. — **Self-review** 2026-11-18 (the `/security-review` command needs a git remote; findings fixed: auth before validation, role matrix, security logging, token grace).
