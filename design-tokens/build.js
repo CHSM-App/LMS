@@ -79,9 +79,11 @@ function build(paths = DEFAULTS) {
   const css = [`/* ${banner} */`, ':root {'];
   for (const [name, c] of colors) css.push(`  --color-${kebab(name)}: ${cssColor(c)};`);
   for (const [g, k, v] of numbers) css.push(`  --${g}-${kebab(k)}: ${v}px;`);
-  css.push(`  --font-family: ${tokens.font.family};`);
+  css.push(`  --font-family: ${tokens.font.familyWeb || tokens.font.family};`);
   for (const [k, v] of Object.entries(tokens.font)) if (k.startsWith('weight')) css.push(`  --font-${kebab(k)}: ${v};`);
   for (const [k, v] of Object.entries(tokens.lineHeight)) css.push(`  --line-height-${k}: ${v};`);
+  for (const [k, v] of Object.entries(tokens.letterSpacing || {})) css.push(`  --letter-spacing-${k}: ${v};`);
+  for (const [k, v] of Object.entries(tokens.shadow || {})) css.push(`  --shadow-${k}: ${v};`);
   css.push('}', '');
 
   const jsObj = { color: Object.fromEntries(colors.map(([n, c]) => [n, cssColor(c)])), font: tokens.font, lineHeight: tokens.lineHeight };

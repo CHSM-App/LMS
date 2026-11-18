@@ -55,6 +55,8 @@ export const tokens = {
   "font": {
     "family": "'Mukta', 'Noto Sans Devanagari', system-ui, sans-serif",
     "familyName": "Mukta",
+    "$familyWeb": "Web only. Inter for Latin text, Noto Sans Devanagari for Marathi/Hindi. Mobile keeps the bundled Mukta.",
+    "familyWeb": "'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, 'Segoe UI', sans-serif",
     "weightRegular": 400,
     "weightMedium": 500,
     "weightSemibold": 600,

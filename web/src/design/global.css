@@ -12,14 +12,26 @@ body {
   font-size: var(--text-base);
   line-height: var(--line-height-body);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   overflow-wrap: anywhere;
 }
 
-h1, h2, h3, h4 { color: var(--color-heading); line-height: var(--line-height-heading); margin: 0 0 var(--space-3); font-weight: var(--font-weight-bold); }
-h1 { font-size: var(--text-xxl); font-weight: var(--font-weight-extrabold); }
-h2 { font-size: var(--text-lg); }
-h3 { font-size: var(--text-md); }
+/* Footer stays at the bottom on short pages. */
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+
+h1, h2, h3, h4 {
+  color: var(--color-heading); line-height: var(--line-height-heading); margin: 0 0 var(--space-3);
+  font-weight: var(--font-weight-bold); letter-spacing: var(--letter-spacing-heading);
+}
+h1 { font-size: var(--text-xxl); }
+h2 { font-size: var(--text-lg); font-weight: var(--font-weight-semibold); }
+h3 { font-size: var(--text-md); font-weight: var(--font-weight-semibold); }
+/* Negative tracking breaks Devanagari conjuncts. */
+:lang(mr) :is(h1, h2, h3, h4, .page-header__title, .home-hero__title, .stat__value),
+:lang(hi) :is(h1, h2, h3, h4, .page-header__title, .home-hero__title, .stat__value) { letter-spacing: 0; }
 p { margin: 0 0 var(--space-3); max-width: 72ch; }
+.tabular { font-variant-numeric: tabular-nums; }
 img, video { max-width: 100%; display: block; }
 button, input, select, textarea { font: inherit; color: inherit; }
 
@@ -28,8 +40,8 @@ a, .link {
   text-decoration: underline;
   text-decoration-color: var(--color-link-underline);
   text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
-  font-weight: var(--font-weight-semibold);
+  text-underline-offset: 4px;
+  font-weight: var(--font-weight-medium);
 }
 a:hover, .link:hover { text-decoration-thickness: 3px; }
 
@@ -55,7 +67,8 @@ a:hover, .link:hover { text-decoration-thickness: 3px; }
 .grid { display: grid; gap: var(--space-4); }
 .grid--2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .grid--3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.container { width: 100%; max-width: var(--size-content); margin: 0 auto; padding: 0 var(--space-4); }
+.container { width: 100%; max-width: var(--size-content); margin: 0 auto; padding: 0 var(--space-5); }
+@media (max-width: 640px) { .container { padding: 0 var(--space-4); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }

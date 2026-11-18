@@ -43,3 +43,15 @@ test('generator writes identical values to CSS, JS and Dart', () => {
   assert.match(css, /--text-md: 19px;/);
   assert.match(dart, /static const double textMd = 19;/);
 });
+
+test('web uses its own font stack; mobile keeps the bundled font', () => {
+  const out = fs.mkdtempSync(path.join(require('os').tmpdir(), 'tokens-'));
+  const files = build({ cssPath: path.join(out, 't.css'), jsPath: path.join(out, 't.js'), dartPath: path.join(out, 't.dart') });
+  const css = fs.readFileSync(files.cssPath, 'utf8');
+  const dart = fs.readFileSync(files.dartPath, 'utf8');
+  assert.ok(tokens.font.familyWeb, 'font.familyWeb is required');
+  assert.ok(css.includes(`--font-family: ${tokens.font.familyWeb};`));
+  assert.match(css, /--letter-spacing-heading: -0\.02em;/);
+  assert.match(css, /--shadow-card: 0 1px 2px var\(--color-shadow\)/);
+  assert.match(dart, new RegExp(`fontFamily = '${tokens.font.familyName}'`));
+});
