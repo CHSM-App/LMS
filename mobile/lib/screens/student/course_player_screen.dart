@@ -124,14 +124,15 @@ class _LessonPanelState extends ConsumerState<_LessonPanel> {
             children: [
               Text(x.title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: AppTokens.spaceS3),
-              if (x.type == 'video' && x.videoSource == 'upload' && x.url != null)
+              if (x.type == 'live' && x.live != null) _LivePanel(live: x.live!),
+              if ((x.type == 'video' || x.live?.stage == 'recorded') && x.videoSource == 'upload' && x.url != null)
                 VideoView(
                   url: Uri.parse(x.url!),
                   startAt: x.lastPositionSec,
                   onPosition: (sec) => repo.saveProgress(x.id, positionSec: sec).catchError((_) {}),
                   onEnded: x.completed ? null : _complete,
                 ),
-              if (x.type == 'video' && x.videoSource != 'upload' && x.url != null)
+              if ((x.type == 'video' || x.live?.stage == 'recorded') && x.videoSource != 'upload' && x.url != null)
                 AppButton(label: l.sWatchOnSite, variant: AppButtonVariant.secondary, icon: Icons.open_in_new, onPressed: () => openExternal(x.url!)),
               if (widget.downloaded)
                 Padding(
@@ -148,6 +149,36 @@ class _LessonPanelState extends ConsumerState<_LessonPanel> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Live lesson: start time and stage; Join while live (opens Meet outside the app);
+/// "Recording coming soon" after it ends. A recording plays like any video (handled by the caller).
+class _LivePanel extends StatelessWidget {
+  const _LivePanel({required this.live});
+  final LessonLive live;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTokens.spaceS3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(spacing: AppTokens.spaceS2, crossAxisAlignment: WrapCrossAlignment.center, children: [
+            LiveStageChip(stage: live.stage),
+            Text(l.sLiveStartsAt(formatDateTime(context, live.startsAt)), style: const TextStyle(color: AppTokens.textSecondary)),
+          ]),
+          const SizedBox(height: AppTokens.spaceS2),
+          if (live.stage == 'upcoming') Text(l.sLiveJoinOpens, style: const TextStyle(color: AppTokens.textSecondary)),
+          if (live.stage == 'live' && live.meetLink != null)
+            AppButton(label: l.sLiveJoin, icon: Icons.videocam_outlined, onPressed: () => openExternal(live.meetLink!)),
+          if (live.stage == 'ended') Text(l.sLiveRecordingSoon),
+          if (live.stage == 'cancelled') Text(l.sLiveCancelledText),
+        ],
       ),
     );
   }

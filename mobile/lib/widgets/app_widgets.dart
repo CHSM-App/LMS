@@ -203,7 +203,7 @@ class StatusBadge extends StatelessWidget {
   final String label;
 
   static (Color, Color, String) styleFor(String status) {
-    const approved = {'approved', 'published', 'completed', 'active', 'answered', 'present'};
+    const approved = {'approved', 'published', 'completed', 'active', 'answered', 'present', 'recorded'};
     const pending = {'pending', 'scheduled', 'open', 'upcoming', 'live'};
     const rejected = {'rejected', 'blocked'};
     if (approved.contains(status)) return (AppTokens.statusApprovedBg, AppTokens.statusApprovedFg, '✓');

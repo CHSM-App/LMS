@@ -206,5 +206,15 @@
   "sNeedCourse": "अभ्यासक्रम निवडा",
   "sDemoTitle": "थेट डेमो विनंती",
   "sVideoDone": "व्हिडिओ संपला",
-  "sSave": "जतन करा"
+  "sSave": "जतन करा",
+  "sLiveUpcoming": "आगामी",
+  "sLiveNow": "आता लाइव्ह",
+  "sLiveEnded": "संपला",
+  "sLiveRecorded": "रेकॉर्ड केलेला",
+  "sLiveCancelled": "रद्द",
+  "sLiveJoin": "वर्गात सामील व्हा",
+  "sLiveRecordingSoon": "रेकॉर्डिंग लवकरच येईल",
+  "sLiveStartsAt": "सुरुवात {when}",
+  "sLiveCancelledText": "हा वर्ग रद्द झाला आहे.",
+  "sLiveJoinOpens": "वर्गाच्या 10 मिनिटे आधी सामील व्हा बटण दिसेल."
 }

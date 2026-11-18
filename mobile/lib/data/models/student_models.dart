@@ -151,16 +151,38 @@ class StudentDashboard {
 }
 
 // ---------- Player ----------
+/// Schedule and stage of a live lesson. Stage: upcoming | live | ended | recorded | cancelled.
+/// The Meet link is sent by the API only while the lesson is upcoming or live.
+@immutable
+class LessonLive {
+  const LessonLive({required this.startsAt, required this.durationMin, required this.stage, this.meetLink});
+  final DateTime startsAt;
+  final int durationMin;
+  final String stage;
+  final String? meetLink;
+
+  static LessonLive? fromJson(dynamic j) {
+    if (j is! Map) return null;
+    return LessonLive(
+      startsAt: DateTime.parse(j['startsAt'] as String),
+      durationMin: _int(j['durationMin']),
+      stage: j['stage'] as String,
+      meetLink: j['meetLink'] as String?,
+    );
+  }
+}
+
 @immutable
 class Lesson {
-  const Lesson({required this.id, required this.title, required this.type, this.videoSource, this.completed = false, this.locked = false, this.downloadable = false});
+  const Lesson({required this.id, required this.title, required this.type, this.videoSource, this.completed = false, this.locked = false, this.downloadable = false, this.live});
   final int id;
   final String title;
-  final String type; // video | pdf | link
+  final String type; // video | pdf | link | live
   final String? videoSource;
   final bool completed;
   final bool locked;
   final bool downloadable;
+  final LessonLive? live;
 
   factory Lesson.fromJson(Json j) => Lesson(
         id: _int(j['id']),
@@ -170,6 +192,7 @@ class Lesson {
         completed: j['completed'] == true,
         locked: j['locked'] == true,
         downloadable: j['downloadable'] == true,
+        live: LessonLive.fromJson(j['live']),
       );
 }
 
@@ -217,7 +240,7 @@ class CourseView {
 
 @immutable
 class LessonDetail {
-  const LessonDetail({required this.id, required this.courseId, required this.title, required this.type, this.videoSource, this.url, this.lastPositionSec = 0, this.completed = false, this.downloadable = false});
+  const LessonDetail({required this.id, required this.courseId, required this.title, required this.type, this.videoSource, this.url, this.lastPositionSec = 0, this.completed = false, this.downloadable = false, this.live});
   final int id;
   final int courseId;
   final String title;
@@ -227,6 +250,7 @@ class LessonDetail {
   final int lastPositionSec;
   final bool completed;
   final bool downloadable;
+  final LessonLive? live;
 
   factory LessonDetail.fromJson(Json j) => LessonDetail(
         id: _int(j['id']),
@@ -238,6 +262,7 @@ class LessonDetail {
         lastPositionSec: _int(j['lastPositionSec']),
         completed: j['completed'] == true,
         downloadable: j['downloadable'] == true,
+        live: LessonLive.fromJson(j['live']),
       );
 }
 

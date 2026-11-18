@@ -686,4 +686,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sSave => 'Save';
+
+  @override
+  String get sLiveUpcoming => 'Upcoming';
+
+  @override
+  String get sLiveNow => 'Live now';
+
+  @override
+  String get sLiveEnded => 'Ended';
+
+  @override
+  String get sLiveRecorded => 'Recorded';
+
+  @override
+  String get sLiveCancelled => 'Cancelled';
+
+  @override
+  String get sLiveJoin => 'Join class';
+
+  @override
+  String get sLiveRecordingSoon => 'Recording coming soon';
+
+  @override
+  String sLiveStartsAt(String when) {
+    return 'Starts $when';
+  }
+
+  @override
+  String get sLiveCancelledText => 'This class was cancelled.';
+
+  @override
+  String get sLiveJoinOpens =>
+      'The Join button appears 10 minutes before the class.';
 }

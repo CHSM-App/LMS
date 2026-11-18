@@ -686,4 +686,36 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get sSave => 'जतन करा';
+
+  @override
+  String get sLiveUpcoming => 'आगामी';
+
+  @override
+  String get sLiveNow => 'आता लाइव्ह';
+
+  @override
+  String get sLiveEnded => 'संपला';
+
+  @override
+  String get sLiveRecorded => 'रेकॉर्ड केलेला';
+
+  @override
+  String get sLiveCancelled => 'रद्द';
+
+  @override
+  String get sLiveJoin => 'वर्गात सामील व्हा';
+
+  @override
+  String get sLiveRecordingSoon => 'रेकॉर्डिंग लवकरच येईल';
+
+  @override
+  String sLiveStartsAt(String when) {
+    return 'सुरुवात $when';
+  }
+
+  @override
+  String get sLiveCancelledText => 'हा वर्ग रद्द झाला आहे.';
+
+  @override
+  String get sLiveJoinOpens => 'वर्गाच्या 10 मिनिटे आधी सामील व्हा बटण दिसेल.';
 }

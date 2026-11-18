@@ -405,5 +405,22 @@
   "sNeedCourse": "Choose a course",
   "sDemoTitle": "Live demo request",
   "sVideoDone": "Video finished",
-  "sSave": "Save"
+  "sSave": "Save",
+  "sLiveUpcoming": "Upcoming",
+  "sLiveNow": "Live now",
+  "sLiveEnded": "Ended",
+  "sLiveRecorded": "Recorded",
+  "sLiveCancelled": "Cancelled",
+  "sLiveJoin": "Join class",
+  "sLiveRecordingSoon": "Recording coming soon",
+  "sLiveStartsAt": "Starts {when}",
+  "sLiveCancelledText": "This class was cancelled.",
+  "sLiveJoinOpens": "The Join button appears 10 minutes before the class.",
+  "@sLiveStartsAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  }
 }

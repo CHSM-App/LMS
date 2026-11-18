@@ -206,5 +206,15 @@
   "sNeedCourse": "कोर्स चुनें",
   "sDemoTitle": "लाइव डेमो अनुरोध",
   "sVideoDone": "वीडियो समाप्त",
-  "sSave": "सहेजें"
+  "sSave": "सहेजें",
+  "sLiveUpcoming": "आने वाली",
+  "sLiveNow": "अभी लाइव",
+  "sLiveEnded": "समाप्त",
+  "sLiveRecorded": "रिकॉर्ड की गई",
+  "sLiveCancelled": "रद्द",
+  "sLiveJoin": "क्लास में जुड़ें",
+  "sLiveRecordingSoon": "रिकॉर्डिंग जल्द आएगी",
+  "sLiveStartsAt": "शुरुआत {when}",
+  "sLiveCancelledText": "यह क्लास रद्द हो गई है।",
+  "sLiveJoinOpens": "क्लास से 10 मिनट पहले जुड़ें बटन दिखेगा।"
 }

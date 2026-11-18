@@ -4,6 +4,7 @@ import '../../../core/theme/app_tokens.g.dart';
 import '../../../data/models/student_models.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../../presentation/viewModels/download_viewmodel.dart';
+import '../../../widgets/app_widgets.dart';
 
 /// One lesson in the course list. The download control appears only for uploaded videos
 /// (YouTube/Vimeo/Bunny links can only be watched online). There is no share action.
@@ -17,11 +18,13 @@ class LessonRow extends StatelessWidget {
   final VoidCallback? onResume;
   final bool selected;
 
-  bool get _canDownload => lesson.type == 'video' && lesson.videoSource == 'upload';
+  // Uploaded videos and uploaded live-lesson recordings only.
+  bool get _canDownload => (lesson.type == 'video' || lesson.type == 'live') && lesson.videoSource == 'upload';
 
   IconData get _icon => switch (lesson.type) {
         'video' => Icons.play_circle_outline,
         'pdf' => Icons.description_outlined,
+        'live' => Icons.videocam_outlined,
         _ => Icons.link,
       };
 
@@ -34,7 +37,11 @@ class LessonRow extends StatelessWidget {
       enabled: !lesson.locked,
       leading: Icon(lesson.completed ? Icons.check_circle : (lesson.locked ? Icons.lock_outline : _icon), color: lesson.completed ? AppTokens.successText : AppTokens.textSecondary),
       title: Text(lesson.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-      subtitle: lesson.locked ? Text(l.sLocked) : (download == null ? null : DownloadChip(item: download!)),
+      subtitle: lesson.locked
+          ? Text(l.sLocked)
+          : (download != null
+              ? DownloadChip(item: download!)
+              : (lesson.live == null ? null : Align(alignment: Alignment.centerLeft, child: LiveStageChip(stage: lesson.live!.stage)))),
       trailing: _canDownload && !lesson.locked ? _trailing(l) : null,
       onTap: lesson.locked ? null : onTap,
     );
@@ -70,4 +77,21 @@ class DownloadChip extends StatelessWidget {
     };
     return Text(text, style: const TextStyle(fontSize: AppTokens.textSm, color: AppTokens.textSecondary));
   }
+}
+
+/// Stage of a live lesson as a status badge (colours from the theme tokens).
+class LiveStageChip extends StatelessWidget {
+  const LiveStageChip({super.key, required this.stage});
+  final String stage;
+
+  static String label(AppLocalizations l, String stage) => switch (stage) {
+        'live' => l.sLiveNow,
+        'ended' => l.sLiveEnded,
+        'recorded' => l.sLiveRecorded,
+        'cancelled' => l.sLiveCancelled,
+        _ => l.sLiveUpcoming,
+      };
+
+  @override
+  Widget build(BuildContext context) => StatusBadge(status: stage, label: label(AppLocalizations.of(context), stage));
 }

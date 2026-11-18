@@ -1341,6 +1341,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save'**
   String get sSave;
+
+  /// No description provided for @sLiveUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get sLiveUpcoming;
+
+  /// No description provided for @sLiveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now'**
+  String get sLiveNow;
+
+  /// No description provided for @sLiveEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get sLiveEnded;
+
+  /// No description provided for @sLiveRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded'**
+  String get sLiveRecorded;
+
+  /// No description provided for @sLiveCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get sLiveCancelled;
+
+  /// No description provided for @sLiveJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Join class'**
+  String get sLiveJoin;
+
+  /// No description provided for @sLiveRecordingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording coming soon'**
+  String get sLiveRecordingSoon;
+
+  /// No description provided for @sLiveStartsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts {when}'**
+  String sLiveStartsAt(String when);
+
+  /// No description provided for @sLiveCancelledText.
+  ///
+  /// In en, this message translates to:
+  /// **'This class was cancelled.'**
+  String get sLiveCancelledText;
+
+  /// No description provided for @sLiveJoinOpens.
+  ///
+  /// In en, this message translates to:
+  /// **'The Join button appears 10 minutes before the class.'**
+  String get sLiveJoinOpens;
 }
 
 class _AppLocalizationsDelegate
