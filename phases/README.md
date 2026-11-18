@@ -15,6 +15,7 @@ Before starting any phase, read `CLAUDE.md` and `guidelines/README.md`.
 | 8 | [phase-08-public-site.md](phase-08-public-site.md) | Public course list, course details, live demo request (**consent**), footer | 5, 7 |
 | 9 | [phase-09-student.md](phase-09-student.md) | Enrollment, dashboard, player (**online streaming**), exams, results, doubts, progress (**batch-aware**), **offline download licences API** | 6, 7, 8 |
 | 10 | [phase-10-notifications-flutter-release.md](phase-10-notifications-flutter-release.md) | Notifications, **student app** completion + **offline video downloads (encrypted, no sharing)**, full tests, Plesk build, **Play Store / WhatsApp / DLT compliance** | all |
+| 11 | [phase-11-live-lessons.md](phase-11-live-lessons.md) | **Live lessons inside modules** (Upcoming → Join → Recorded), recordings, 60/15-min reminders, web builder + player, student app | 5, 7, 9, 10 |
 
 **Decisions that change the original spec are in `guidelines/DECISIONS.md`.** ⏸️ = greyed out for v1.
 

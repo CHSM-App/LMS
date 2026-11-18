@@ -59,6 +59,27 @@ Items marked **(assumed)** are defaults that still need the owner's confirmation
    - A warning when phone storage is low
 10. **Progress offline:** watch position and "mark complete" are saved on the phone and synced the next time the app is online.
 
+## Live lessons inside modules (confirmed 2026-11-18)
+Added 2026-11-18. A module can mix **recorded** lessons (video, PDF, link) and **live** lessons,
+so a course can be fully recorded, fully live, or mixed (hybrid).
+
+1. **New content type `live`:** besides video, PDF and link, the teacher can add a live lesson
+   to any module. It has a title*, date*, time*, duration, and a Meet link* (created
+   automatically, or pasted by the teacher as a fallback, same as live classes).
+2. **Who:** a live lesson targets **one batch or all batches**, same as live classes.
+3. **Lesson stages:** Upcoming → Live now (Join button) → Ended → Recorded.
+4. **Recording:** after the class, the teacher adds the recording to the **same lesson**,
+   either as an **upload** or a **link** (YouTube unlisted / Vimeo / Bunny). Uploaded
+   recordings follow the offline download rules.
+5. **Missed class:** if the class ended and no recording exists yet, the student sees
+   "Recording coming soon". Once added, the lesson plays like any recorded video.
+6. **Attendance:** taken for live lessons the same way as for live classes.
+7. **Reminders:** **1 hour and 15 minutes** before the start, by **in-app notification and WhatsApp**.
+8. **Publishing:** a live lesson counts as content for the "at least 1 content" publish
+   check. The teacher can add live lessons after the course is published.
+9. **Existing live classes:** the separate live classes list stays as it is, for classes
+   that don't belong to a module (e.g. a general doubt session).
+
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**
 - Student audience (school / college / competitive exams / skills) **(assumed: school + competitive exam coaching in Maharashtra)**
