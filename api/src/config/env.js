@@ -6,6 +6,12 @@ function loadConfig(env = process.env) {
   for (const key of REQUIRED) {
     if (!env[key]) throw new Error(`Missing env: ${key}`);
   }
+  // Dev/demo only: every OTP becomes this code. Never allowed in production.
+  const otpFixedCode = env.OTP_FIXED_CODE || null;
+  if (otpFixedCode) {
+    if (!/^\d{6}$/.test(otpFixedCode)) throw new Error('OTP_FIXED_CODE must be 6 digits');
+    if (env.NODE_ENV === 'production') throw new Error('OTP_FIXED_CODE is not allowed in production');
+  }
   return {
     port: Number(env.PORT || 4000),
     nodeEnv: env.NODE_ENV || 'development',
@@ -26,6 +32,7 @@ function loadConfig(env = process.env) {
       refreshTtlDays: 30,
     },
     otpSecret: env.OTP_SECRET,
+    otpFixedCode,
     downloadKeySecret: env.DOWNLOAD_KEY_SECRET || env.OTP_SECRET,
     fileSigningSecret: env.FILE_SIGNING_SECRET || env.OTP_SECRET,
     webOrigin: env.WEB_ORIGIN,

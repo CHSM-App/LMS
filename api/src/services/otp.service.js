@@ -6,6 +6,7 @@ const { maskMobile } = require('../utils/mobile');
 const { otpSender } = require('../providers/otp');
 const { clock } = require('../utils/clock');
 const { APIError, badRequest } = require('../utils/APIError');
+const { config } = require('../config/env');
 
 const EXPIRY_MS = 5 * 60 * 1000;
 const WINDOW_MS = 15 * 60 * 1000;
@@ -16,7 +17,7 @@ const RESEND_AFTER_SEC = 30;
 const hash = (mobile, purpose, code) =>
   crypto.createHmac('sha256', process.env.OTP_SECRET).update(`${mobile}|${purpose}|${code}`).digest();
 
-const generate = () => String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+const generate = () => config().otpFixedCode || String(crypto.randomInt(0, 1000000)).padStart(6, '0');
 
 // Sends a new OTP. Same response for known and unknown numbers.
 async function send(mobile, purpose) {
@@ -101,4 +102,4 @@ async function verify(mobile, purpose, code, tx) {
   return true;
 }
 
-module.exports = { send, verify, MAX_SENDS, MAX_ATTEMPTS };
+module.exports = { send, verify, generate, MAX_SENDS, MAX_ATTEMPTS };
