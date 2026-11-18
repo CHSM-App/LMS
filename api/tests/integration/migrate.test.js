@@ -37,3 +37,11 @@ test('all foreign keys are trusted', async () => {
   const r = await pool.request().query('SELECT COUNT(*) AS n FROM sys.foreign_keys WHERE is_not_trusted = 1');
   expect(r.recordset[0].n).toBe(0);
 });
+
+test('006 adds live lesson columns', async () => {
+  const pool = await getPool();
+  const r = await pool.request().query(`SELECT TABLE_NAME t, COLUMN_NAME c FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE (TABLE_NAME = 'contents' AND COLUMN_NAME = 'live_class_id')
+       OR (TABLE_NAME = 'live_classes' AND COLUMN_NAME = 'reminder2_sent_at')`);
+  expect(r.recordset).toHaveLength(2);
+});
