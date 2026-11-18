@@ -61,8 +61,9 @@ async function findPublished(slug) {
 }
 
 // Lesson titles are public; only free-preview lessons carry a (short-lived) link.
+// Live lessons are never previews: no Meet link and no recording on the public site.
 function previewUrl(x) {
-  if (!x.is_free_preview) return undefined;
+  if (!x.is_free_preview || x.type === 'live') return undefined;
   if (x.file_key) return storage.signedUrl(x.file_key, 3600);
   return x.url;
 }
@@ -94,7 +95,7 @@ async function details(slug) {
           contents: contents
             .filter((x) => x.module_id === m.module_id)
             .map((x) => {
-              const out = { title: x.title, type: x.type, isFreePreview: x.is_free_preview };
+              const out = { title: x.title, type: x.type, isFreePreview: x.type !== 'live' && x.is_free_preview };
               const url = previewUrl(x);
               if (url) {
                 out.previewUrl = url;

@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const { query, one, T } = require('../db/query');
 const storage = require('../providers/storage');
-const { courseAccess } = require('./studentAccess');
+const { courseAccess, loadContent, isVisible } = require('./studentAccess');
 const { loadEnrollment } = require('../middlewares/enrollment');
 const { clock, todayIST } = require('../utils/clock');
 const { APIError, badRequest, conflict, notFound } = require('../utils/APIError');
@@ -91,11 +91,13 @@ async function licenceExpiry(studentId, content) {
 async function issue(studentId, contentId, deviceId) {
   const dev = checkDeviceId(deviceId);
   if (!(await activeDevice(studentId, dev))) throw new APIError(403, 'Register this device first', 'DEVICE_NOT_REGISTERED');
-  const c = await one('SELECT * FROM dbo.contents WHERE content_id = @id', { id: T.int(Number(contentId)) });
+  const c = await loadContent(contentId);
   if (!c) throw notFound('Lesson not found');
-  if (c.type !== 'video') throw badRequest('Only videos can be downloaded');
+  if (c.type !== 'video' && c.type !== 'live') throw badRequest('Only videos can be downloaded');
+  const { enrollment } = await courseAccess(studentId, c.course_id);
+  if (!isVisible(c, enrollment)) throw notFound('Lesson not found');
+  if (c.type === 'live' && !c.video_source) throw conflict('The recording is not ready yet', 'NO_RECORDING');
   if (c.video_source !== 'upload') throw conflict('This video can only be watched online', 'ONLINE_ONLY');
-  await courseAccess(studentId, c.course_id);
   const reason = await blockReason(studentId, c);
   if (reason) throw new APIError(403, reason === 'teacher_inactive' ? "This course is read-only because the teacher's account is inactive" : 'You cannot download this lesson now', 'DOWNLOAD_NOT_ALLOWED');
   const expires = await licenceExpiry(studentId, c);

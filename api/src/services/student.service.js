@@ -5,7 +5,8 @@ const { notify } = require('./notification.service');
 const catalog = require('./publicCatalog.service');
 const storage = require('../providers/storage');
 const { accessStatus } = require('./enrollment.service');
-const { courseAccess, requireWritable, contentWithAccess } = require('./studentAccess');
+const { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql } = require('./studentAccess');
+const { liveStage } = require('../domain/liveLesson');
 const { sanitize } = require('../utils/sanitize');
 const { clock } = require('../utils/clock');
 const { text } = require('../utils/validate');
@@ -67,9 +68,12 @@ async function enrolledCourses(studentId) {
   return query(
     `SELECT e.enrollment_id, e.course_id, e.batch_id, c.title, c.slug, c.thumbnail_key, u.name AS teacher_name, u.status AS teacher_status,
             b.name AS batch_name, s.start_date, s.end_date, s.access_enabled,
-            (SELECT COUNT(*) FROM dbo.contents x WHERE x.course_id = e.course_id) AS total_lessons,
+            (SELECT COUNT(*) FROM dbo.contents x LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
+              WHERE x.course_id = e.course_id AND ${visibleSql('e.batch_id')}) AS total_lessons,
             (SELECT COUNT(*) FROM dbo.content_progress p JOIN dbo.contents x ON x.content_id = p.content_id
-              WHERE p.student_id = e.student_id AND x.course_id = e.course_id AND p.completed_at IS NOT NULL) AS done_lessons
+              LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
+              WHERE p.student_id = e.student_id AND x.course_id = e.course_id AND p.completed_at IS NOT NULL
+                AND ${visibleSql('e.batch_id')}) AS done_lessons
      FROM dbo.enrollments e
      JOIN dbo.courses c ON c.course_id = e.course_id
      JOIN dbo.users u ON u.user_id = e.teacher_id
@@ -97,8 +101,10 @@ const courseOut = (r) => ({
 async function liveClasses(studentId, { upcomingOnly = true } = {}) {
   const now = clock.now();
   const rows = await query(
-    `SELECT l.live_class_id, l.topic, l.starts_at, l.duration_min, l.meet_link, l.status, c.title AS course_title, b.name AS batch_name
+    `SELECT l.live_class_id, l.course_id, l.topic, l.starts_at, l.duration_min, l.meet_link, l.status, c.title AS course_title, b.name AS batch_name,
+            x.content_id
      FROM dbo.live_classes l
+     LEFT JOIN dbo.contents x ON x.live_class_id = l.live_class_id
      JOIN dbo.enrollments e ON e.course_id = l.course_id AND e.student_id = @s AND e.status = 'approved'
      JOIN dbo.student_subscriptions s ON s.enrollment_id = e.enrollment_id AND s.access_enabled = 1
      JOIN dbo.courses c ON c.course_id = l.course_id
@@ -111,6 +117,8 @@ async function liveClasses(studentId, { upcomingOnly = true } = {}) {
   );
   return rows.map((r) => ({
     id: r.live_class_id,
+    courseId: r.course_id,
+    contentId: r.content_id || null,
     topic: r.topic,
     course: r.course_title,
     batch: r.batch_name,
@@ -129,15 +137,17 @@ async function dashboard(studentId) {
 
 // ---------- Player ----------
 async function courseView(studentId, courseId) {
-  const { readOnly } = await courseAccess(studentId, courseId);
+  const { readOnly, enrollment } = await courseAccess(studentId, courseId);
   const c = await one('SELECT course_id, title, slug FROM dbo.courses WHERE course_id = @c', { c: T.int(Number(courseId)) });
-  const p = { c: T.int(c.course_id), s: T.int(studentId) };
+  const p = { c: T.int(c.course_id), s: T.int(studentId), b: T.int(enrollment.batch_id ?? null) };
   const subjects = await query('SELECT * FROM dbo.subjects WHERE course_id = @c ORDER BY sort_order', p);
   const modules = await query('SELECT * FROM dbo.modules WHERE course_id = @c ORDER BY sort_order', p);
   const contents = await query(
-    `SELECT x.content_id, x.module_id, x.title, x.type, x.video_source, x.file_key, p.completed_at, p.last_position_sec
+    `SELECT x.content_id, x.module_id, x.title, x.type, x.video_source, x.file_key, x.live_class_id, p.completed_at, p.last_position_sec,
+            l.starts_at AS live_starts_at, l.duration_min AS live_duration_min, l.status AS live_status
      FROM dbo.contents x LEFT JOIN dbo.content_progress p ON p.content_id = x.content_id AND p.student_id = @s
-     WHERE x.course_id = @c ORDER BY x.sort_order`,
+     LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
+     WHERE x.course_id = @c AND ${visibleSql('@b')} ORDER BY x.sort_order`,
     p,
   );
   const done = contents.filter((x) => x.completed_at).length;
@@ -156,23 +166,37 @@ async function courseView(studentId, courseId) {
           name: m.name,
           contents: contents
             .filter((x) => x.module_id === m.module_id)
-            .map((x) => ({
-              id: x.content_id,
-              title: x.title,
-              type: x.type,
-              videoSource: x.video_source,
-              completed: !!x.completed_at,
-              locked: readOnly && !x.completed_at,
-              downloadable: x.type === 'video' && x.video_source === 'upload',
-            })),
+            .map((x) => {
+              const o = {
+                id: x.content_id,
+                title: x.title,
+                type: x.type,
+                videoSource: x.video_source,
+                completed: !!x.completed_at,
+                locked: readOnly && !x.completed_at,
+                downloadable: isDownloadable(x),
+              };
+              if (x.type === 'live') o.live = liveSummary(x);
+              return o;
+            }),
         })),
     })),
   };
 }
 
+// Uploaded videos and uploaded live-lesson recordings can be saved offline.
+const isDownloadable = (x) => (x.type === 'video' || x.type === 'live') && x.video_source === 'upload';
+
+// x: content row with live_* columns.
+function liveSummary(x) {
+  const hasRecording = !!x.video_source;
+  const stage = liveStage({ status: x.live_status, startsAt: x.live_starts_at, durationMin: x.live_duration_min, hasRecording }, clock.now());
+  return { startsAt: x.live_starts_at, durationMin: x.live_duration_min, stage };
+}
+
 async function contentView(studentId, contentId) {
   const { content: x, progress } = await contentWithAccess(studentId, contentId);
-  return {
+  const out = {
     id: x.content_id,
     courseId: x.course_id,
     title: x.title,
@@ -181,8 +205,14 @@ async function contentView(studentId, contentId) {
     url: x.file_key ? storage.signedUrl(x.file_key) : x.url,
     lastPositionSec: progress ? progress.last_position_sec : 0,
     completed: !!(progress && progress.completed_at),
-    downloadable: x.type === 'video' && x.video_source === 'upload',
+    downloadable: isDownloadable(x),
   };
+  if (x.type === 'live') {
+    out.live = liveSummary(x);
+    // The Meet link is shared only until the class ends.
+    if (['upcoming', 'live'].includes(out.live.stage)) out.live.meetLink = x.live_meet_link;
+  }
+  return out;
 }
 
 async function upsertProgress(studentId, contentId, { positionSec, completed, completedAt }, tx) {
@@ -206,9 +236,10 @@ async function upsertProgress(studentId, contentId, { positionSec, completed, co
 }
 
 async function saveProgress(studentId, contentId, body) {
-  const c = await one('SELECT content_id, course_id FROM dbo.contents WHERE content_id = @id', { id: T.int(Number(contentId)) });
+  const c = await loadContent(contentId);
   if (!c) throw new APIError(404, 'Lesson not found');
-  await requireWritable(studentId, c.course_id);
+  const { enrollment } = await requireWritable(studentId, c.course_id);
+  if (!isVisible(c, enrollment)) throw new APIError(404, 'Lesson not found');
   await upsertProgress(studentId, c.content_id, { positionSec: body.positionSec, completed: body.completed === true });
   return { saved: true };
 }
@@ -218,10 +249,11 @@ async function syncProgress(studentId, items) {
   if (!Array.isArray(items) || items.length > 500) throw badRequest('items: send up to 500 progress entries');
   let applied = 0;
   for (const it of items) {
-    const c = await one('SELECT content_id, course_id FROM dbo.contents WHERE content_id = @id', { id: T.int(Number(it.contentId)) });
+    const c = await loadContent(it.contentId);
     if (!c) continue;
     try {
-      await courseAccess(studentId, c.course_id);
+      const { enrollment } = await courseAccess(studentId, c.course_id);
+      if (!isVisible(c, enrollment)) continue;
     } catch {
       continue;
     }

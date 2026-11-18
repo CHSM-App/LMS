@@ -1,0 +1,129 @@
+const { app, request, reset, closeAll, clock } = require('../../setup/helpers');
+const { world, asStudent, query, one, T } = require('../../setup/student');
+const { liveLessonBody, uploadVideo } = require('../../setup/content');
+const { student, activeEnrollment } = require('../../setup/operations');
+
+beforeEach(async () => {
+  await reset();
+  clock.set(new Date('2026-06-15T10:00:00Z'));
+  process.env.MEET_PROVIDER = 'console';
+});
+afterAll(async () => {
+  clock.reset();
+  await closeAll();
+});
+
+const START = '2026-06-15T12:30:00Z'; // lesson runs 12:30–13:30 UTC, join from 12:20
+const MEET = 'https://meet.google.com/abc-defg-hij';
+
+async function withLive(over = {}) {
+  const w = await world();
+  const r = await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, liveLessonBody({ startsAt: START, ...over }));
+  expect(r.status).toBe(201);
+  return { ...w, live: r.body.data };
+}
+
+const lessonIn = (view, id) => view.body.data.subjects.flatMap((s) => s.modules).flatMap((m) => m.contents).find((x) => x.id === id);
+const keysOf = (v) => (Array.isArray(v) ? v.flatMap(keysOf) : v && typeof v === 'object' ? Object.entries(v).flatMap(([k, x]) => [k, ...keysOf(x)]) : []);
+
+test('course view shows the live lesson as upcoming without a Meet link', async () => {
+  const w = await withLive();
+  const view = await w.s.get(`/api/v1/student/courses/${w.courseId}`);
+  const x = lessonIn(view, w.live.id);
+  expect(x).toMatchObject({ type: 'live', downloadable: false, live: { stage: 'upcoming', durationMin: 60 } });
+  expect(new Date(x.live.startsAt).toISOString()).toBe('2026-06-15T12:30:00.000Z');
+  expect(JSON.stringify(view.body)).not.toContain(MEET);
+});
+
+test('content view has the Meet link only before and during the class', async () => {
+  const w = await withLive();
+  const early = await w.s.get(`/api/v1/student/contents/${w.live.id}`);
+  expect(early.body.data).toMatchObject({ type: 'live', live: { stage: 'upcoming', meetLink: MEET }, url: null });
+  clock.set(new Date('2026-06-15T12:25:00Z'));
+  const during = await w.s.get(`/api/v1/student/contents/${w.live.id}`);
+  expect(during.body.data.live).toMatchObject({ stage: 'live', meetLink: MEET });
+  clock.set(new Date('2026-06-15T13:31:00Z'));
+  const after = await w.s.get(`/api/v1/student/contents/${w.live.id}`);
+  expect(after.body.data.live.stage).toBe('ended');
+  expect(after.body.data.url).toBeNull();
+  expect(JSON.stringify(after.body)).not.toContain(MEET);
+});
+
+test('a student of another batch does not see the lesson', async () => {
+  const w = await world();
+  const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: 'Evening', startDate: '2026-01-01' })).body.data;
+  const r = await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, liveLessonBody({ startsAt: START, batchId: evening.id }));
+  const view = await w.s.get(`/api/v1/student/courses/${w.courseId}`);
+  expect(lessonIn(view, r.body.data.id)).toBeUndefined();
+  expect((await w.s.get(`/api/v1/student/contents/${r.body.data.id}`)).status).toBe(404);
+  expect((await w.s.post(`/api/v1/student/contents/${r.body.data.id}/progress`, { completed: true })).status).toBe(404);
+  const dash = await w.s.get('/api/v1/student/dashboard');
+  expect(dash.body.data.myCourses[0].progressPct).toBe(0);
+  // A student of the evening batch does see it.
+  const e = await student({ name: 'Evening kid' });
+  await activeEnrollment(w.courseId, w.t.user.user_id, e.user_id, evening.id);
+  const es = await asStudent(e);
+  expect(lessonIn(await es.get(`/api/v1/student/courses/${w.courseId}`), r.body.data.id)).toBeDefined();
+});
+
+test('cancelled lesson shows stage cancelled and no Meet link, and still counts for progress', async () => {
+  const w = await withLive();
+  await query("UPDATE dbo.live_classes SET status = 'cancelled'");
+  clock.set(new Date('2026-06-15T12:25:00Z'));
+  const v = await w.s.get(`/api/v1/student/contents/${w.live.id}`);
+  expect(v.body.data.live.stage).toBe('cancelled');
+  expect(v.body.data.live.meetLink).toBeUndefined();
+  const total = (await one('SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c', { c: T.int(w.courseId) })).n;
+  const first = w.contents[0].content_id;
+  await w.s.post(`/api/v1/student/contents/${first}/progress`, { completed: true });
+  const view = await w.s.get(`/api/v1/student/courses/${w.courseId}`);
+  expect(view.body.data.progressPct).toBe(Math.round(100 / total));
+});
+
+test('recorded lesson plays the recording; uploaded is downloadable, YouTube is online only', async () => {
+  const w = await withLive();
+  const key = await uploadVideo(w.t);
+  await w.t.put(`/api/v1/teacher/contents/${w.live.id}/recording`, { videoSource: 'upload', fileKey: key });
+  const v = await w.s.get(`/api/v1/student/contents/${w.live.id}`);
+  expect(v.body.data).toMatchObject({ videoSource: 'upload', downloadable: true, live: { stage: 'recorded' } });
+  expect(v.body.data.url).toMatch(/\?exp=\d+&sig=/);
+  expect(v.body.data.live.meetLink).toBeUndefined();
+  expect(lessonIn(await w.s.get(`/api/v1/student/courses/${w.courseId}`), w.live.id).downloadable).toBe(true);
+
+  await w.s.post('/api/v1/student/devices', { deviceId: 'device-aaaa-1111', deviceName: 'Redmi', platform: 'android' });
+  const dl = (id) => request(app).post(`/api/v1/student/contents/${id}/download`).set('Authorization', `Bearer ${w.s.token}`).set('X-Device-Id', 'device-aaaa-1111').send({});
+  expect((await dl(w.live.id)).status).toBe(200);
+
+  await w.t.put(`/api/v1/teacher/contents/${w.live.id}/recording`, { videoSource: 'youtube', url: 'https://youtu.be/abcdefgh123' });
+  const yt = await dl(w.live.id);
+  expect(yt.status).toBe(409);
+  expect(yt.body.code).toBe('ONLINE_ONLY');
+});
+
+test('a live lesson without a recording cannot be downloaded', async () => {
+  const w = await withLive();
+  await w.s.post('/api/v1/student/devices', { deviceId: 'device-aaaa-1111', deviceName: 'Redmi', platform: 'android' });
+  const r = await request(app).post(`/api/v1/student/contents/${w.live.id}/download`)
+    .set('Authorization', `Bearer ${w.s.token}`).set('X-Device-Id', 'device-aaaa-1111').send({});
+  expect(r.status).toBe(409);
+});
+
+test('student live classes list links live lessons to their content', async () => {
+  const w = await withLive();
+  const list = await w.s.get('/api/v1/student/live-classes');
+  expect(list.body.data[0]).toMatchObject({ contentId: w.live.id, courseId: w.courseId });
+});
+
+test('public course details list the live lesson title and type with no link', async () => {
+  const w = await withLive();
+  await w.t.put(`/api/v1/teacher/contents/${w.live.id}/recording`, { videoSource: 'youtube', url: 'https://youtu.be/zzzzzzzz999' });
+  // Even if the flag were set by hand, a live lesson never gets a public link.
+  await query('UPDATE dbo.contents SET is_free_preview = 1 WHERE content_id = @id', { id: T.int(w.live.id) });
+  const d = await request(app).get(`/api/v1/public/courses/${w.slug}`);
+  expect(d.status).toBe(200);
+  const lessons = d.body.data.curriculum.flatMap((s) => s.modules).flatMap((m) => m.contents);
+  expect(lessons.find((x) => x.type === 'live')).toEqual({ title: 'Live: factorisation', type: 'live', isFreePreview: false });
+  expect(JSON.stringify(d.body)).not.toContain('zzzzzzzz999');
+  expect(JSON.stringify(d.body)).not.toContain(MEET);
+  expect(keysOf(d.body)).not.toContain('live');
+});

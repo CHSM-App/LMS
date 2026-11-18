@@ -21,10 +21,27 @@ async function requireWritable(studentId, courseId) {
   return a;
 }
 
+// Contents with their live class (live lessons). A live lesson for one batch is invisible to other batches.
+const CONTENT_SQL = `SELECT x.*, l.batch_id AS live_batch_id, l.starts_at AS live_starts_at, l.duration_min AS live_duration_min,
+    l.meet_link AS live_meet_link, l.status AS live_status
+  FROM dbo.contents x LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id`;
+
+// The same rule as SQL; needs aliases x (contents) and l (live_classes) and the student's batch expression.
+const visibleSql = (batchExpr) => `(x.live_class_id IS NULL OR l.batch_id IS NULL OR l.batch_id = ${batchExpr})`;
+
+const isVisible = (c, enrollment) => !c.live_class_id || !c.live_batch_id || c.live_batch_id === (enrollment && enrollment.batch_id);
+
+const loadContent = (contentId) => {
+  const id = Number(contentId);
+  if (!Number.isInteger(id) || id <= 0) return null;
+  return one(`${CONTENT_SQL} WHERE x.content_id = @id`, { id: T.int(id) });
+};
+
 async function contentWithAccess(studentId, contentId) {
-  const c = await one('SELECT * FROM dbo.contents WHERE content_id = @id', { id: T.int(Number(contentId)) });
+  const c = await loadContent(contentId);
   if (!c) throw new APIError(404, 'Lesson not found');
   const access = await courseAccess(studentId, c.course_id);
+  if (!isVisible(c, access.enrollment)) throw new APIError(404, 'Lesson not found');
   const progress = await one('SELECT last_position_sec, completed_at FROM dbo.content_progress WHERE student_id = @s AND content_id = @c', {
     s: T.int(studentId), c: T.int(c.content_id),
   });
@@ -32,4 +49,4 @@ async function contentWithAccess(studentId, contentId) {
   return { content: c, ...access, progress };
 }
 
-module.exports = { courseAccess, requireWritable, contentWithAccess, READ_ONLY_MSG };
+module.exports = { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql, READ_ONLY_MSG };
