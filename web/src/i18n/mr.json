@@ -621,7 +621,11 @@
       "facebook": "Facebook",
       "instagram": "Instagram",
       "linkedin": "LinkedIn"
-    }
+    },
+    "fees": "अभ्यासक्रम शुल्क",
+    "feePlaceholder": "उदाहरण: ₹3000 / वर्ष",
+    "saveFees": "शुल्क जतन करा",
+    "noCourses": "शुल्क ठरवण्यासाठी आधी अभ्यासक्रम तयार करा."
   },
   "teacherDash": {
     "hello": "नमस्कार, {{name}}",

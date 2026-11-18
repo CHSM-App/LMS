@@ -621,7 +621,11 @@
       "facebook": "Facebook",
       "instagram": "Instagram",
       "linkedin": "LinkedIn"
-    }
+    },
+    "fees": "Course fees",
+    "feePlaceholder": "For example: ₹3000 / year",
+    "saveFees": "Save fees",
+    "noCourses": "Create a course first to set its fee."
   },
   "teacherDash": {
     "hello": "Hello, {{name}}",

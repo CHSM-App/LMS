@@ -9,8 +9,7 @@ import { VideoSourceField } from './VideoSourceField';
 import { CurriculumTab } from './CurriculumTab';
 import { BatchesTab } from './BatchesTab';
 import { LANGUAGE_OPTIONS } from './CoursesPage';
-
-const toVideoInput = (v) => (v ? (v.source === 'upload' ? { source: 'upload', fileKey: v.fileKey } : { source: v.source, url: v.url }) : null);
+import { toCourseInput } from './courseInput';
 
 function DetailsTab({ course, onSaved }) {
   const { t } = useTranslation();
@@ -29,18 +28,7 @@ function DetailsTab({ course, onSaved }) {
   }));
   const [thumbError, setThumbError] = useState('');
   const save = useMutation({
-    mutationFn: () =>
-      api.put(`/teacher/courses/${course.id}`, {
-        title: f.title,
-        subject: f.subject,
-        language: f.language,
-        description: f.description,
-        durationText: f.durationText || null,
-        feeDisplay: f.feeDisplay || null,
-        thumbnailKey: f.thumbnailKey || null,
-        demoVideo1: toVideoInput(f.demoVideo1),
-        demoVideo2: toVideoInput(f.demoVideo2),
-      }),
+    mutationFn: () => api.put(`/teacher/courses/${course.id}`, toCourseInput(f)),
     onSuccess: () => {
       toast.show({ message: t('common.saved') });
       onSaved();

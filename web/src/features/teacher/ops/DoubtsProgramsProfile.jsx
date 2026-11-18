@@ -7,6 +7,7 @@ import { Button, Card, EmptyState, FileUpload, Input, Modal, PageHeader, Select,
 import { formatDateTime } from '../../../utils/format';
 import { uploadSmall } from '../../../utils/upload';
 import { useCourseModules } from '../exams/useCourseModules';
+import { toCourseInput } from '../courses/courseInput';
 
 export function DoubtsPage() {
   const { t, i18n } = useTranslation();
@@ -127,6 +128,55 @@ function ProgramDialog({ item, courses, onClose, onDone }) {
 
 const SOCIAL = ['website', 'youtube', 'facebook', 'instagram', 'linkedin'];
 
+// Fees are stored per course; this card edits them all from the public profile page.
+function CourseFeesCard() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const q = useQuery({ queryKey: ['teacher', 'courses'], queryFn: () => api.get('/teacher/courses') });
+  const courses = q.data?.data || [];
+  const [fees, setFees] = useState({});
+  const feeOf = (c) => fees[c.id] ?? c.feeDisplay ?? '';
+  const save = useMutation({
+    mutationFn: async () => {
+      const changed = courses.filter((c) => fees[c.id] !== undefined && fees[c.id].trim() !== (c.feeDisplay || ''));
+      for (const c of changed) await api.put(`/teacher/courses/${c.id}`, toCourseInput({ ...c, feeDisplay: fees[c.id].trim() }));
+      return changed.length;
+    },
+    onSuccess: (n) => {
+      if (!n) return;
+      toast.show({ message: t('common.saved') });
+      setFees({});
+      qc.invalidateQueries({ queryKey: ['teacher', 'courses'] });
+    },
+    onError: (e) => toast.show({ kind: 'error', message: e.message }),
+  });
+  let body;
+  if (q.isLoading) body = <Spinner label={t('common.loading')} />;
+  else if (courses.length === 0) body = <EmptyState title={t('profile.noCourses')} />;
+  else {
+    body = (
+      <>
+        <div className="grid grid--2">
+          {courses.map((c) => (
+            <Input key={c.id} label={c.title} value={feeOf(c)} maxLength={60} placeholder={t('profile.feePlaceholder')}
+              onChange={(e) => setFees((x) => ({ ...x, [c.id]: e.target.value }))} />
+          ))}
+        </div>
+        <div className="row"><Button type="submit" loading={save.isPending}>{t('profile.saveFees')}</Button></div>
+      </>
+    );
+  }
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} noValidate>
+      <Card title={t('profile.fees')}>
+        <p className="muted">{t('courses.feeHint')}</p>
+        {body}
+      </Card>
+    </form>
+  );
+}
+
 export function ProfilePage() {
   const { t } = useTranslation();
   const toast = useToast();
@@ -153,33 +203,36 @@ export function ProfilePage() {
     }
   };
   return (
-    <form className="stack" onSubmit={(e) => { e.preventDefault(); save.mutate(); }} noValidate>
-      <PageHeader title={t('nav.profile')} subtitle={t('profile.subtitle')}
-        actions={f.publicSlug && <Link to={`/teachers/${f.publicSlug}`} target="_blank">{t('profile.view')}</Link>} />
-      <Card title={t('profile.about')}>
-        <div className="grid grid--2">
-          <Input label={t('common.name')} value={f.name} onChange={set('name')} required />
-          <Input label={t('common.email')} type="email" value={f.email || ''} onChange={set('email')} />
-          <Input label={t('profile.subjects')} value={f.subjects || ''} onChange={set('subjects')} hint={t('profile.subjectsHint')} />
-          <Input label={t('teacherReg.experience')} type="number" min="0" max="60" value={f.experienceYears ?? ''} onChange={set('experienceYears')} />
-          <Input label={t('teacherReg.qualification')} value={f.qualification || ''} onChange={set('qualification')} />
-          <Input label={t('profile.languages')} value={f.languages || ''} onChange={set('languages')} hint={t('profile.languagesHint')} />
-        </div>
-        <Textarea label={t('profile.bio')} value={f.bio || ''} onChange={set('bio')} rows={5} />
-        {f.photoUrl && <img src={fileUrl(f.photoUrl)} alt="" className="avatar-lg" />}
-        <FileUpload label={t('teacherReg.photo')} accept="image/jpeg,image/png,image/webp" maxMb={5} onFile={onPhoto} error={photoError} />
-      </Card>
-      <Card title={t('profile.publicPage')}>
-        <Input label={t('profile.slug')} value={f.publicSlug || ''} onChange={set('publicSlug')} hint={t('profile.slugHint')} />
-        <Input label={t('profile.introVideo')} value={f.introVideoUrl || ''} onChange={set('introVideoUrl')} placeholder="https://" />
-        <div className="grid grid--2">
-          {SOCIAL.map((k) => (
-            <Input key={k} label={t(`profile.social.${k}`)} value={f.socialLinks[k] || ''} placeholder="https://"
-              onChange={(e) => setF((x) => ({ ...x, socialLinks: { ...x.socialLinks, [k]: e.target.value } }))} />
-          ))}
-        </div>
-      </Card>
-      <div className="row"><Button type="submit" loading={save.isPending}>{t('common.save')}</Button></div>
-    </form>
+    <div className="stack">
+      <form className="stack" onSubmit={(e) => { e.preventDefault(); save.mutate(); }} noValidate>
+        <PageHeader title={t('nav.profile')} subtitle={t('profile.subtitle')}
+          actions={f.publicSlug && <Link to={`/teachers/${f.publicSlug}`} target="_blank">{t('profile.view')}</Link>} />
+        <Card title={t('profile.about')}>
+          <div className="grid grid--2">
+            <Input label={t('common.name')} value={f.name} onChange={set('name')} required />
+            <Input label={t('common.email')} type="email" value={f.email || ''} onChange={set('email')} />
+            <Input label={t('profile.subjects')} value={f.subjects || ''} onChange={set('subjects')} hint={t('profile.subjectsHint')} />
+            <Input label={t('teacherReg.experience')} type="number" min="0" max="60" value={f.experienceYears ?? ''} onChange={set('experienceYears')} />
+            <Input label={t('teacherReg.qualification')} value={f.qualification || ''} onChange={set('qualification')} />
+            <Input label={t('profile.languages')} value={f.languages || ''} onChange={set('languages')} hint={t('profile.languagesHint')} />
+          </div>
+          <Textarea label={t('profile.bio')} value={f.bio || ''} onChange={set('bio')} rows={5} />
+          {f.photoUrl && <img src={fileUrl(f.photoUrl)} alt="" className="avatar-lg" />}
+          <FileUpload label={t('teacherReg.photo')} accept="image/jpeg,image/png,image/webp" maxMb={5} onFile={onPhoto} error={photoError} />
+        </Card>
+        <Card title={t('profile.publicPage')}>
+          <Input label={t('profile.slug')} value={f.publicSlug || ''} onChange={set('publicSlug')} hint={t('profile.slugHint')} />
+          <Input label={t('profile.introVideo')} value={f.introVideoUrl || ''} onChange={set('introVideoUrl')} placeholder="https://" />
+          <div className="grid grid--2">
+            {SOCIAL.map((k) => (
+              <Input key={k} label={t(`profile.social.${k}`)} value={f.socialLinks[k] || ''} placeholder="https://"
+                onChange={(e) => setF((x) => ({ ...x, socialLinks: { ...x.socialLinks, [k]: e.target.value } }))} />
+            ))}
+          </div>
+        </Card>
+        <div className="row"><Button type="submit" loading={save.isPending}>{t('common.save')}</Button></div>
+      </form>
+      <CourseFeesCard />
+    </div>
   );
 }

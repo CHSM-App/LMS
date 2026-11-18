@@ -621,7 +621,11 @@
       "facebook": "Facebook",
       "instagram": "Instagram",
       "linkedin": "LinkedIn"
-    }
+    },
+    "fees": "कोर्स शुल्क",
+    "feePlaceholder": "उदाहरण: ₹3000 / वर्ष",
+    "saveFees": "शुल्क सहेजें",
+    "noCourses": "शुल्क तय करने के लिए पहले कोर्स बनाएं।"
   },
   "teacherDash": {
     "hello": "नमस्ते, {{name}}",
