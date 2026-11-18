@@ -6,3 +6,4 @@ export { Modal } from './Modal';
 export { StatusBadge, ProgressBar, Banner, EmptyState, Spinner, PageHeader, Card, ToastProvider, useToast } from './Feedback';
 export { FileUpload, UploadProgress } from './FileUpload';
 export { VideoFrame, embedUrl } from './VideoFrame';
+export { LiveStageBadge } from './LiveStageBadge';

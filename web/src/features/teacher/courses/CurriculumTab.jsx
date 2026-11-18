@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../api/client';
-import { Button, Card, Checkbox, EmptyState, Input, Modal, Select, Spinner, Textarea, useToast, FileUpload } from '../../../components';
+import { Button, Card, Checkbox, EmptyState, Input, Modal, Select, Spinner, Textarea, useToast, FileUpload, LiveStageBadge } from '../../../components';
 import { uploadSmall } from '../../../utils/upload';
 import { VideoSourceField } from './VideoSourceField';
-import { LiveLessonFields, LiveStageBadge, emptyLive, liveBody } from './LiveLessonFields';
+import { LiveLessonFields, emptyLive, liveBody } from './LiveLessonFields';
 import { RecordingModal } from './RecordingModal';
 import { formatDateTime } from '../../../utils/format';
 

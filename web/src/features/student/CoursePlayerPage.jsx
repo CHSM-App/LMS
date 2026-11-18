@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
-import { Banner, Button, Card, EmptyState, PageHeader, ProgressBar, Spinner, VideoFrame } from '../../components';
+import { Banner, Button, Card, EmptyState, PageHeader, ProgressBar, Spinner, VideoFrame, LiveStageBadge } from '../../components';
+import { LiveLessonPanel } from './LiveLessonPanel';
 
 function Lesson({ contentId, onCompleted }) {
   const { t } = useTranslation();
@@ -25,7 +26,8 @@ function Lesson({ contentId, onCompleted }) {
         <VideoFrame source={c.videoSource} url={c.videoSource === 'upload' ? fileUrl(c.url) : c.url} title={c.title} startAt={c.lastPositionSec}
           onTimeUpdate={c.videoSource === 'upload' ? onTime : undefined} onEnded={() => complete.mutate()} />
       )}
-      {c.type === 'video' && c.downloadable && <p className="field__hint">{t('player.downloadInApp')}</p>}
+      {c.type === 'live' && <LiveLessonPanel content={c} onTimeUpdate={onTime} onEnded={() => complete.mutate()} />}
+      {(c.type === 'video' || c.type === 'live') && c.downloadable && <p className="field__hint">{t('player.downloadInApp')}</p>}
       {c.type === 'pdf' && (
         <div className="stack">
           <iframe className="pdf-frame" src={fileUrl(c.url)} title={c.title} />
@@ -47,9 +49,11 @@ function Lesson({ contentId, onCompleted }) {
 
 export default function CoursePlayerPage() {
   const { courseId } = useParams();
+  const [params] = useSearchParams();
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [current, setCurrent] = useState(null);
+  // ?lesson=<id> (from a live lesson notification) opens that lesson.
+  const [current, setCurrent] = useState(() => Number(params.get('lesson')) || null);
   const q = useQuery({ queryKey: ['student', 'course', courseId], queryFn: () => api.get(`/student/courses/${courseId}`) });
   const course = q.data?.data;
   const lessons = course ? course.subjects.flatMap((s) => s.modules.flatMap((m) => m.contents)) : [];
@@ -86,6 +90,7 @@ export default function CoursePlayerPage() {
                       <li key={l.id}>
                         <button type="button" className={`player__lesson${current === l.id ? ' player__lesson--current' : ''}`} disabled={l.locked} onClick={() => setCurrent(l.id)} aria-current={current === l.id ? 'true' : undefined}>
                           <span aria-hidden="true">{l.completed ? '✓' : l.locked ? '🔒' : '○'}</span> {l.title}
+                          {l.live && <> <LiveStageBadge stage={l.live.stage} /></>}
                         </button>
                       </li>
                     ))}

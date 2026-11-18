@@ -41,10 +41,3 @@ export function LiveLessonFields({ courseId, value, onChange }) {
     </>
   );
 }
-
-const STAGE_CLASS = { upcoming: 'info', live: 'pending', recorded: 'approved', ended: 'neutral', cancelled: 'neutral' };
-
-export function LiveStageBadge({ stage }) {
-  const { t } = useTranslation();
-  return <span className={`badge badge--${STAGE_CLASS[stage] || 'neutral'}`}>{t(`content.live.stage.${stage}`)}</span>;
-}
