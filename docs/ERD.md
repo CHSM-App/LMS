@@ -47,6 +47,7 @@ erDiagram
   users ||--o{ student_devices : registers
   student_devices ||--o{ offline_downloads : licenses
   contents ||--o{ offline_downloads : downloaded
+  live_classes |o--o| contents : "live lesson"
 ```
 
 | Migration | Tables |
@@ -56,9 +57,11 @@ erDiagram
 | 003_exams | questions, question_options, exams, exam_modules, exam_questions, exam_batches, exam_attempts, exam_attempt_questions, attempt_answers |
 | 004_operations | demo_requests, enrollments, student_subscriptions, live_classes, attendance, doubts, class_programs |
 | 005_student | content_progress, student_devices, offline_downloads |
+| 006_live_lessons | `contents.live_class_id` (FK `FK_contents_live_class`, unique when set), `contents.type` adds `live`, `live_classes.reminder2_sent_at` |
 
 Key rules:
 - `users.mobile` is unique only among non-deleted users (`deleted_at IS NULL`).
 - Teacher-owned data is always queried with `teacher_id = @me`.
 - Questions used in an exam are archived (`is_archived`, `replaced_by`), never deleted.
 - `admin_audit_log` is append-only.
+- A live lesson is a `contents` row with `type = 'live'` and `live_class_id` set. Its recording uses the same `video_source` / `file_key` / `url` columns as a video. Its stage is computed, never stored.
