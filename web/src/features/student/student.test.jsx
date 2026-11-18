@@ -9,7 +9,7 @@ import { ExamRunner } from './ExamTakePage';
 import CoursePlayerPage from './CoursePlayerPage';
 import StudentExamsPage from './StudentExamsPage';
 import EnrollPage from './EnrollPage';
-import { StudentDashboard, StudentLiveClassesPage, StudentMyCoursesPage } from './StudentPages';
+import { ResultPage, StudentDashboard, StudentLiveClassesPage, StudentMyCoursesPage } from './StudentPages';
 
 function wrap(ui, { path = '/', route = '/', user = { role: 'student', name: 'Meera' } } = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -169,4 +169,15 @@ test('My courses with no enrollment points to Browse courses', async () => {
   vi.spyOn(client.api, 'get').mockResolvedValue({ data: { myCourses: [], upcomingLiveClasses: [], requests: [] } });
   wrap(<StudentMyCoursesPage />);
   expect(await screen.findByRole('button', { name: 'Browse courses' })).toBeInTheDocument();
+});
+
+test('result review shows the solution image under the explanation', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: {
+    exam: { title: 'Unit Test 1' }, submittedAt: '2026-06-15T03:00:00Z', score: 0, max: 1, pct: 0, passed: null, rank: null, of: 1,
+    review: [{ questionId: 1, type: 'fill_blank', text: '12 x 12 = ?', options: [], yourAnswer: { text: '124' }, correct: false, marks: 0,
+      correctAnswer: { acceptedAnswers: ['144'] }, explanation: 'Multiply', explanationImageUrl: '/api/v1/files/solution/abc.png?exp=1&sig=a' }],
+  } });
+  wrap(<ResultPage />, { path: '/r/a-1', route: '/r/:attemptId' });
+  const img = await screen.findByRole('img', { name: /solution image/i });
+  expect(img.getAttribute('src')).toContain('/files/solution/abc.png');
 });

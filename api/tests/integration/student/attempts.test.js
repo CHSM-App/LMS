@@ -58,6 +58,7 @@ test('autosave keeps the last answer; submit scores with negative marking; resul
   const review = r.body.data.review.find((x) => x.questionId === q2.id);
   expect(review).toMatchObject({ correct: false, marks: -0.25, explanation: expect.stringMatching(/^Because/) });
   expect(review.correctAnswer.optionIds).toHaveLength(1);
+  expect(review).toHaveProperty('explanationImageUrl', null);
   const other = await asStudent(await createUser({ role: 'student' }));
   expect((await other.get(`/api/v1/student/attempts/${a.attemptId}/result`)).status).toBe(404);
   const next = await w.s.post(`/api/v1/student/exams/${w.exam.id}/attempts`);

@@ -1,6 +1,6 @@
 const ExcelJS = require('exceljs');
 const { app, request, reset, closeAll, createUser } = require('../../setup/helpers');
-const { teacher, readyCourse, query, one, T } = require('../../setup/content');
+const { teacher, readyCourse, PNG, query, one, T } = require('../../setup/content');
 
 beforeEach(reset);
 afterAll(closeAll);
@@ -41,6 +41,26 @@ describe('question bank', () => {
     const other = await teacher({ name: 'O' });
     expect((await other.get(`/api/v1/teacher/modules/${moduleId}/questions`)).status).toBe(404);
     expect((await t.get(`/api/v1/teacher/modules/${moduleId}/questions?difficulty=easy`)).body.data).toHaveLength(1);
+  });
+
+  test('a solution image can be uploaded and attached; only the teacher\'s own solution uploads are accepted', async () => {
+    const t = await teacher();
+    const { moduleId } = await readyCourse(t);
+    const up = await t.upload('solution', PNG, 'working.png');
+    expect(up.status).toBe(201);
+    expect(up.body.data.key).toMatch(/^solution\/[0-9a-f-]{36}\.png$/);
+    const ok = await t.post(`/api/v1/teacher/modules/${moduleId}/questions`, mcq({ explanationImageKey: up.body.data.key }));
+    expect(ok.status).toBe(201);
+    expect(ok.body.data.explanationImageKey).toBe(up.body.data.key);
+    expect(ok.body.data.explanationImageUrl).toMatch(/\/files\/solution\/.+sig=/);
+    const thumb = (await t.upload('thumbnail', PNG, 't.png')).body.data.key;
+    expect((await t.post(`/api/v1/teacher/modules/${moduleId}/questions`, mcq({ explanationImageKey: thumb }))).status).toBe(400);
+    const other = await teacher({ name: 'O' });
+    const { moduleId: otherModule } = await readyCourse(other);
+    expect((await other.post(`/api/v1/teacher/modules/${otherModule}/questions`, mcq({ explanationImageKey: up.body.data.key }))).status).toBe(400);
+    const cleared = await t.put(`/api/v1/teacher/questions/${ok.body.data.id}`, mcq({ explanationImageKey: null }));
+    expect(cleared.body.data.explanationImageKey).toBeNull();
+    expect(cleared.body.data.explanationImageUrl).toBeNull();
   });
 
   test('editing an unused question changes it in place; a used one becomes a new version and the old one is archived', async () => {

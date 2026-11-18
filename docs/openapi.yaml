@@ -84,6 +84,7 @@ components:
         marks: { type: number }
         negativeMarks: { type: number }
         explanation: { type: string, nullable: true }
+        explanationImageKey: { type: string, nullable: true, description: "Photo of the worked solution. Upload first with POST /uploads kind=solution, then pass the returned key. Responses also carry explanationImageUrl (signed)." }
         options:
           type: array
           items: { type: object, properties: { text: { type: string }, isCorrect: { type: boolean } } }
@@ -707,7 +708,7 @@ paths:
     post:
       tags: [uploads]
       security: [{ bearerAuth: [] }]
-      summary: 'Small files (thumbnail, photo, pdf). Type is checked by content. Multipart fields: kind, file.'
+      summary: 'Small files (thumbnail, photo, solution, pdf). Type is checked by content. Multipart fields: kind, file.'
       requestBody:
         required: true
         content:
@@ -716,7 +717,7 @@ paths:
               type: object
               required: [kind, file]
               properties:
-                kind: { type: string, enum: [thumbnail, photo, pdf] }
+                kind: { type: string, enum: [thumbnail, photo, solution, pdf] }
                 file: { type: string, format: binary }
       responses:
         '201': { description: '{ key, url }' }

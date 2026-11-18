@@ -84,6 +84,14 @@ so a course can be fully recorded, fully live, or mixed (hybrid).
     see the date and time. WhatsApp messages link to the class page in the app, not to Meet.
     (Demo requests are unchanged: the visitor gets the Meet link on WhatsApp.)
 
+## Solution image on questions (added 2026-11-18)
+1. When adding or editing a question, the teacher can upload **one optional solution image**
+   (e.g. a photo of a maths sum solved on paper). JPG, PNG or WebP, up to 5 MB, checked by content.
+2. Students see it **only where the explanation is shown**: the answer review after submitting,
+   and the instant feedback in practice exams. Never on the question paper itself.
+3. Files are private (signed links), uploaded with `POST /uploads` kind `solution`. A question can
+   only use the teacher's own solution uploads. Excel import does not carry images.
+
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**
 - Student audience (school / college / competitive exams / skills) **(assumed: school + competitive exam coaching in Maharashtra)**

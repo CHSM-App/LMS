@@ -1030,6 +1030,12 @@ abstract class AppLocalizations {
   /// **'Answer review'**
   String get sReview;
 
+  /// No description provided for @sSolutionImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Solution image'**
+  String get sSolutionImage;
+
   /// No description provided for @sCorrectAnswer.
   ///
   /// In en, this message translates to:

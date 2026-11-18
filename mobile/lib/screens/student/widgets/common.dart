@@ -79,3 +79,29 @@ class LiveClassTile extends StatelessWidget {
     );
   }
 }
+
+/// Photo of a worked solution (e.g. a maths sum solved on paper), shown with the explanation.
+/// The whole photo is kept (no cropping); if it fails to load, nothing is shown.
+class SolutionImage extends StatelessWidget {
+  const SolutionImage({super.key, required this.url, required this.label});
+  final String url;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppTokens.spaceS2),
+      child: Semantics(
+        label: label,
+        image: true,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 480),
+            child: Image.network(url, fit: BoxFit.contain, excludeFromSemantics: true, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+          ),
+        ),
+      ),
+    );
+  }
+}

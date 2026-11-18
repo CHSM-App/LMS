@@ -56,6 +56,7 @@ class ResultScreen extends ConsumerWidget {
                       Text('${q.correct ? '✓' : '✕'} ${l.sYourAnswer}: ${q.yourAnswer.isEmpty ? l.sNotAnswered : q.yourAnswer}'),
                       if (!q.correct) Text('${l.sCorrectAnswer}: ${q.correctAnswer}', style: const TextStyle(fontWeight: FontWeight.w600)),
                       if (q.explanation != null) Padding(padding: const EdgeInsets.only(top: AppTokens.spaceS1), child: Text(q.explanation!, style: const TextStyle(color: AppTokens.textSecondary))),
+                      if (q.explanationImageUrl != null) SolutionImage(url: q.explanationImageUrl!, label: l.sSolutionImage),
                     ],
                   ),
                 ),

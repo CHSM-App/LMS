@@ -521,6 +521,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sReview => 'Answer review';
 
   @override
+  String get sSolutionImage => 'Solution image';
+
+  @override
   String get sCorrectAnswer => 'Correct answer';
 
   @override

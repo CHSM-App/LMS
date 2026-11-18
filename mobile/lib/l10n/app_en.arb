@@ -310,6 +310,7 @@
   "sFailed": "Not passed",
   "sAuto": "Submitted automatically when time ran out",
   "sReview": "Answer review",
+  "sSolutionImage": "Solution image",
   "sCorrectAnswer": "Correct answer",
   "sNotAnswered": "Not answered",
   "sAskDoubt": "Ask a doubt",

@@ -20,6 +20,7 @@ import 'package:lms_app/screens/public/demo_request_screen.dart';
 import 'package:lms_app/screens/student/course_player_screen.dart';
 import 'package:lms_app/screens/student/offline_player_screen.dart';
 import 'package:lms_app/screens/student/result_screen.dart';
+import 'package:lms_app/screens/student/widgets/common.dart';
 import 'package:lms_app/screens/student/student_exams_screen.dart';
 import 'package:lms_app/widgets/app_widgets.dart';
 
@@ -157,6 +158,27 @@ void main() {
     expect(find.text('Submitted automatically when time ran out'), findsOneWidget);
     expect(find.textContaining('Correct answer: 4'), findsOneWidget);
     expect(find.text('Add them'), findsOneWidget);
+  });
+
+  testWidgets('result screen shows the solution image under the explanation', (tester) async {
+    final repo = FakeStudentRepo()
+      ..attemptResult = const AttemptResult(title: 'Unit Test 1', score: 0, max: 1, pct: 0, review: [
+        ReviewItem(text: '12 x 12 = ?', correct: false, marks: 0, yourAnswer: '124', correctAnswer: '144', explanation: 'Multiply', explanationImageUrl: 'https://x/solution.png'),
+      ]);
+    await tester.pumpWidget(app(const ResultScreen(attemptId: 'a-1'), overrides: [studentRepositoryProvider.overrideWithValue(repo)]));
+    await tester.pumpAndSettle();
+    expect(find.byWidgetPredicate((w) => w is SolutionImage && w.url == 'https://x/solution.png' && w.label == 'Solution image'), findsOneWidget);
+  });
+
+  test('review items read the solution image URL and make relative file links absolute', () {
+    final r = AttemptResult.fromJson({
+      'exam': {'title': 'T'}, 'score': 0, 'max': 1, 'pct': 0,
+      'review': [
+        {'text': 'Q', 'options': [], 'correct': false, 'marks': 0, 'correctAnswer': {'acceptedAnswers': ['1']}, 'explanationImageUrl': '/api/v1/files/solution/a.png?exp=1&sig=s'},
+      ],
+    });
+    expect(r.review.single.explanationImageUrl, endsWith('/api/v1/files/solution/a.png?exp=1&sig=s'));
+    expect(r.review.single.explanationImageUrl, startsWith('http'));
   });
 
   testWidgets('course player: notes lesson opens, Mark as complete saves progress and refreshes the bar', (tester) async {

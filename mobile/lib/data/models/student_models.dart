@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/network/file_url.dart';
+
 /// Hand-written models for the student + public API (no codegen).
 typedef Json = Map<String, dynamic>;
 
@@ -362,20 +364,22 @@ class ExamPaper {
 
 @immutable
 class PracticeFeedback {
-  const PracticeFeedback({required this.correct, this.explanation});
+  const PracticeFeedback({required this.correct, this.explanation, this.explanationImageUrl});
   final bool correct;
   final String? explanation;
+  final String? explanationImageUrl;
 }
 
 @immutable
 class ReviewItem {
-  const ReviewItem({required this.text, required this.correct, required this.marks, required this.yourAnswer, required this.correctAnswer, this.explanation});
+  const ReviewItem({required this.text, required this.correct, required this.marks, required this.yourAnswer, required this.correctAnswer, this.explanation, this.explanationImageUrl});
   final String text;
   final bool correct;
   final num marks;
   final String yourAnswer;
   final String correctAnswer;
   final String? explanation;
+  final String? explanationImageUrl;
 }
 
 @immutable
@@ -417,6 +421,7 @@ class AttemptResult {
           yourAnswer: answerText(q, q['yourAnswer'] as Json?),
           correctAnswer: ca['acceptedAnswers'] != null ? (ca['acceptedAnswers'] as List).join(' / ') : optionText(q, (ca['optionIds'] as List?) ?? const []),
           explanation: q['explanation'] as String?,
+          explanationImageUrl: absoluteFileUrl(q['explanationImageUrl'] as String?),
         );
       }).toList(),
     );

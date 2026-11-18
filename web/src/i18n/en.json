@@ -424,7 +424,10 @@
       "options": "Add at least two options",
       "marks": "Marks must be more than 0",
       "negative": "Negative marks cannot be more than marks"
-    }
+    },
+    "solutionImage": "Solution image",
+    "solutionImageHint": "Photo of the worked solution, e.g. a sum solved on paper. JPG, PNG or WebP, up to 5 MB. Shown to students in the answer review.",
+    "removeImage": "Remove image"
   },
   "import": {
     "open": "Import from Excel",
@@ -735,7 +738,8 @@
     "yours": "Your answer",
     "correctAnswer": "Correct answer",
     "back": "Back to exams",
-    "passMark": "Pass mark: {{pct}}%"
+    "passMark": "Pass mark: {{pct}}%",
+    "solutionImage": "Solution image"
   },
   "studentCourses": {
     "subtitle": "Every course you're enrolled in, with your progress."

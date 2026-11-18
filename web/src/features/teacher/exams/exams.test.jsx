@@ -42,6 +42,26 @@ test('question form fields change with the question type', async () => {
   }));
 });
 
+test('question form uploads a solution image and sends its key; Remove clears it', async () => {
+  const form = vi.spyOn(client.api, 'form').mockResolvedValue({ data: { key: 'solution/abc.png', url: '/api/v1/files/solution/abc.png?exp=1&sig=a' } });
+  const onSave = vi.fn();
+  wrap(<QuestionForm onSave={onSave} onCancel={() => {}} />);
+  await userEvent.selectOptions(screen.getByLabelText(/question type/i), 'fill_blank');
+  await userEvent.type(screen.getByLabelText(/^question\s*\*?$/i), '12 x 12 = ?');
+  await userEvent.type(screen.getByLabelText(/accepted answers/i), '144');
+  const file = new File(['png'], 'working.png', { type: 'image/png' });
+  await userEvent.upload(screen.getByLabelText(/solution image/i), file);
+  expect(form).toHaveBeenCalledWith('/uploads', expect.any(FormData));
+  expect(form.mock.calls[0][1].get('kind')).toBe('solution');
+  expect(await screen.findByRole('img', { name: /solution image/i })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /save question/i }));
+  expect(onSave).toHaveBeenLastCalledWith(expect.objectContaining({ explanationImageKey: 'solution/abc.png' }));
+  await userEvent.click(screen.getByRole('button', { name: /remove image/i }));
+  expect(screen.queryByRole('img', { name: /solution image/i })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: /save question/i }));
+  expect(onSave).toHaveBeenLastCalledWith(expect.objectContaining({ explanationImageKey: null }));
+});
+
 test('import shows the per-row error table and a download link', async () => {
   vi.spyOn(client.api, 'form').mockResolvedValue({
     data: { imported: 3, errors: [{ row: 4, field: 'correct', message: 'MCQ needs exactly one correct option' }], errorFileUrl: '/api/v1/files/import_errors/x.xlsx?exp=1&sig=a' },

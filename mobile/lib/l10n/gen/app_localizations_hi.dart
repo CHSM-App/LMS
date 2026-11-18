@@ -521,6 +521,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get sReview => 'उत्तर समीक्षा';
 
   @override
+  String get sSolutionImage => 'हल की फ़ोटो';
+
+  @override
   String get sCorrectAnswer => 'सही उत्तर';
 
   @override

@@ -522,6 +522,9 @@ class AppLocalizationsMr extends AppLocalizations {
   String get sReview => 'उत्तर तपासणी';
 
   @override
+  String get sSolutionImage => 'उत्तराचा फोटो';
+
+  @override
   String get sCorrectAnswer => 'बरोबर उत्तर';
 
   @override

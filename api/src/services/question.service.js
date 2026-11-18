@@ -2,6 +2,8 @@ const { query, one, T } = require('../db/query');
 const { withTransaction } = require('../db/tx');
 const { validateQuestion, DIFFICULTIES } = require('../domain/exam');
 const { APIError } = require('../utils/APIError');
+const uploads = require('./upload.service');
+const storage = require('../providers/storage');
 
 // Body -> normalized question. Throws 400 with every validation error listed.
 function parse(b) {
@@ -12,6 +14,7 @@ function parse(b) {
     marks: b.marks === undefined || b.marks === '' ? 1 : Number(b.marks),
     negativeMarks: b.negativeMarks === undefined || b.negativeMarks === '' ? 0 : Number(b.negativeMarks),
     explanation: b.explanation ? String(b.explanation).trim().slice(0, 2000) : null,
+    explanationImageKey: b.explanationImageKey ? String(b.explanationImageKey) : null,
     options: Array.isArray(b.options) ? b.options.map((o) => ({ text: String(o.text ?? '').trim(), isCorrect: !!o.isCorrect })) : [],
     acceptedAnswers: Array.isArray(b.acceptedAnswers) ? b.acceptedAnswers.map((a) => String(a).trim()).filter(Boolean) : [],
   };
@@ -26,11 +29,18 @@ function parse(b) {
   return q;
 }
 
+// parse() plus: the solution image must be this teacher's own 'solution' upload.
+async function parseFor(teacherId, body) {
+  const q = parse(body);
+  q.explanationImageKey = await uploads.assertOwnedKey(teacherId, q.explanationImageKey, ['solution']);
+  return q;
+}
+
 async function insert(mod, q, tx) {
   const row = await one(
-    `INSERT INTO dbo.questions (module_id, subject_id, course_id, type, text, difficulty, marks, negative_marks, explanation, accepted_answers_json)
+    `INSERT INTO dbo.questions (module_id, subject_id, course_id, type, text, difficulty, marks, negative_marks, explanation, explanation_image_key, accepted_answers_json)
      OUTPUT INSERTED.question_id
-     VALUES (@m, @s, @c, @type, @text, @d, @marks, @neg, @exp, @acc)`,
+     VALUES (@m, @s, @c, @type, @text, @d, @marks, @neg, @exp, @img, @acc)`,
     {
       m: T.int(mod.id),
       s: T.int(mod.subject_id),
@@ -41,6 +51,7 @@ async function insert(mod, q, tx) {
       marks: T.decimal(q.marks, 5, 2),
       neg: T.decimal(q.negativeMarks, 5, 2),
       exp: T.nvarchar(q.explanation, 2000),
+      img: T.varchar(q.explanationImageKey || null, 200),
       acc: T.nvarchar(q.acceptedAnswers.length ? JSON.stringify(q.acceptedAnswers) : null, 1000),
     },
     tx,
@@ -71,6 +82,8 @@ async function load(ids, tx) {
     marks: Number(q.marks),
     negativeMarks: Number(q.negative_marks),
     explanation: q.explanation,
+    explanationImageKey: q.explanation_image_key || null,
+    explanationImageUrl: q.explanation_image_key ? storage.signedUrl(q.explanation_image_key) : null,
     acceptedAnswers: q.accepted_answers_json ? JSON.parse(q.accepted_answers_json) : [],
     isArchived: q.is_archived,
     replacedBy: q.replaced_by,
@@ -82,8 +95,8 @@ async function get(id, tx) {
   return (await load([id], tx))[0];
 }
 
-async function create(mod, body) {
-  const q = parse(body);
+async function create(mod, body, teacherId) {
+  const q = await parseFor(teacherId, body);
   const id = await withTransaction((tx) => insert(mod, q, tx));
   return get(id);
 }
@@ -100,8 +113,8 @@ async function isUsed(id, tx) {
   return !!r.used;
 }
 
-async function update(questionRow, body) {
-  const q = parse(body);
+async function update(questionRow, body, teacherId) {
+  const q = await parseFor(teacherId, body);
   const newId = await withTransaction(async (tx) => {
     const current = await one('SELECT * FROM dbo.questions WITH (UPDLOCK) WHERE question_id = @id', { id: T.int(questionRow.id) }, tx);
     if (current.is_archived) throw new APIError(409, 'This question is archived. Edit its newest version instead.', 'QUESTION_ARCHIVED');
@@ -119,7 +132,7 @@ async function update(questionRow, body) {
       return id;
     }
     await query(
-      `UPDATE dbo.questions SET type = @type, text = @text, difficulty = @d, marks = @marks, negative_marks = @neg, explanation = @exp,
+      `UPDATE dbo.questions SET type = @type, text = @text, difficulty = @d, marks = @marks, negative_marks = @neg, explanation = @exp, explanation_image_key = @img,
          accepted_answers_json = @acc WHERE question_id = @id`,
       {
         id: T.int(questionRow.id),
@@ -129,6 +142,7 @@ async function update(questionRow, body) {
         marks: T.decimal(q.marks, 5, 2),
         neg: T.decimal(q.negativeMarks, 5, 2),
         exp: T.nvarchar(q.explanation, 2000),
+        img: T.varchar(q.explanationImageKey || null, 200),
         acc: T.nvarchar(q.acceptedAnswers.length ? JSON.stringify(q.acceptedAnswers) : null, 1000),
       },
       tx,

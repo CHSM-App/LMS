@@ -134,6 +134,7 @@ export function ResultPage() {
           <p>{x.correct ? '✓' : '✕'} {t('result.yours')}: {answerText(x, x.yourAnswer)}</p>
           {!x.correct && <p>{t('result.correctAnswer')}: {correctText(x)}</p>}
           {x.explanation && <p className="muted">{x.explanation}</p>}
+          {x.explanationImageUrl && <img src={fileUrl(x.explanationImageUrl)} alt={t('result.solutionImage')} className="solution-img" loading="lazy" />}
         </Card>
       ))}
       <Link to="/student/exams">{t('result.back')}</Link>

@@ -8,6 +8,7 @@
         marks: { type: number }
         negativeMarks: { type: number }
         explanation: { type: string, nullable: true }
+        explanationImageKey: { type: string, nullable: true, description: "Photo of the worked solution. Upload first with POST /uploads kind=solution, then pass the returned key. Responses also carry explanationImageUrl (signed)." }
         options:
           type: array
           items: { type: object, properties: { text: { type: string }, isCorrect: { type: boolean } } }

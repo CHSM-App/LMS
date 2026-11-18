@@ -9,7 +9,7 @@ const { APIError, badRequest, conflict, notFound } = require('../utils/APIError'
 
 const MB = 1024 * 1024;
 // Small files go through POST /uploads; videos use resumable sessions.
-const SMALL = { thumbnail: { exts: ['jpg', 'png', 'webp'], maxMb: 5 }, photo: { exts: ['jpg', 'png', 'webp'], maxMb: 5 }, pdf: { exts: ['pdf'], maxMb: 20 } };
+const SMALL = { thumbnail: { exts: ['jpg', 'png', 'webp'], maxMb: 5 }, photo: { exts: ['jpg', 'png', 'webp'], maxMb: 5 }, solution: { exts: ['jpg', 'png', 'webp'], maxMb: 5 }, pdf: { exts: ['pdf'], maxMb: 20 } };
 const LARGE = { video: { exts: ['mp4'], maxMb: 500 }, demo_video: { exts: ['mp4'], maxMb: 500 } };
 const CHUNK = 5 * MB;
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
@@ -18,7 +18,7 @@ const tmpPath = (id) => path.join(storage.root(), 'tmp', `${id}.part`);
 
 async function saveSmall(teacherId, kind, file) {
   const spec = SMALL[kind];
-  if (!spec) throw badRequest('kind: choose thumbnail, photo or pdf');
+  if (!spec) throw badRequest('kind: choose thumbnail, photo, solution or pdf');
   if (!file) throw badRequest('file: is required');
   if (file.size > spec.maxMb * MB) throw new APIError(413, `File is larger than ${spec.maxMb} MB`);
   const t = await FileType.fromBuffer(file.buffer);

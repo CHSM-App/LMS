@@ -1,4 +1,5 @@
 import '../../core/network/api_client.dart';
+import '../../core/network/file_url.dart';
 import '../models/student_models.dart';
 
 /// Public catalog + demo request (no login).
@@ -93,7 +94,7 @@ class ApiStudentRepository implements StudentRepository {
   @override
   Future<PracticeFeedback?> saveAnswer(String attemptId, int questionId, Json answer) async {
     final data = await api.put('/student/attempts/$attemptId/answers/$questionId', answer);
-    if (data is Json && data['correct'] is bool) return PracticeFeedback(correct: data['correct'] as bool, explanation: data['explanation'] as String?);
+    if (data is Json && data['correct'] is bool) return PracticeFeedback(correct: data['correct'] as bool, explanation: data['explanation'] as String?, explanationImageUrl: absoluteFileUrl(data['explanationImageUrl'] as String?));
     return null;
   }
 

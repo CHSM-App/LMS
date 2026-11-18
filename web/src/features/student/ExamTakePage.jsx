@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { api } from '../../api/client';
+import { api, fileUrl } from '../../api/client';
 import { Banner, Button, Card, EmptyState, Input, Modal, Spinner } from '../../components';
 
 const fmt = (ms) => {
@@ -47,6 +47,9 @@ function Question({ q, index, value, onChange, feedback }) {
       )}
       {feedback && (
         <Banner kind={feedback.correct ? 'success' : 'error'} message={`${feedback.correct ? t('exam.correct') : t('exam.wrong')}${feedback.explanation ? ` — ${feedback.explanation}` : ''}`} />
+      )}
+      {feedback && feedback.explanationImageUrl && (
+        <img src={fileUrl(feedback.explanationImageUrl)} alt={t('result.solutionImage')} className="solution-img" loading="lazy" />
       )}
     </Card>
   );

@@ -172,7 +172,7 @@ async function saveAnswer(publicId, studentId, questionId, body) {
   });
   if (exam.mode === 'practice') {
     const r = scoreAnswer(q, answer, { negativeMarking: false });
-    return { saved: true, correct: r.correct, explanation: q.explanation, correctAnswer: correctAnswer(q) };
+    return { saved: true, correct: r.correct, explanation: q.explanation, explanationImageUrl: q.explanationImageUrl, correctAnswer: correctAnswer(q) };
   }
   return { saved: true, savedAt: clock.now() };
 }
@@ -251,6 +251,7 @@ async function result(publicId, studentId) {
         marks: ans && ans.marks_awarded !== null ? Number(ans.marks_awarded) : 0,
         correctAnswer: correctAnswer(q),
         explanation: q.explanation,
+        explanationImageUrl: q.explanationImageUrl,
       };
     }),
   };

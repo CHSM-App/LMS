@@ -8,6 +8,7 @@ import '../../l10n/gen/app_localizations.dart';
 import '../../presentation/providers/student_providers.dart';
 import '../../presentation/viewModels/exam_viewmodel.dart';
 import '../../widgets/app_widgets.dart';
+import 'widgets/common.dart';
 
 String _clock(Duration d) => '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
 
@@ -171,6 +172,7 @@ class _QuestionCardState extends State<_QuestionCard> {
                 kind: widget.feedback!.correct ? 'success' : 'error',
                 message: '${widget.feedback!.correct ? l.sCorrect : l.sWrong}${widget.feedback!.explanation == null ? '' : ' — ${widget.feedback!.explanation}'}',
               ),
+            if (widget.feedback?.explanationImageUrl != null) SolutionImage(url: widget.feedback!.explanationImageUrl!, label: l.sSolutionImage),
           ],
         ),
       ),

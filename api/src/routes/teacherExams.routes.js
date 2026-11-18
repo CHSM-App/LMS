@@ -13,9 +13,9 @@ router.use('/teacher', authenticate, authorize('teacher'));
 
 // Question bank (per module)
 router.get('/teacher/modules/:moduleId/questions', owns('module', 'moduleId'), h((req) => questions.list(req.owned.module.id, req.query)));
-router.post('/teacher/modules/:moduleId/questions', owns('module', 'moduleId'), h((req) => questions.create(req.owned.module, req.body), 201));
+router.post('/teacher/modules/:moduleId/questions', owns('module', 'moduleId'), h((req) => questions.create(req.owned.module, req.body, req.user.id), 201));
 router.get('/teacher/modules/:moduleId/question-counts', owns('module', 'moduleId'), h(async (req) => (await questions.counts([req.owned.module.id]))[req.owned.module.id]));
-router.put('/teacher/questions/:questionId', owns('question', 'questionId'), h((req) => questions.update(req.owned.question, req.body)));
+router.put('/teacher/questions/:questionId', owns('question', 'questionId'), h((req) => questions.update(req.owned.question, req.body, req.user.id)));
 router.delete('/teacher/questions/:questionId', owns('question', 'questionId'), h((req) => questions.remove(req.owned.question)));
 
 router.get('/teacher/questions/import-template', async (req, res, next) => {
