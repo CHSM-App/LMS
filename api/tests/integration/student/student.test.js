@@ -137,3 +137,17 @@ describe('doubts, live classes, progress, profile, privacy', () => {
     }
   });
 });
+
+// Review Focus (Phase 7 #2): access that ends today lasts until midnight IST, not midnight UTC.
+test('a subscription ending today keeps access until the end of the day in IST', async () => {
+  const w = await world({ enrollOpts: { start: '2026-01-01', end: '2026-06-15' } });
+  const lesson = `/api/v1/student/contents/${w.contents[0].content_id}`;
+  clock.set(new Date('2026-06-15T18:00:00Z')); // 23:30 IST on the last day
+  expect((await w.s.get(lesson)).status).toBe(200);
+  clock.set(new Date('2026-06-15T18:29:00Z')); // 23:59 IST
+  expect((await w.s.get(lesson)).status).toBe(200);
+  clock.set(new Date('2026-06-15T18:31:00Z')); // 00:01 IST on the 16th
+  const after = await w.s.get(lesson);
+  expect(after.status).toBe(403);
+  expect(after.body.code).toBe('ACCESS_ENDED');
+});

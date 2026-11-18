@@ -16,11 +16,14 @@ export const reset = (request) => hook(request, 'POST', '/reset');
 export const ADMIN_MOBILE = '+919000000001';
 export const local10 = (e164) => e164.replace(/^\+91/, '');
 
-/** The OTP the console provider generated for this mobile + purpose (polls briefly). */
-export async function otpFor(request, mobile, purpose) {
-  for (let i = 0; i < 20; i += 1) {
+/** The code currently stored for this mobile + purpose (null if none). Read it BEFORE requesting a new OTP. */
+export const currentOtp = async (request, mobile, purpose) => (await hook(request, 'GET', '/otp', { mobile, purpose })).code;
+
+/** The OTP the console provider generated for this mobile + purpose (polls until it differs from `previous`). */
+export async function otpFor(request, mobile, purpose, previous = null) {
+  for (let i = 0; i < 40; i += 1) {
     const { code } = await hook(request, 'GET', '/otp', { mobile, purpose });
-    if (code) return code;
+    if (code && code !== previous) return code;
     await new Promise((r) => setTimeout(r, 150));
   }
   throw new Error(`no OTP for ${mobile} ${purpose}`);
@@ -34,9 +37,10 @@ export async function enterOtp(page, code) {
 export async function login(page, request, mobile, { expectSuccess = true } = {}) {
   await page.goto('/login');
   await page.getByLabel('Mobile number').fill(local10(mobile));
+  const previous = await currentOtp(request, mobile, 'login');
   await page.getByRole('button', { name: 'Send OTP' }).click();
   await expect(page.getByText(/OTP sent to/)).toBeVisible();
-  await enterOtp(page, await otpFor(request, mobile, 'login'));
+  await enterOtp(page, await otpFor(request, mobile, 'login', previous));
   await page.getByRole('button', { name: 'Verify and log in' }).click();
   if (expectSuccess) await expect(page).not.toHaveURL(/\/login/, { timeout: 15_000 });
 }

@@ -124,3 +124,20 @@ test('practice shows correctness straight away; Final locked until Unit Tests ar
   const closed = await w.s.post(`/api/v1/student/exams/${ut.id}/attempts`);
   expect(closed.status).toBe(403);
 });
+
+// Review Focus (Phase 9 #2): two tabs on one attempt see the same deadline; the last write per question wins.
+test('two tabs share one attempt: same deadline and paper, last answer wins', async () => {
+  clock.set(new Date('2026-06-15T03:00:00Z'));
+  const w = await examWorld();
+  const tab1 = (await w.s.post(`/api/v1/student/exams/${w.exam.id}/attempts`)).body.data;
+  clock.set(new Date('2026-06-15T03:07:00Z'));
+  const tab2 = (await w.s.post(`/api/v1/student/exams/${w.exam.id}/attempts`)).body.data;
+  expect(tab2.attemptId).toBe(tab1.attemptId);
+  expect(tab2.deadlineAt).toBe(tab1.deadlineAt);
+  const q = tab1.questions[0];
+  const [o1, o2] = q.options;
+  expect((await w.s.put(`/api/v1/student/attempts/${tab1.attemptId}/answers/${q.id}`, { optionId: o1.id })).status).toBe(200);
+  expect((await w.s.put(`/api/v1/student/attempts/${tab2.attemptId}/answers/${q.id}`, { optionId: o2.id })).status).toBe(200);
+  const again = (await w.s.post(`/api/v1/student/exams/${w.exam.id}/attempts`)).body.data;
+  expect(again.answers[q.id]).toEqual({ optionId: o2.id });
+});
