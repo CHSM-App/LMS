@@ -199,4 +199,17 @@ describe('teacher live lessons', () => {
     await runLiveClassReminders();
     expect(await countNotes(s.user_id)).toBe(base + 3);
   });
+test("the live classes page cannot move a lesson to another course, and a topic edit renames the lesson", async () => {
+    const { t, moduleId, courseId } = await setup();
+    const other = await readyCourse(t);
+    const r = await addLive(t, moduleId);
+    const lcId = r.body.data.live.liveClassId;
+    const body = { courseId: other.courseId, topic: "Moved", startsAt: "2099-06-15T12:30:00Z", durationMin: 60, meetLink: "https://meet.google.com/abc-defg-hij" };
+    const moved = await t.put(`/api/v1/teacher/live-classes/${lcId}`, body);
+    expect(moved.status).toBe(400);
+    expect(moved.body.code).toBe("LIVE_LESSON_COURSE_FIXED");
+    expect((await one("SELECT course_id FROM dbo.live_classes WHERE live_class_id = @id", { id: T.int(lcId) })).course_id).toBe(courseId);
+    expect((await t.put(`/api/v1/teacher/live-classes/${lcId}`, { ...body, courseId })).status).toBe(200);
+    expect((await one("SELECT title FROM dbo.contents WHERE content_id = @id", { id: T.int(r.body.data.id) })).title).toBe("Moved");
+  });
 });

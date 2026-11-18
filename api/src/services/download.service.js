@@ -142,8 +142,10 @@ async function renew(studentId, deviceId, contentIds) {
       out.push({ contentId: id, revoked: true, reason: row ? row.revoke_reason || 'revoked' : 'not_found' });
       continue;
     }
-    const c = await one('SELECT * FROM dbo.contents WHERE content_id = @c', { c: T.int(id) });
-    const reason = !deviceOk ? 'device_removed' : !c ? 'content_removed' : await blockReason(studentId, c);
+    const c = await loadContent(id);
+    // The lesson must still be an uploaded video (or uploaded recording) that this student's batch can see.
+    const gone = !c || c.video_source !== 'upload' || !isVisible(c, await loadEnrollment(studentId, c.course_id));
+    const reason = !deviceOk ? 'device_removed' : gone ? 'content_removed' : await blockReason(studentId, c);
     if (reason) {
       await query('UPDATE dbo.offline_downloads SET revoked_at = @now, revoke_reason = @r WHERE download_id = @id', { now: T.datetime(clock.now()), r: T.varchar(reason, 30), id: T.int(row.download_id) });
       out.push({ contentId: id, revoked: true, reason });

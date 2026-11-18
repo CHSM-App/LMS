@@ -45,7 +45,7 @@
 - Produces: column `dbo.contents.live_class_id INT NULL` (FK `FK_contents_live_class` → `live_classes`, unique filtered index `UQ_contents_live_class` WHERE NOT NULL), column `dbo.live_classes.reminder2_sent_at DATETIME2(3) NULL`.
 - Produces: `liveStage({ status, startsAt, durationMin, hasRecording }, now: Date) → 'upcoming' | 'live' | 'ended' | 'recorded' | 'cancelled'` and `JOIN_EARLY_MIN = 10`.
 
-- [ ] **Step 1: Write the failing unit tests** in `api/tests/unit/liveLesson.test.js`:
+- [x] **Step 1: Write the failing unit tests** in `api/tests/unit/liveLesson.test.js`:
 
 ```js
 const { liveStage } = require('../../src/domain/liveLesson');
@@ -62,10 +62,10 @@ test('cancelled wins', () => expect(liveStage({ ...base, status: 'cancelled', ha
 test('teacher-marked completed counts as ended', () => expect(liveStage({ ...base, status: 'completed' }, at('2026-12-01T12:40:00Z'))).toBe('ended'));
 ```
 
-- [ ] **Step 2: Run** `cd api && npx jest tests/unit/liveLesson.test.js`. Expected: FAIL, "Cannot find module".
-- [ ] **Step 3: Implement `liveStage`** in `api/src/domain/liveLesson.js`. Order: cancelled → recorded → completed/after end → ended → in window → live → else upcoming.
-- [ ] **Step 4: Run** the same command. Expected: 7 passed.
-- [ ] **Step 5: Extend `migrate.test.js`** with a test that after `migrate()` the columns exist:
+- [x] **Step 2: Run** `cd api && npx jest tests/unit/liveLesson.test.js`. Expected: FAIL, "Cannot find module".
+- [x] **Step 3: Implement `liveStage`** in `api/src/domain/liveLesson.js`. Order: cancelled → recorded → completed/after end → ended → in window → live → else upcoming.
+- [x] **Step 4: Run** the same command. Expected: 7 passed.
+- [x] **Step 5: Extend `migrate.test.js`** with a test that after `migrate()` the columns exist:
 
 ```js
 test('006 adds live lesson columns', async () => {
@@ -75,11 +75,11 @@ test('006 adds live lesson columns', async () => {
 });
 ```
 
-- [ ] **Step 6: Run** `npx jest tests/integration/migrate.test.js`. Expected: FAIL (0 rows).
-- [ ] **Step 7: Write `006_live_lessons.sql`.** Guard every statement with `IF COL_LENGTH(...) IS NULL` / `IF NOT EXISTS (sys.indexes / sys.check_constraints)`. Drop and recreate `CK_contents_type` as `type IN ('video','pdf','link','live')`. Drop and recreate `CK_contents_source` with one more branch: `(type = 'live' AND live_class_id IS NOT NULL AND (video_source IS NULL OR (video_source = 'upload' AND file_key IS NOT NULL) OR (video_source <> 'upload' AND url IS NOT NULL)))`. Add `CK_contents_live_link CHECK (live_class_id IS NULL OR type = 'live')`.
-- [ ] **Step 8: Run** `npx jest tests/integration/migrate.test.js tests/integration/teacher/curriculum.test.js`. Expected: all pass (old content still valid).
-- [ ] **Step 9: Update `docs/ERD.md`** with the two columns and the FK.
-- [ ] **Step 10: Commit** `feat(content): live lesson columns and stage rules`.
+- [x] **Step 6: Run** `npx jest tests/integration/migrate.test.js`. Expected: FAIL (0 rows).
+- [x] **Step 7: Write `006_live_lessons.sql`.** Guard every statement with `IF COL_LENGTH(...) IS NULL` / `IF NOT EXISTS (sys.indexes / sys.check_constraints)`. Drop and recreate `CK_contents_type` as `type IN ('video','pdf','link','live')`. Drop and recreate `CK_contents_source` with one more branch: `(type = 'live' AND live_class_id IS NOT NULL AND (video_source IS NULL OR (video_source = 'upload' AND file_key IS NOT NULL) OR (video_source <> 'upload' AND url IS NOT NULL)))`. Add `CK_contents_live_link CHECK (live_class_id IS NULL OR type = 'live')`.
+- [x] **Step 8: Run** `npx jest tests/integration/migrate.test.js tests/integration/teacher/curriculum.test.js`. Expected: all pass (old content still valid).
+- [x] **Step 9: Update `docs/ERD.md`** with the two columns and the FK.
+- [x] **Step 10: Commit** `feat(content): live lesson columns and stage rules`.
 
 ---
 
@@ -95,9 +95,9 @@ test('006 adds live lesson columns', async () => {
 - Produces: `PUT /teacher/contents/{contentId}/recording` body `RecordingInput { videoSource: enum[upload, youtube, vimeo, bunny], fileKey?: string, url?: string }`, and `DELETE /teacher/contents/{contentId}/recording`. Both return the teacher content object.
 - Produces: content objects (teacher curriculum, student course view, student content view) may carry `live: { liveClassId, startsAt, durationMin, batch: {id,name}|null, stage, meetLink? }` and `recording: { videoSource, url } | null`.
 
-- [ ] **Step 1:** Write the two part files and edit `ContentInput`.
-- [ ] **Step 2: Run** `node docs/openapi-parts/merge.js phase11 && cd api && npx jest tests/integration/openapi.test.js`. Expected: pass.
-- [ ] **Step 3: Commit** `docs(api): live lesson contract`.
+- [x] **Step 1:** Write the two part files and edit `ContentInput`.
+- [x] **Step 2: Run** `node docs/openapi-parts/merge.js phase11 && cd api && npx jest tests/integration/openapi.test.js`. Expected: pass.
+- [x] **Step 3: Commit** `docs(api): live lesson contract`.
 
 ---
 
@@ -116,7 +116,7 @@ test('006 adds live lesson columns', async () => {
 - Produces in `liveLesson.service.js`: `createLiveLesson(teacherId, mod, body) → contentOut`, `updateLiveLesson(teacherId, contentId, body) → contentOut`, `setRecording(teacherId, contentId, body) → contentOut`, `clearRecording(contentId) → contentOut`, `deleteLiveLesson(contentId) → { deleted: true }`.
 - Live class link for the reminder/notification uses `/student/courses/{courseId}?lesson={contentId}` for live lessons.
 
-- [ ] **Step 1: Write failing tests** in `liveLessons.test.js` (use `readyCourse`, a batch, and `clock` frozen via the existing test clock helper):
+- [x] **Step 1: Write failing tests** in `liveLessons.test.js` (use `readyCourse`, a batch, and `clock` frozen via the existing test clock helper):
   - `creates a live lesson with a pasted Meet link` → 201, `type: 'live'`, `live.stage === 'upcoming'`, `live.batch === null`, `isFreePreview === false` even when the body sends `true`; a `live_classes` row exists with the same `starts_at`.
   - `rejects a time in the past` → 400.
   - `rejects a batch of another course` → 400 `Choose a batch of this course`.
@@ -130,10 +130,10 @@ test('006 adds live lesson columns', async () => {
   - `a course whose only content is a live lesson can be published` (DECISIONS point 8).
   - `the live lesson appears in the teacher's live classes list and its attendance sheet works` (DECISIONS point 6: attendance reuses the live class page).
   - `reminders: 60 then 15 minutes before` → freeze clock at start−59 min, run job, 1 notification per student; run again, none; move to start−14 min, run, a second one; standalone class at start−29 min still gets exactly one.
-- [ ] **Step 2: Run** `npx jest tests/integration/teacher/liveLessons.test.js`. Expected: FAIL.
-- [ ] **Step 3: Implement** the service and route changes. Create and delete run in one `withTransaction` (content + live class together). Validation reuses `liveClass.parse` rules (move it to accept `{ courseId }` from the module). Recording validation reuses `uploads.assertOwnedKey(teacherId, key, ['video'])` and `validateVideoLink`.
-- [ ] **Step 4: Run** the new test file plus `operations.test.js` and `curriculum.test.js`. Expected: all pass.
-- [ ] **Step 5: Commit** `feat(content): teacher live lessons with recordings and reminders`.
+- [x] **Step 2: Run** `npx jest tests/integration/teacher/liveLessons.test.js`. Expected: FAIL.
+- [x] **Step 3: Implement** the service and route changes. Create and delete run in one `withTransaction` (content + live class together). Validation reuses `liveClass.parse` rules (move it to accept `{ courseId }` from the module). Recording validation reuses `uploads.assertOwnedKey(teacherId, key, ['video'])` and `validateVideoLink`.
+- [x] **Step 4: Run** the new test file plus `operations.test.js` and `curriculum.test.js`. Expected: all pass.
+- [x] **Step 5: Commit** `feat(content): teacher live lessons with recordings and reminders`.
 
 ---
 
@@ -150,17 +150,17 @@ test('006 adds live lesson columns', async () => {
 - Produces: in `courseView` each live content has `live: { startsAt, durationMin, stage }` and `downloadable` is true only for an `upload` recording. Live lessons for another batch are left out. In `contentView` a live content adds `meetLink` only when stage is `upcoming` or `live`, and `url` is the recording (signed if uploaded) when `recorded`.
 - `liveClasses(studentId)` rows gain `contentId` (null for standalone) so the dashboard can open the lesson.
 
-- [ ] **Step 1: Write failing tests:**
+- [x] **Step 1: Write failing tests:**
   - `student sees a live lesson as upcoming without a Meet link in the course view`.
   - `content view has the Meet link during the join window` (clock at start−5 min) `and not after the end` (start+61 min, no recording → stage `ended`, no `meetLink`, no `url`).
   - `student of another batch does not see the lesson` → absent from `courseView`, `contentView` → 404.
   - `cancelled lesson shows stage cancelled and no Meet link`, still counted in `progressPct` denominator.
   - `uploaded recording is downloadable; YouTube recording returns ONLINE_ONLY`.
   - `public course details list the live lesson title and type with no previewUrl`.
-- [ ] **Step 2: Run** the three test files. Expected: FAIL.
-- [ ] **Step 3: Implement.** Batch filter: `x.live_class_id IS NULL OR l.batch_id IS NULL OR l.batch_id = e.batch_id` (join `live_classes` and the student's enrollment). `contentWithAccess` must apply the same filter.
-- [ ] **Step 4: Run** the full API suite `cd api && npm test`. Expected: all pass.
-- [ ] **Step 5: Commit** `feat(student): live lessons in course player and downloads`.
+- [x] **Step 2: Run** the three test files. Expected: FAIL.
+- [x] **Step 3: Implement.** Batch filter: `x.live_class_id IS NULL OR l.batch_id IS NULL OR l.batch_id = e.batch_id` (join `live_classes` and the student's enrollment). `contentWithAccess` must apply the same filter.
+- [x] **Step 4: Run** the full API suite `cd api && npm test`. Expected: all pass.
+- [x] **Step 5: Commit** `feat(student): live lessons in course player and downloads`.
 
 ---
 
@@ -176,15 +176,15 @@ test('006 adds live lesson columns', async () => {
 - Consumes: Task 2 endpoints.
 - Produces: i18n keys under `content.live.*`: `type`, `startsAt`, `duration`, `meetLink`, `meetLinkHint`, `batch`, `allBatches`, `addRecording`, `removeRecording`, `stage.upcoming`, `stage.live`, `stage.ended`, `stage.recorded`, `stage.cancelled`, `recordingSoon`, `join`. Task 6 uses the same keys.
 
-- [ ] **Step 1: Write failing tests:**
+- [x] **Step 1: Write failing tests:**
   - choosing type "Live" shows date-time, duration, Meet link and batch fields, and hides "free preview".
   - submit posts `{ type: 'live', title, startsAt (ISO, from IST input), durationMin, meetLink, batchId }`.
   - a live lesson row shows a stage badge and an "Add recording" button; the modal offers Upload / YouTube / Vimeo / Bunny and calls `PUT .../recording`.
   - every new key exists in `en`, `mr` and `hi` (extend the existing `i18n.test.js` check if it is not already generic).
-- [ ] **Step 2: Run** `cd web && npx vitest run src/features/teacher/courses`. Expected: FAIL.
-- [ ] **Step 3: Implement.** Reuse `FileUpload` (resumable upload) and `Field`; badge colours from tokens (`upcoming` Blue, `live` Orange, `recorded` Lime, `ended`/`cancelled` Navy tint).
-- [ ] **Step 4: Run** `npm test`. Expected: all pass.
-- [ ] **Step 5: Commit** `feat(web): live lessons in the course builder`.
+- [x] **Step 2: Run** `cd web && npx vitest run src/features/teacher/courses`. Expected: FAIL.
+- [x] **Step 3: Implement.** Reuse `FileUpload` (resumable upload) and `Field`; badge colours from tokens (`upcoming` Blue, `live` Orange, `recorded` Lime, `ended`/`cancelled` Navy tint).
+- [x] **Step 4: Run** `npm test`. Expected: all pass.
+- [x] **Step 5: Commit** `feat(web): live lessons in the course builder`.
 
 ---
 
@@ -198,16 +198,16 @@ test('006 adds live lesson columns', async () => {
 **Interfaces:**
 - Consumes: student content view from Task 4; i18n keys from Task 5.
 
-- [ ] **Step 1: Write failing tests** for `LiveLessonPanel`, one per stage:
+- [x] **Step 1: Write failing tests** for `LiveLessonPanel`, one per stage:
   - `upcoming` → date and time in IST and the batch, no Join button.
   - `live` → Join button that opens `meetLink` in a new tab (`rel="noopener noreferrer"`).
   - `ended` → "Recording coming soon" text.
   - `recorded` → renders `VideoFrame` with the recording URL.
   - `cancelled` → cancelled text, no Join.
-- [ ] **Step 2: Run** `npx vitest run src/features/student`. Expected: FAIL.
-- [ ] **Step 3: Implement** and use the panel in `CoursePlayerPage` when `type === 'live'`. Lesson list shows the stage badge.
-- [ ] **Step 4: Run** `npm test && npm run build`. Expected: pass, build OK.
-- [ ] **Step 5: Commit** `feat(web): live lessons in the student player`.
+- [x] **Step 2: Run** `npx vitest run src/features/student`. Expected: FAIL.
+- [x] **Step 3: Implement** and use the panel in `CoursePlayerPage` when `type === 'live'`. Lesson list shows the stage badge.
+- [x] **Step 4: Run** `npm test && npm run build`. Expected: pass, build OK.
+- [x] **Step 5: Commit** `feat(web): live lessons in the student player`.
 
 ---
 
@@ -220,11 +220,11 @@ test('006 adds live lesson columns', async () => {
 - Modify: `mobile/lib/l10n/app_en.arb`, `app_mr.arb`, `app_hi.arb`. ARB keys are camelCase with the student `s` prefix (no dots): `sLiveUpcoming`, `sLiveNow`, `sLiveEnded`, `sLiveRecorded`, `sLiveCancelled`, `sLiveJoin`, `sLiveRecordingSoon`, `sLiveStartsAt` (placeholder `{when}`). Same meanings as the web `content.live.*` keys in Task 5.
 - Test: `mobile/test/student/live_lesson_test.dart`
 
-- [ ] **Step 1: Write failing tests:** model parses `live` JSON (and `null`); `LessonRow` shows the right chip text per stage; the player shows a Join button only for stage `live` and no download button for a YouTube recording.
-- [ ] **Step 2: Run** `cd mobile && flutter test test/student/live_lesson_test.dart`. Expected: FAIL.
-- [ ] **Step 3: Implement.** Colours from the theme built from `design-tokens/tokens.json`.
-- [ ] **Step 4: Run** `flutter analyze && flutter test`. Expected: no issues, all pass.
-- [ ] **Step 5: Commit** `feat(mobile): live lessons in the student course player`.
+- [x] **Step 1: Write failing tests:** model parses `live` JSON (and `null`); `LessonRow` shows the right chip text per stage; the player shows a Join button only for stage `live` and no download button for a YouTube recording.
+- [x] **Step 2: Run** `cd mobile && flutter test test/student/live_lesson_test.dart`. Expected: FAIL.
+- [x] **Step 3: Implement.** Colours from the theme built from `design-tokens/tokens.json`.
+- [x] **Step 4: Run** `flutter analyze && flutter test`. Expected: no issues, all pass.
+- [x] **Step 5: Commit** `feat(mobile): live lessons in the student course player`.
 
 ---
 
@@ -235,16 +235,16 @@ test('006 adds live lesson columns', async () => {
 - Test: `api/tests/integration/seedDemo.test.js` (assert 2 `type = 'live'` contents, one with `video_source` set)
 - Modify: `phases/README.md` (add row 11), this file's checkboxes
 
-- [ ] **Step 1: Write the failing seed assertion**, run `npx jest tests/integration/seedDemo.test.js` → FAIL.
-- [ ] **Step 2: Extend the seed** (idempotent, like the existing lesson loop). Past lessons are inserted with SQL because the API refuses past times.
-- [ ] **Step 3: Run** the seed test → PASS, then the full suites: `cd api && npm test`, `cd web && npm test`, `cd mobile && flutter analyze && flutter test`.
-- [ ] **Step 4:** Run `/security-review` on the branch.
-- [ ] **Step 5: Commit** `chore(seed): demo live lessons`.
+- [x] **Step 1: Write the failing seed assertion**, run `npx jest tests/integration/seedDemo.test.js` → FAIL.
+- [x] **Step 2: Extend the seed** (idempotent, like the existing lesson loop). Past lessons are inserted with SQL because the API refuses past times.
+- [x] **Step 3: Run** the seed test → PASS, then the full suites: `cd api && npm test`, `cd web && npm test`, `cd mobile && flutter analyze && flutter test`.
+- [x] **Step 4:** Run `/security-review` on the branch.
+- [x] **Step 5: Commit** `chore(seed): demo live lessons`.
 
 ## Phase done when
-- [ ] A teacher can add a live lesson to a module, edit its time, add/remove a recording, and delete it (when no attendance).
-- [ ] Students of the right batch see Upcoming → Join → "Recording coming soon" → recording, on web and in the app.
-- [ ] Reminders go out 60 and 15 minutes before a live lesson; standalone classes still get one at 30.
-- [ ] Uploaded recordings download offline; link recordings are online only.
-- [ ] The public course page shows live lesson titles with no link.
-- [ ] All API, web and mobile tests pass; `/security-review` is clean.
+- [x] A teacher can add a live lesson to a module, edit its time, add/remove a recording, and delete it (when no attendance).
+- [x] Students of the right batch see Upcoming → Join → "Recording coming soon" → recording, on web and in the app.
+- [x] Reminders go out 60 and 15 minutes before a live lesson; standalone classes still get one at 30.
+- [x] Uploaded recordings download offline; link recordings are online only.
+- [x] The public course page shows live lesson titles with no link.
+- [x] All API, web and mobile tests pass; `/security-review` is clean.

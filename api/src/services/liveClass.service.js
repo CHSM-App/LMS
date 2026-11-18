@@ -99,9 +99,13 @@ async function create(teacherId, body) {
 }
 
 async function update(id, teacherId, body) {
-  await get(id, teacherId);
+  const current = await get(id, teacherId);
   const f = await parse(teacherId, body);
   if (!['scheduled', 'live', 'completed', 'cancelled'].includes(f.status)) throw badRequest('status: scheduled, live, completed or cancelled');
+  const lesson = await one('SELECT content_id FROM dbo.contents WHERE live_class_id = @id', { id: T.int(current.live_class_id) });
+  // A class that is a live lesson belongs to its module's course.
+  if (lesson && f.courseId !== current.course_id) throw badRequest('This class is a lesson in a course. Move the lesson instead.', 'LIVE_LESSON_COURSE_FIXED');
+  if (lesson) await query('UPDATE dbo.contents SET title = @t WHERE content_id = @id', { t: T.nvarchar(f.topic, 200), id: T.int(lesson.content_id) });
   await query(
     `UPDATE dbo.live_classes SET course_id = @c, batch_id = @b, topic = @t, starts_at = @s, duration_min = @d, meet_link = @l, status = @st,
        reminder_sent_at = CASE WHEN starts_at <> @s THEN NULL ELSE reminder_sent_at END,

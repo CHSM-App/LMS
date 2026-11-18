@@ -127,3 +127,31 @@ test('public course details list the live lesson title and type with no link', a
   expect(JSON.stringify(d.body)).not.toContain(MEET);
   expect(keysOf(d.body)).not.toContain('live');
 });
+
+test("an offline licence stops renewing once the uploaded recording is removed", async () => {
+  const w = await withLive();
+  const key = await uploadVideo(w.t);
+  await w.t.put(`/api/v1/teacher/contents/${w.live.id}/recording`, { videoSource: "upload", fileKey: key });
+  await w.s.post("/api/v1/student/devices", { deviceId: "device-aaaa-1111", deviceName: "Redmi", platform: "android" });
+  const dl = await request(app).post(`/api/v1/student/contents/${w.live.id}/download`)
+    .set("Authorization", `Bearer ${w.s.token}`).set("X-Device-Id", "device-aaaa-1111").send({});
+  expect(dl.status).toBe(200);
+  await w.t.put(`/api/v1/teacher/contents/${w.live.id}/recording`, { videoSource: "youtube", url: "https://youtu.be/abcdefgh123" });
+  const renew = await w.s.post("/api/v1/student/downloads/renew", { deviceId: "device-aaaa-1111", contentIds: [w.live.id] });
+  expect(renew.body.data[0]).toEqual({ contentId: w.live.id, revoked: true, reason: "content_removed" });
+});
+
+test("an offline licence stops renewing when the student moves to a batch the lesson is not for", async () => {
+  const w = await world();
+  const r = await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, liveLessonBody({ startsAt: START, batchId: w.batch.id }));
+  const key = await uploadVideo(w.t);
+  await w.t.put(`/api/v1/teacher/contents/${r.body.data.id}/recording`, { videoSource: "upload", fileKey: key });
+  await w.s.post("/api/v1/student/devices", { deviceId: "device-aaaa-1111", deviceName: "Redmi", platform: "android" });
+  const dl = await request(app).post(`/api/v1/student/contents/${r.body.data.id}/download`)
+    .set("Authorization", `Bearer ${w.s.token}`).set("X-Device-Id", "device-aaaa-1111").send({});
+  expect(dl.status).toBe(200);
+  const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: "Evening", startDate: "2026-01-01" })).body.data;
+  await query("UPDATE dbo.enrollments SET batch_id = @b WHERE course_id = @c", { b: T.int(evening.id), c: T.int(w.courseId) });
+  const renew = await w.s.post("/api/v1/student/downloads/renew", { deviceId: "device-aaaa-1111", contentIds: [r.body.data.id] });
+  expect(renew.body.data[0]).toEqual({ contentId: r.body.data.id, revoked: true, reason: "content_removed" });
+});
