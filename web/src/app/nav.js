@@ -1,37 +1,69 @@
-// Sidebar items per role. Items are added as each phase lands.
+// Sidebar items per role, in groups. `group` is the i18n key of the group heading (null = no heading).
 export const ADMIN_NAV = [
-  { to: '/admin', label: 'common.dashboard', end: true },
-  { to: '/admin/teacher-requests', label: 'nav.teacherRequests' },
-  { to: '/admin/teachers', label: 'nav.teachers' },
-  { to: '/admin/subscriptions', label: 'nav.subscriptions' },
-  { to: '/notifications', label: 'nav.notifications' },
-  { to: '/admin/audit-log', label: 'nav.auditLog' },
+  { group: null, items: [
+    { to: '/admin', label: 'common.dashboard', icon: 'dashboard', end: true },
+    { to: '/notifications', label: 'nav.notifications', icon: 'bell' },
+  ] },
+  { group: 'nav.groupTeachers', items: [
+    { to: '/admin/teacher-requests', label: 'nav.teacherRequests', icon: 'inbox' },
+    { to: '/admin/teachers', label: 'nav.teachers', icon: 'users' },
+    { to: '/admin/subscriptions', label: 'nav.subscriptions', icon: 'card' },
+  ] },
+  { group: 'nav.groupSystem', items: [
+    { to: '/admin/audit-log', label: 'nav.auditLog', icon: 'history' },
+  ] },
 ];
 
 export const TEACHER_NAV = [
-  { to: '/teacher', label: 'common.dashboard', end: true },
-  { to: '/teacher/requests', label: 'nav.requests' },
-  { to: '/teacher/students', label: 'nav.students' },
-  { to: '/teacher/live-classes', label: 'nav.liveClasses' },
-  { to: '/teacher/doubts', label: 'nav.doubts' },
-  { to: '/teacher/courses', label: 'nav.courses' },
-  { to: '/teacher/question-bank', label: 'nav.questionBank' },
-  { to: '/teacher/exams', label: 'nav.exams' },
-  { to: '/teacher/programs', label: 'nav.programs' },
-  { to: '/teacher/profile', label: 'nav.profile' },
-  { to: '/notifications', label: 'nav.notifications' },
+  { group: null, items: [
+    { to: '/teacher', label: 'common.dashboard', icon: 'dashboard', end: true },
+    { to: '/notifications', label: 'nav.notifications', icon: 'bell' },
+  ] },
+  { group: 'nav.groupStudents', items: [
+    { to: '/teacher/requests', label: 'nav.requests', icon: 'inbox' },
+    { to: '/teacher/students', label: 'nav.students', icon: 'users' },
+    { to: '/teacher/doubts', label: 'nav.doubts', icon: 'help' },
+  ] },
+  { group: 'nav.groupTeaching', items: [
+    { to: '/teacher/courses', label: 'nav.courses', icon: 'book' },
+    { to: '/teacher/live-classes', label: 'nav.liveClasses', icon: 'video' },
+    { to: '/teacher/question-bank', label: 'nav.questionBank', icon: 'list' },
+    { to: '/teacher/exams', label: 'nav.exams', icon: 'clipboard' },
+    { to: '/teacher/programs', label: 'nav.programs', icon: 'calendar' },
+  ] },
+  { group: 'nav.groupProfile', items: [
+    { to: '/teacher/profile', label: 'nav.profile', icon: 'user' },
+  ] },
 ];
 
 export const STUDENT_NAV = [
-  { to: '/student', label: 'common.dashboard', end: true },
-  { to: '/student/courses', label: 'nav.myCourses' },
-  { to: '/student/exams', label: 'nav.exams' },
-  { to: '/student/live-classes', label: 'nav.liveClasses' },
-  { to: '/student/doubts', label: 'nav.doubts' },
-  { to: '/student/progress', label: 'nav.progress' },
-  { to: '/student/browse', label: 'nav.browse' },
-  { to: '/student/profile', label: 'nav.profile' },
-  { to: '/notifications', label: 'nav.notifications' },
+  { group: null, items: [
+    { to: '/student', label: 'common.dashboard', icon: 'dashboard', end: true },
+    { to: '/notifications', label: 'nav.notifications', icon: 'bell' },
+  ] },
+  { group: 'nav.groupLearning', items: [
+    { to: '/student/courses', label: 'nav.myCourses', icon: 'book' },
+    { to: '/student/live-classes', label: 'nav.liveClasses', icon: 'video' },
+    { to: '/student/exams', label: 'nav.exams', icon: 'clipboard' },
+    { to: '/student/progress', label: 'nav.progress', icon: 'chart' },
+    { to: '/student/doubts', label: 'nav.doubts', icon: 'help' },
+  ] },
+  { group: 'nav.groupDiscover', items: [
+    { to: '/student/browse', label: 'nav.browse', icon: 'compass' },
+    { to: '/student/profile', label: 'nav.profile', icon: 'user' },
+  ] },
 ];
 
 export const navFor = (role) => ({ admin: ADMIN_NAV, teacher: TEACHER_NAV, student: STUDENT_NAV }[role] || []);
+
+// The nav item for the current path: the longest matching `to`, so /teacher/courses/7 → Courses.
+export function activeItem(nav, pathname) {
+  let best = null;
+  for (const g of nav) {
+    for (const it of g.items) {
+      const hit = it.end ? pathname === it.to : pathname === it.to || pathname.startsWith(`${it.to}/`);
+      if (hit && (!best || it.to.length > best.to.length)) best = it;
+    }
+  }
+  return best;
+}

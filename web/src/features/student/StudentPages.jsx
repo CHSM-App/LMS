@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
-import { formatDate, formatDateTime } from '../../utils/format';
+import { formatDate, formatDateTime, formatLongDay } from '../../utils/format';
+import { Icon } from '../../components/Icon';
 
 // Marks the student present when they click Join (POST /student/live-classes/:id/join).
 function markJoined(liveClassId) {
@@ -35,19 +36,36 @@ function MyCourseCards({ courses }) {
     return <EmptyState title={t('studentDash.noCourses')} action={{ label: t('nav.browse'), onClick: () => navigate('/student/browse') }} />;
   }
   return (
-    <div className="grid grid--2">
+    <div className="my-courses">
       {courses.map((c) => (
-        <Card key={c.courseId} title={c.title}>
-          <p className="muted">{c.teacher}{c.batch ? ` · ${c.batch}` : ''}</p>
-          <ProgressBar value={c.progressPct} label={c.title} />
-          <p className="row row--between">
-            <span>{t('studentDash.until', { date: formatDate(c.endDate, i18n.language) })}</span>
-            <StatusBadge status={c.readOnly ? 'paused' : c.accessStatus} />
-          </p>
-          {c.readOnly && <p className="field__hint">{t('player.readOnly')}</p>}
-          <Link to={`/student/courses/${c.courseId}`}>{t('studentDash.open')}</Link>
-        </Card>
+        <article key={c.courseId} className="my-course">
+          <CourseThumb course={c} />
+          <div className="my-course__body">
+            <div className="row row--between">
+              <h3 className="my-course__title">{c.title}</h3>
+              <StatusBadge status={c.readOnly ? 'paused' : c.accessStatus} />
+            </div>
+            <p className="muted my-course__meta">{c.teacher}{c.batch ? ` · ${c.batch}` : ''}</p>
+            <ProgressBar value={c.progressPct} label={c.title} />
+            <div className="row row--between my-course__foot">
+              <span className="muted">{t('studentDash.until', { date: formatDate(c.endDate, i18n.language) })}</span>
+              <Link to={`/student/courses/${c.courseId}`}>{t('studentDash.open')}</Link>
+            </div>
+            {c.readOnly && <p className="field__hint">{t('player.readOnly')}</p>}
+          </div>
+        </article>
       ))}
+    </div>
+  );
+}
+
+// Course image, or the generated cover when the teacher added none.
+function CourseThumb({ course, className = '' }) {
+  return (
+    <div className={`my-course__thumb ${className}`}>
+      {course.thumbnailUrl ? <img src={fileUrl(course.thumbnailUrl)} alt="" loading="lazy" /> : (
+        <div className="course-cover" aria-hidden="true"><span className="course-cover__title">{course.title}</span></div>
+      )}
     </div>
   );
 }
@@ -73,31 +91,60 @@ export function StudentDashboard() {
   if (q.error) return <EmptyState title={q.error.message} action={{ label: t('common.retry'), onClick: q.refetch }} />;
   const d = q.data.data;
   const next = d.myCourses.find((c) => !c.readOnly && c.accessStatus === 'active' && c.progressPct < 100);
+  const active = d.myCourses.filter((c) => c.accessStatus === 'active');
+  const avg = d.myCourses.length ? Math.round(d.myCourses.reduce((s, c) => s + c.progressPct, 0) / d.myCourses.length) : 0;
+  const stats = [
+    { label: t('studentDash.statCourses'), value: active.length, icon: 'book' },
+    { label: t('studentDash.statProgress'), value: `${avg}%`, icon: 'chart' },
+    { label: t('studentDash.statClasses'), value: d.upcomingLiveClasses.length, icon: 'video' },
+  ];
   return (
     <div className="stack">
-      <PageHeader title={t('teacherDash.hello', { name: user ? user.name : '' })} subtitle={t('studentDash.subtitle')} />
+      <PageHeader title={t('teacherDash.hello', { name: user ? user.name : '' })} subtitle={formatLongDay(new Date(), i18n.language)} />
+      <ul className="kpis kpis--3" aria-label={t('studentDash.summary')}>
+        {stats.map((s) => (
+          <li key={s.label} className="kpi">
+            <span className="kpi__icon"><Icon name={s.icon} size={20} /></span>
+            <span className="kpi__value">{s.value}</span>
+            <span className="kpi__label">{s.label}</span>
+          </li>
+        ))}
+      </ul>
       {next && (
-        <Card accent className="next-up">
-          <p className="muted">{t('studentDash.nextUp')}</p>
-          <h2>{next.title}</h2>
-          <ProgressBar value={next.progressPct} label={next.title} />
-          <Link className="btn btn--primary" to={`/student/courses/${next.courseId}`}><span className="btn__label">{t('studentDash.continue')}</span></Link>
-        </Card>
+        <section className="next-up" aria-label={t('studentDash.nextUp')}>
+          <CourseThumb course={next} className="next-up__thumb" />
+          <div className="next-up__body">
+            <p className="next-up__eyebrow">{t('studentDash.nextUp')}</p>
+            <h2 className="next-up__title">{next.title}</h2>
+            <p className="muted">{next.teacher}{next.batch ? ` · ${next.batch}` : ''}</p>
+            <ProgressBar value={next.progressPct} label={next.title} />
+            <Link className="btn btn--primary" to={`/student/courses/${next.courseId}`}><span className="btn__label">{t('studentDash.continue')}</span></Link>
+          </div>
+        </section>
       )}
-      <h2>{t('nav.myCourses')}</h2>
-      <MyCourseCards courses={d.myCourses} />
-      <Card title={t('nav.liveClasses')}>
-        {d.upcomingLiveClasses.length === 0 ? <p className="muted">{t('studentDash.noClasses')}</p> : (
-          <ul className="stack" style={{ listStyle: 'none', padding: 0, margin: 0, gap: 'var(--space-2)' }}>
-            {d.upcomingLiveClasses.map((c) => (
-              <li key={c.id} className="row row--between">
-                <span><strong>{c.topic}</strong> <span className="muted">· {c.course} · {formatDateTime(c.startsAt, i18n.language)}</span></span>
-                <JoinOrWait c={c} className="btn btn--compact btn--sm" />
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+      <div className="dash-cols">
+        <section>
+          <h2 className="section-title">{t('nav.myCourses')}</h2>
+          <MyCourseCards courses={d.myCourses} />
+        </section>
+        <Card title={t('nav.liveClasses')}>
+          {d.upcomingLiveClasses.length === 0 ? (
+            <div className="dash-empty"><Icon name="calendar" size={28} /><p className="muted">{t('studentDash.noClasses')}</p></div>
+          ) : (
+            <ul className="agenda">
+              {d.upcomingLiveClasses.map((c) => (
+                <li key={c.id} className="agenda__row agenda__row--stack">
+                  <span className="agenda__body">
+                    <span className="agenda__title">{c.topic}</span>
+                    <span className="agenda__meta">{c.course} · {formatDateTime(c.startsAt, i18n.language)}</span>
+                  </span>
+                  <JoinOrWait c={c} className="btn btn--compact btn--sm" />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
       {d.requests.length > 0 && (
         <Card title={t('studentDash.requests')}>
           <Table rowKey={(r) => r.id} rows={d.requests} columns={[

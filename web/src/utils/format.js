@@ -24,4 +24,9 @@ export function formatTime(value, lang = 'en') {
   return new Date(value).toLocaleTimeString(locale(lang), { hour: 'numeric', minute: '2-digit' });
 }
 
-export const todayISO = () => new Date().toISOString().slice(0, 10);
+// "Thursday, 19 November" for dashboard headers.
+export function formatLongDay(value, lang = 'en') {
+  return new Date(value).toLocaleDateString(locale(lang), { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+export const todayISO =() => new Date().toISOString().slice(0, 10);

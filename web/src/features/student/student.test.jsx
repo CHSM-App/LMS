@@ -171,7 +171,7 @@ test('My courses lists every enrolled course with progress and an Open link', as
   } });
   wrap(<StudentMyCoursesPage />);
   expect(await screen.findByRole('heading', { level: 1, name: 'My courses' })).toBeInTheDocument();
-  expect(screen.getByText('Maths')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 3, name: 'Maths' })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /open/i })).toHaveAttribute('href', '/student/courses/3');
 });
 

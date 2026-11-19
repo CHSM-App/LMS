@@ -141,7 +141,14 @@
     "doubts": "शंका",
     "programs": "वर्ग कार्यक्रम",
     "profile": "सार्वजनिक प्रोफाइल",
-    "progress": "प्रगती"
+    "progress": "प्रगती",
+    "groupTeachers": "शिक्षक",
+    "groupSystem": "सिस्टम",
+    "groupStudents": "विद्यार्थी",
+    "groupTeaching": "शिकवणे",
+    "groupProfile": "प्रोफाइल",
+    "groupLearning": "शिकणे",
+    "groupDiscover": "शोधा"
   },
   "notifications": {
     "bell": "सूचना, {{count}} न वाचलेल्या",
@@ -673,7 +680,16 @@
     "doubts": "उघड्या शंका",
     "students": "सक्रिय विद्यार्थी",
     "today": "आजचे थेट वर्ग",
-    "noClasses": "आज थेट वर्ग नाहीत"
+    "noClasses": "आज थेट वर्ग नाहीत",
+    "newCourse": "नवीन कोर्स",
+    "scheduleClass": "लाइव्ह क्लास ठरवा",
+    "needsAction": "कृती आवश्यक",
+    "view": "पहा",
+    "shortcuts": "शॉर्टकट",
+    "shortcutQuestions": "प्रश्न जोडा",
+    "shortcutExam": "चाचणी तयार करा",
+    "shortcutAttendance": "हजेरी तपासा",
+    "shortcutProfile": "सार्वजनिक प्रोफाइल बदला"
   },
   "home": {
     "title": "योग्य शिक्षक शोधा. आधी मोफत डेमो पहा.",
@@ -798,7 +814,11 @@
     "until": "{{date}} पर्यंत प्रवेश",
     "open": "अभ्यासक्रम उघडा",
     "noClasses": "आगामी थेट वर्ग नाहीत",
-    "requests": "तुम्ही पाठवलेल्या विनंत्या"
+    "requests": "तुम्ही पाठवलेल्या विनंत्या",
+    "summary": "तुमचा सारांश",
+    "statCourses": "प्रवेश घेतलेले कोर्स",
+    "statProgress": "सरासरी प्रगती",
+    "statClasses": "येणारे लाइव्ह क्लास"
   },
   "studentDoubts": {
     "subtitle": "अडकलात तर शिक्षकांना विचारा.",
@@ -873,5 +893,10 @@
       },
       "waitingForLink": "शिक्षक लवकरच लिंक देतील"
     }
+  },
+  "roles": {
+    "admin": "सुपर ॲडमिन",
+    "teacher": "शिक्षक",
+    "student": "विद्यार्थी"
   }
 }

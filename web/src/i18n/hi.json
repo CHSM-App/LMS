@@ -141,7 +141,14 @@
     "doubts": "संदेह",
     "programs": "क्लास कार्यक्रम",
     "profile": "सार्वजनिक प्रोफ़ाइल",
-    "progress": "प्रगति"
+    "progress": "प्रगति",
+    "groupTeachers": "शिक्षक",
+    "groupSystem": "सिस्टम",
+    "groupStudents": "छात्र",
+    "groupTeaching": "पढ़ाना",
+    "groupProfile": "प्रोफ़ाइल",
+    "groupLearning": "सीखना",
+    "groupDiscover": "खोजें"
   },
   "notifications": {
     "bell": "सूचनाएँ, {{count}} अपठित",
@@ -673,7 +680,16 @@
     "doubts": "खुले संदेह",
     "students": "सक्रिय छात्र",
     "today": "आज की लाइव क्लास",
-    "noClasses": "आज कोई लाइव क्लास नहीं"
+    "noClasses": "आज कोई लाइव क्लास नहीं",
+    "newCourse": "नया कोर्स",
+    "scheduleClass": "लाइव क्लास तय करें",
+    "needsAction": "कार्रवाई ज़रूरी",
+    "view": "देखें",
+    "shortcuts": "शॉर्टकट",
+    "shortcutQuestions": "प्रश्न जोड़ें",
+    "shortcutExam": "टेस्ट बनाएँ",
+    "shortcutAttendance": "हाज़िरी देखें",
+    "shortcutProfile": "सार्वजनिक प्रोफ़ाइल बदलें"
   },
   "home": {
     "title": "सही शिक्षक खोजें. पहले मुफ़्त डेमो देखें.",
@@ -798,7 +814,11 @@
     "until": "{{date}} तक एक्सेस",
     "open": "कोर्स खोलें",
     "noClasses": "कोई आगामी लाइव क्लास नहीं",
-    "requests": "आपके भेजे अनुरोध"
+    "requests": "आपके भेजे अनुरोध",
+    "summary": "आपका सारांश",
+    "statCourses": "दाखिल कोर्स",
+    "statProgress": "औसत प्रगति",
+    "statClasses": "आने वाली लाइव क्लास"
   },
   "studentDoubts": {
     "subtitle": "अटकने पर शिक्षक से पूछें।",
@@ -873,5 +893,10 @@
       },
       "waitingForLink": "शिक्षक जल्द ही लिंक देंगे"
     }
+  },
+  "roles": {
+    "admin": "सुपर एडमिन",
+    "teacher": "शिक्षक",
+    "student": "छात्र"
   }
 }

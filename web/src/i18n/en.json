@@ -141,7 +141,14 @@
     "doubts": "Doubts",
     "programs": "Class programs",
     "profile": "Public profile",
-    "progress": "Progress"
+    "progress": "Progress",
+    "groupTeachers": "Teachers",
+    "groupSystem": "System",
+    "groupStudents": "Students",
+    "groupTeaching": "Teaching",
+    "groupProfile": "Profile",
+    "groupLearning": "Learning",
+    "groupDiscover": "Discover"
   },
   "notifications": {
     "bell": "Notifications, {{count}} unread",
@@ -673,7 +680,16 @@
     "doubts": "Open doubts",
     "students": "Active students",
     "today": "Today's live classes",
-    "noClasses": "No live classes today"
+    "noClasses": "No live classes today",
+    "newCourse": "New course",
+    "scheduleClass": "Schedule live class",
+    "needsAction": "Needs action",
+    "view": "View",
+    "shortcuts": "Shortcuts",
+    "shortcutQuestions": "Add questions",
+    "shortcutExam": "Create a test",
+    "shortcutAttendance": "Check attendance",
+    "shortcutProfile": "Edit public profile"
   },
   "home": {
     "title": "Find the right teacher. Watch a free demo first.",
@@ -798,7 +814,11 @@
     "until": "Access until {{date}}",
     "open": "Open course",
     "noClasses": "No upcoming live classes",
-    "requests": "Requests you sent"
+    "requests": "Requests you sent",
+    "summary": "Your summary",
+    "statCourses": "Enrolled courses",
+    "statProgress": "Average progress",
+    "statClasses": "Upcoming live classes"
   },
   "studentDoubts": {
     "subtitle": "Ask your teacher when you're stuck.",
@@ -873,5 +893,10 @@
       },
       "waitingForLink": "The teacher will share the link soon"
     }
+  },
+  "roles": {
+    "admin": "Super Admin",
+    "teacher": "Teacher",
+    "student": "Student"
   }
 }
