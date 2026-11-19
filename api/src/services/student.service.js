@@ -10,7 +10,7 @@ const { liveStage } = require('../domain/liveLesson');
 const { sanitize } = require('../utils/sanitize');
 const { clock } = require('../utils/clock');
 const { text } = require('../utils/validate');
-const { APIError, badRequest, conflict } = require('../utils/APIError');
+const { APIError, badRequest, conflict, notFound } = require('../utils/APIError');
 
 const iso = (d) => (d ? new Date(d).toISOString().slice(0, 10) : null);
 const pct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
@@ -138,6 +138,27 @@ async function liveClasses(studentId, { upcomingOnly = true } = {}) {
   });
 }
 
+// The Join button calls this before opening Meet: the student is marked present automatically.
+// Same access rules as the list (approved enrollment, access on, my batch). Idempotent, so a rejoin
+// after a network drop keeps one record; the teacher can still correct the sheet afterwards.
+async function joinLiveClass(studentId, liveClassId) {
+  const id = Number(liveClassId);
+  const c = (await liveClasses(studentId, { upcomingOnly: false })).find((x) => x.id === id);
+  if (!c) throw notFound('Live class not found');
+  if (!c.canJoin) throw conflict('You can join only from 10 minutes before the start until the end', 'NOT_JOINABLE');
+  await withTransaction(async (tx) => {
+    const p = { l: T.int(id), s: T.int(studentId), now: T.datetime(clock.now()) };
+    const updated = await query(
+      `UPDATE dbo.attendance WITH (UPDLOCK, SERIALIZABLE)
+       SET marked_at = CASE WHEN present = 1 THEN marked_at ELSE @now END, present = 1
+       OUTPUT INSERTED.student_id WHERE live_class_id = @l AND student_id = @s`,
+      p, tx,
+    );
+    if (!updated.length) await query('INSERT INTO dbo.attendance (live_class_id, student_id, present, marked_at) VALUES (@l, @s, 1, @now)', p, tx);
+  });
+  return { meetLink: c.meetLink, present: true };
+}
+
 async function dashboard(studentId) {
   const courses = (await enrolledCourses(studentId)).map(courseOut);
   const pending = (await myEnrollments(studentId)).filter((e) => e.status !== 'approved');
@@ -200,7 +221,7 @@ const isDownloadable = (x) => (x.type === 'video' || x.type === 'live') && x.vid
 function liveSummary(x) {
   const hasRecording = !!x.video_source;
   const stage = liveStage({ status: x.live_status, startsAt: x.live_starts_at, durationMin: x.live_duration_min, hasRecording }, clock.now());
-  return { startsAt: x.live_starts_at, durationMin: x.live_duration_min, stage };
+  return { liveClassId: x.live_class_id, startsAt: x.live_starts_at, durationMin: x.live_duration_min, stage };
 }
 
 // A live lesson can be completed only once it has ended or has a recording; other lessons always.
@@ -382,6 +403,6 @@ async function saveProfile(studentId, b) {
 }
 
 module.exports = {
-  requestEnrollment, myEnrollments, dashboard, liveClasses, courseView, contentView, saveProgress, syncProgress, upsertProgress,
+  requestEnrollment, myEnrollments, dashboard, liveClasses, joinLiveClass, courseView, contentView, saveProgress, syncProgress, upsertProgress,
   progress, askDoubt, myDoubts, profile, saveProfile,
 };

@@ -84,6 +84,18 @@ so a course can be fully recorded, fully live, or mixed (hybrid).
     see the date and time. WhatsApp messages link to the class page in the app, not to Meet.
     (Demo requests are unchanged: the visitor gets the Meet link on WhatsApp.)
 
+## Automatic attendance (added 2026-11-18)
+1. When a student taps **Join** on a live class or live lesson (web or app), they are marked
+   **present automatically** (`POST /student/live-classes/:id/join`). The teacher does not mark it by hand.
+2. Join works only in the join window (10 min before start until the end) and only when the Meet
+   link exists. Joining again after a network drop keeps one record.
+3. Meet opens even if marking fails, so a student is never blocked from the class.
+4. Students who never tap Join have no record and are shown as **not marked** (counted absent).
+   The teacher's attendance sheet stays for **corrections only** (e.g. a student who joined from
+   another device).
+5. Limit: Google Meet does not tell us who actually stayed in the call, so "present" means
+   "joined through the app or website".
+
 ## Solution image on questions (added 2026-11-18)
 1. When adding or editing a question, the teacher can upload **one optional solution image**
    (e.g. a photo of a maths sum solved on paper). JPG, PNG or WebP, up to 5 MB, checked by content.

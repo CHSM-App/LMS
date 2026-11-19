@@ -73,6 +73,31 @@ void main() {
       await tester.pumpWidget(app(const Scaffold(body: LiveClassTile(topic: 'Algebra', subtitle: 'Maths', meetLink: 'https://meet.google.com/abc-defg-hij'))));
       expect(find.text('Join'), findsOneWidget);
     });
+
+    testWidgets('tapping Join marks attendance, then opens Meet', (tester) async {
+      final repo = FakeStudentRepo();
+      final opened = <String>[];
+      await tester.pumpWidget(app(
+        const Scaffold(body: LiveClassTile(liveClassId: 9, topic: 'Algebra', subtitle: 'Maths', meetLink: 'https://meet.google.com/abc-defg-hij')),
+        overrides: [studentRepositoryProvider.overrideWithValue(repo), externalOpenerProvider.overrideWithValue((u) async => opened.add(u))],
+      ));
+      await tester.tap(find.text('Join'));
+      await tester.pumpAndSettle();
+      expect(repo.joined, [9]);
+      expect(opened, ['https://meet.google.com/abc-defg-hij']);
+    });
+
+    testWidgets('Meet still opens when marking attendance fails', (tester) async {
+      final repo = FakeStudentRepo()..joinError = offline;
+      final opened = <String>[];
+      await tester.pumpWidget(app(
+        const Scaffold(body: LiveClassTile(liveClassId: 9, topic: 'Algebra', subtitle: 'Maths', meetLink: 'https://meet.google.com/abc-defg-hij')),
+        overrides: [studentRepositoryProvider.overrideWithValue(repo), externalOpenerProvider.overrideWithValue((u) async => opened.add(u))],
+      ));
+      await tester.tap(find.text('Join'));
+      await tester.pumpAndSettle();
+      expect(opened, ['https://meet.google.com/abc-defg-hij']);
+    });
   });
 
   group('lesson row stage chip', () {
@@ -118,6 +143,33 @@ void main() {
     testWidgets('Join button only while live', (tester) async {
       await pumpPlayer(tester, detail('live', meetLink: 'https://meet.google.com/abc-defg-hij'));
       expect(find.text('Join class'), findsOneWidget);
+    });
+
+    testWidgets('tapping Join class marks attendance for the live lesson', (tester) async {
+      final repo = FakeStudentRepo();
+      final opened = <String>[];
+      repo.courseView = CourseView(courseId: 3, title: 'Maths', progressPct: 0, subjects: [
+        CourseSubject(id: 1, name: 'Algebra', modules: [
+          CourseModule(id: 1, name: 'Basics', lessons: [Lesson(id: 7, title: 'Live', type: 'live', live: LessonLive(startsAt: DateTime.utc(2099), durationMin: 60, stage: 'live'))]),
+        ]),
+      ]);
+      repo.lessons[7] = LessonDetail(id: 7, courseId: 3, title: 'Live', type: 'live',
+          live: LessonLive(liveClassId: 31, startsAt: DateTime.utc(2099), durationMin: 60, stage: 'live', meetLink: 'https://meet.google.com/abc-defg-hij'));
+      await tester.pumpWidget(app(const CoursePlayerScreen(courseId: 3), overrides: [
+        studentRepositoryProvider.overrideWithValue(repo),
+        externalOpenerProvider.overrideWithValue((u) async => opened.add(u)),
+        downloadsProvider.overrideWith((ref) => throw UnimplementedError('not used')),
+      ]));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Join class'));
+      await tester.pumpAndSettle();
+      expect(repo.joined, [31]);
+      expect(opened, ['https://meet.google.com/abc-defg-hij']);
+    });
+
+    test('LessonLive reads liveClassId', () {
+      final l = LessonLive.fromJson({'liveClassId': 31, 'startsAt': '2099-06-15T12:30:00.000Z', 'durationMin': 60, 'stage': 'live'});
+      expect(l!.liveClassId, 31);
     });
 
     testWidgets('live without a link: no Join, the teacher will share it', (tester) async {

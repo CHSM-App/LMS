@@ -7,11 +7,22 @@ import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
 import { formatDate, formatDateTime } from '../../utils/format';
 
+// Marks the student present when they click Join (POST /student/live-classes/:id/join).
+function markJoined(liveClassId) {
+  if (!liveClassId) return;
+  api.post(`/student/live-classes/${liveClassId}/join`, {}).catch(() => {});
+}
+
 // Join is shown only in the join window (10 min before start until the end); the API sends meetLink only then.
 function JoinOrWait({ c, className }) {
   const { t } = useTranslation();
   if (c.canJoin && c.meetLink) {
-    return <a className={className} href={c.meetLink} target="_blank" rel="noopener noreferrer"><span className="btn__label">{t('liveClasses.join')}</span></a>;
+    // Clicking Join marks attendance automatically; Meet still opens even if that call fails.
+    return (
+      <a className={className} href={c.meetLink} target="_blank" rel="noopener noreferrer" onClick={() => markJoined(c.id)}>
+        <span className="btn__label">{t('liveClasses.join')}</span>
+      </a>
+    );
   }
   return <span className="muted">{t(c.waitingForLink ? 'liveClasses.waitingForLink' : 'liveClasses.joinSoon')}</span>;
 }

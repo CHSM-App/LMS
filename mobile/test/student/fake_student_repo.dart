@@ -104,6 +104,13 @@ class FakeStudentRepo implements StudentRepository {
   Future<void> askDoubt(int courseId, String question, {String? attachmentPath}) async => doubtsAsked.add('$courseId:$question');
   @override
   Future<List<LiveClassItem>> liveClasses() async => const [];
+  final joined = <int>[];
+  ApiException? joinError;
+  @override
+  Future<void> joinLiveClass(int liveClassId) async {
+    if (joinError != null) throw joinError!;
+    joined.add(liveClassId);
+  }
   @override
   Future<List<CourseProgress>> progress() async => const [];
   @override

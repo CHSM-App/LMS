@@ -157,12 +157,12 @@ class _LessonPanelState extends ConsumerState<_LessonPanel> {
 
 /// Live lesson: start time and stage; Join while live (opens Meet outside the app);
 /// "Recording coming soon" after it ends. A recording plays like any video (handled by the caller).
-class _LivePanel extends StatelessWidget {
+class _LivePanel extends ConsumerWidget {
   const _LivePanel({required this.live});
   final LessonLive live;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppTokens.spaceS3),
@@ -176,7 +176,7 @@ class _LivePanel extends StatelessWidget {
           const SizedBox(height: AppTokens.spaceS2),
           if (live.stage == 'upcoming') Text(l.sLiveJoinOpens, style: const TextStyle(color: AppTokens.textSecondary)),
           if (live.stage == 'live' && live.meetLink != null)
-            AppButton(label: l.sLiveJoin, icon: Icons.videocam_outlined, onPressed: () => openExternal(live.meetLink!)),
+            AppButton(label: l.sLiveJoin, icon: Icons.videocam_outlined, onPressed: () => joinLiveClass(ref, live.liveClassId, live.meetLink!)),
           if (live.stage == 'live' && live.meetLink == null) Text(l.sLiveWaitingForLink, style: const TextStyle(color: AppTokens.textSecondary)),
           if (live.stage == 'ended') Text(l.sLiveRecordingSoon),
           if (live.stage == 'cancelled') Text(l.sLiveCancelledText),

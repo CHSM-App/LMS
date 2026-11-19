@@ -165,7 +165,10 @@ class StudentDashboard {
 /// The Meet link is sent by the API only while the lesson is upcoming or live.
 @immutable
 class LessonLive {
-  const LessonLive({required this.startsAt, required this.durationMin, required this.stage, this.meetLink, this.waitingForLink = false});
+  const LessonLive({this.liveClassId, required this.startsAt, required this.durationMin, required this.stage, this.meetLink, this.waitingForLink = false});
+
+  /// The live class behind this lesson; Join marks attendance on it.
+  final int? liveClassId;
   final DateTime startsAt;
   final int durationMin;
   final String stage;
@@ -177,6 +180,7 @@ class LessonLive {
   static LessonLive? fromJson(dynamic j) {
     if (j is! Map) return null;
     return LessonLive(
+      liveClassId: (j['liveClassId'] as num?)?.toInt(),
       startsAt: DateTime.parse(j['startsAt'] as String),
       durationMin: _int(j['durationMin']),
       stage: j['stage'] as String,

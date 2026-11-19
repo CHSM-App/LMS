@@ -124,6 +124,34 @@ describe('doubts, live classes, progress, profile, privacy', () => {
     expect(p.body.data.courses[0]).toMatchObject({ title: 'Class 10 Maths', attendancePct: 100, classesHeld: 1, completedLessons: 0, totalLessons: 3 });
   });
 
+  test('joining a live class marks the student present automatically', async () => {
+    clock.set(new Date('2026-06-15T03:00:00Z'));
+    const w = await world();
+    const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: 'Evening', startDate: '2026-01-01' })).body.data;
+    const link = 'https://meet.google.com/abc-defg-hij';
+    const lc = (await w.t.post('/api/v1/teacher/live-classes', { courseId: w.courseId, topic: 'Algebra', startsAt: '2026-06-15T04:00:00Z', meetLink: link })).body.data;
+    const other = (await w.t.post('/api/v1/teacher/live-classes', { courseId: w.courseId, batchId: evening.id, topic: 'Not mine', startsAt: '2026-06-15T04:00:00Z', meetLink: link })).body.data;
+    // Too early: outside the join window, nothing is recorded.
+    const early = await w.s.post(`/api/v1/student/live-classes/${lc.id}/join`, {});
+    expect(early.status).toBe(409);
+    expect(early.body.code).toBe('NOT_JOINABLE');
+    clock.set(new Date('2026-06-15T04:05:00Z'));
+    const res = await w.s.post(`/api/v1/student/live-classes/${lc.id}/join`, {});
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual({ meetLink: link, present: true });
+    // Joining again (rejoin after a drop) is fine and keeps one record.
+    expect((await w.s.post(`/api/v1/student/live-classes/${lc.id}/join`, {})).status).toBe(200);
+    const rows = await query('SELECT present FROM dbo.attendance WHERE live_class_id = @l', { l: T.int(lc.id) });
+    expect(rows).toEqual([{ present: true }]);
+    // The teacher's sheet already shows the student present.
+    const sheet = (await w.t.get(`/api/v1/teacher/live-classes/${lc.id}/attendance`)).body.data;
+    expect(sheet.find((s) => s.studentPublicId === w.s.user.public_id).present).toBe(true);
+    // A class for another batch is not found for this student.
+    expect((await w.s.post(`/api/v1/student/live-classes/${other.id}/join`, {})).status).toBe(404);
+    const p = await w.s.get('/api/v1/student/progress');
+    expect(p.body.data.courses[0]).toMatchObject({ attendancePct: 100, classesHeld: 1 });
+  });
+
   test('profile update; no student endpoint exposes another student\'s mobile', async () => {
     const w = await world();
     const res = await w.s.put('/api/v1/student/profile', { name: 'Meera K', education: 'B.Sc', classStandard: 'FY', city: 'Nashik', preferredLang: 'mr' });

@@ -1371,6 +1371,17 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         '200': { description: 'Upcoming classes for my courses and batch, each with stage and canJoin; meetLink only while canJoin (10 min before start until the end and the teacher has added it); waitingForLink when it is class time but no link yet' }
+  /student/live-classes/{id}/join:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [student]
+      summary: Join a live class or live lesson; attendance is marked present automatically
+      description: The Join button calls this before opening Meet. Allowed only in the join window (10 min before start until the end) when the Meet link exists. Idempotent; the teacher can still correct the sheet.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ meetLink, present: true }' }
+        '404': { description: 'Not a class for my course and batch' }
+        '409': { description: 'NOT_JOINABLE: outside the join window, cancelled, or no Meet link yet' }
   /student/progress:
     get:
       tags: [student]

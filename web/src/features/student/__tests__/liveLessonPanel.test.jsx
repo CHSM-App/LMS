@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import '../../../i18n';
+import * as client from '../../../api/client';
 import { LiveLessonPanel } from '../LiveLessonPanel';
 
 const base = {
@@ -21,6 +22,15 @@ test('live shows a Join button that opens Meet in a new tab', () => {
   expect(join).toHaveAttribute('href', 'https://meet.google.com/abc-defg-hij');
   expect(join).toHaveAttribute('target', '_blank');
   expect(join).toHaveAttribute('rel', 'noopener noreferrer');
+});
+
+test('clicking Join marks attendance automatically', () => {
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { present: true } });
+  render(<LiveLessonPanel content={withStage('live', { live: { liveClassId: 31 } })} />);
+  const join = screen.getByRole('link', { name: 'Join class' });
+  join.addEventListener('click', (e) => e.preventDefault());
+  fireEvent.click(join);
+  expect(post).toHaveBeenCalledWith('/student/live-classes/31/join', {});
 });
 
 test('ended without a recording says the recording is coming', () => {

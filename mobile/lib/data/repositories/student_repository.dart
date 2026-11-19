@@ -44,6 +44,9 @@ abstract class StudentRepository {
   Future<void> submit(String attemptId);
   Future<AttemptResult> result(String attemptId);
   Future<List<LiveClassItem>> liveClasses();
+
+  /// Called when the student taps Join: marks them present for that class or live lesson.
+  Future<void> joinLiveClass(int liveClassId);
   Future<List<StudentDoubt>> doubts();
   Future<void> askDoubt(int courseId, String question, {String? attachmentPath});
   Future<List<CourseProgress>> progress();
@@ -106,6 +109,9 @@ class ApiStudentRepository implements StudentRepository {
 
   @override
   Future<List<LiveClassItem>> liveClasses() async => _list(await api.get('/student/live-classes')).map(LiveClassItem.fromJson).toList();
+
+  @override
+  Future<void> joinLiveClass(int liveClassId) => api.post('/student/live-classes/$liveClassId/join');
 
   @override
   Future<List<StudentDoubt>> doubts() async => _list(await api.get('/student/doubts')).map(StudentDoubt.fromJson).toList();

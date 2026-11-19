@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_tokens.g.dart';
 import '../../../l10n/gen/app_localizations.dart';
+import '../../../presentation/providers/student_providers.dart';
 import '../../../widgets/app_widgets.dart';
 
 /// Spinner / error-with-retry / data for a FutureProvider value.
@@ -37,6 +38,20 @@ String formatBytes(int bytes) {
 /// Opens Meet links, notes and outside videos in the browser / Meet app.
 Future<void> openExternal(String url) => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 
+/// Opens a URL outside the app; overridden in tests.
+final externalOpenerProvider = Provider<Future<void> Function(String url)>((ref) => openExternal);
+
+/// Join: marks the student present (automatic attendance), then opens Meet.
+/// Meet opens even if marking fails (e.g. a network drop), so the student is never blocked.
+Future<void> joinLiveClass(WidgetRef ref, int? liveClassId, String meetLink) async {
+  if (liveClassId != null) {
+    try {
+      await ref.read(studentRepositoryProvider).joinLiveClass(liveClassId);
+    } catch (_) {}
+  }
+  await ref.read(externalOpenerProvider)(meetLink);
+}
+
 /// Notes open in an in-app browser tab (no download/share controls of ours).
 Future<void> openInApp(String url) => launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
 
@@ -52,8 +67,9 @@ class SectionTitle extends StatelessWidget {
 
 /// Join shows only when [meetLink] is set, which the API does only in the join window
 /// (10 min before start until the end). Before that the tile says when Join opens.
-class LiveClassTile extends StatelessWidget {
-  const LiveClassTile({super.key, required this.topic, required this.subtitle, required this.meetLink, this.waitingForLink = false});
+class LiveClassTile extends ConsumerWidget {
+  const LiveClassTile({super.key, this.liveClassId, required this.topic, required this.subtitle, required this.meetLink, this.waitingForLink = false});
+  final int? liveClassId;
   final String topic;
   final String subtitle;
   final String? meetLink;
@@ -62,7 +78,7 @@ class LiveClassTile extends StatelessWidget {
   final bool waitingForLink;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final link = meetLink;
     return Card(
@@ -70,7 +86,7 @@ class LiveClassTile extends StatelessWidget {
         title: Text(topic, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(subtitle),
         trailing: link != null
-            ? TextButton(onPressed: () => openExternal(link), child: Text(l.join))
+            ? TextButton(onPressed: () => joinLiveClass(ref, liveClassId, link), child: Text(l.join))
             : ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 120),
                 child: Text(waitingForLink ? l.sLiveWaitingForLink : l.sLiveJoinSoon, textAlign: TextAlign.end, style: const TextStyle(color: AppTokens.textSecondary)),

@@ -118,6 +118,16 @@ test.each([
   expect(screen.getByText('Join opens 10 min before')).toBeInTheDocument();
 });
 
+test('clicking Join marks attendance automatically', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: classes });
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { present: true } });
+  wrap(<StudentLiveClassesPage />);
+  const join = await screen.findByRole('link', { name: 'Join' });
+  join.addEventListener('click', (e) => e.preventDefault());
+  await userEvent.click(join);
+  expect(post).toHaveBeenCalledWith('/student/live-classes/2/join', {});
+});
+
 test('exams: a locked Final explains how to unlock it', async () => {
   vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
     if (path === '/student/dashboard') return { data: { myCourses: [{ courseId: 3, title: 'Maths', readOnly: false }], upcomingLiveClasses: [], requests: [] } };

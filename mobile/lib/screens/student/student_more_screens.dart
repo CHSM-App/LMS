@@ -26,7 +26,7 @@ class StudentLiveClassesScreen extends ConsumerWidget {
               ? ListView(children: [EmptyState(title: l.sNoUpcoming)])
               : ListView(
                   padding: const EdgeInsets.all(AppTokens.spaceS4),
-                  children: [for (final c in list) LiveClassTile(topic: c.topic, subtitle: [c.course, ?c.batch, formatDateTime(context, c.startsAt)].join(' · '), meetLink: c.canJoin ? c.meetLink : null, waitingForLink: c.waitingForLink)],
+                  children: [for (final c in list) LiveClassTile(liveClassId: c.id, topic: c.topic, subtitle: [c.course, ?c.batch, formatDateTime(context, c.startsAt)].join(' · '), meetLink: c.canJoin ? c.meetLink : null, waitingForLink: c.waitingForLink)],
                 ),
         ),
       ),

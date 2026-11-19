@@ -20,6 +20,7 @@ router.get('/student/contents/:contentId', h((req) => students.contentView(req.u
 router.post('/student/contents/:contentId/progress', h((req) => students.saveProgress(req.user.id, req.params.contentId, req.body)));
 router.post('/student/progress/sync', h((req) => students.syncProgress(req.user.id, req.body.items)));
 router.get('/student/live-classes', h((req) => students.liveClasses(req.user.id)));
+router.post('/student/live-classes/:id/join', h((req) => students.joinLiveClass(req.user.id, req.params.id)));
 router.get('/student/progress', h((req) => students.progress(req.user.id)));
 
 // Exams

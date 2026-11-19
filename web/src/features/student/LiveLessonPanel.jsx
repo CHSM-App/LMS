@@ -1,5 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { fileUrl } from '../../api/client';
+import { api, fileUrl } from '../../api/client';
+
+// Clicking Join marks attendance automatically; Meet still opens even if that call fails.
+function markJoined(liveClassId) {
+  if (!liveClassId) return;
+  api.post(`/student/live-classes/${liveClassId}/join`, {}).catch(() => {});
+}
 import { LiveStageBadge, VideoFrame } from '../../components';
 import { formatDateTime } from '../../utils/format';
 
@@ -16,7 +22,7 @@ export function LiveLessonPanel({ content: c, onTimeUpdate, onEnded }) {
       {stage === 'upcoming' && <p className="field__hint">{t('content.live.joinOpens')}</p>}
       {stage === 'live' && meetLink && (
         <p>
-          <a className="btn btn--primary" href={meetLink} target="_blank" rel="noopener noreferrer">
+          <a className="btn btn--primary" href={meetLink} target="_blank" rel="noopener noreferrer" onClick={() => markJoined(c.live.liveClassId)}>
             <span className="btn__label">{t('content.live.join')}</span>
           </a>
         </p>
