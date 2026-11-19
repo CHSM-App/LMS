@@ -72,3 +72,15 @@ test('consents table stays the record of agreement', async () => {
   await query("INSERT INTO dbo.legal_consents (mobile, consent_type, policy_version) VALUES ('+919833333340', 'terms_privacy', '1.0')");
   expect((await one('SELECT COUNT(*) n FROM dbo.legal_consents')).n).toBe(1);
 });
+
+test('language: any signed-in user saves their language; /auth/me returns it; bad values refused', async () => {
+  for (const role of ['student', 'teacher', 'admin']) {
+    const u = await asUser({ role });
+    const res = await u.put('/api/v1/account/language', { preferredLang: 'en' });
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual({ preferredLang: 'en' });
+    expect((await u.get('/api/v1/auth/me')).body.data.preferredLang).toBe('en');
+    expect((await u.put('/api/v1/account/language', { preferredLang: 'fr' })).status).toBe(400);
+  }
+  expect((await request(app).put('/api/v1/account/language').send({ preferredLang: 'mr' })).status).toBe(401);
+});

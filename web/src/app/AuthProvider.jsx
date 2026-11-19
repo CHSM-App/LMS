@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, setAccessToken, refreshSession, onSessionEnded } from '../api/client';
 import i18n from '../i18n';
+import { resolveLoginLanguage, wasLanguageChosen } from '../i18n/preference';
 
 export const AuthContext = createContext({ user: null, loading: true });
 export const useAuth = () => useContext(AuthContext);
@@ -15,7 +16,9 @@ export function AuthProvider({ children }) {
   const loadMe = useCallback(async () => {
     const me = await api.get('/auth/me');
     setUser(me.data);
-    if (me.data.preferredLang && me.data.preferredLang !== i18n.language) i18n.changeLanguage(me.data.preferredLang);
+    const { apply, save } = resolveLoginLanguage({ chosen: wasLanguageChosen(), account: me.data.preferredLang, current: i18n.language });
+    if (apply) i18n.changeLanguage(apply);
+    if (save) api.put('/account/language', { preferredLang: save }).catch(() => {});
     return me.data;
   }, []);
 

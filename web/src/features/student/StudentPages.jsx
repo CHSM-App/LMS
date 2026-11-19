@@ -7,6 +7,7 @@ import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
 import { formatDate, formatDateTime, formatLongDay, formatRelativeDay } from '../../utils/format';
 import { LiveStageBadge } from '../../components/LiveStageBadge';
+import { markLanguageChosen } from '../../i18n/preference';
 import { Icon } from '../../components/Icon';
 
 // Marks the student present when they click Join (POST /student/live-classes/:id/join).
@@ -343,7 +344,7 @@ export function StudentProgressPage() {
 }
 
 export function StudentProfilePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
   const { refreshMe } = useAuth();
   const q = useQuery({ queryKey: ['student', 'profile'], queryFn: () => api.get('/student/profile') });
@@ -352,6 +353,11 @@ export function StudentProfilePage() {
   const save = useMutation({
     mutationFn: () => api.put('/student/profile', f),
     onSuccess: () => {
+      // The language saved here is now this device's choice too, so the next login keeps it.
+      if (f.preferredLang && f.preferredLang !== i18n.language) {
+        markLanguageChosen();
+        i18n.changeLanguage(f.preferredLang);
+      }
       toast.show({ message: t('common.saved') });
       refreshMe();
     },

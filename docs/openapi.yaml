@@ -286,6 +286,19 @@ paths:
                 refreshToken: { type: string }
       responses:
         '200': { description: Mobile changed; other sessions revoked }
+  /account/language:
+    put:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      summary: Save the signed-in user's language (used for the UI, notifications and WhatsApp).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [preferredLang], properties: { preferredLang: { type: string, enum: [en, mr, hi] } } }
+      responses:
+        '200': { description: '{ preferredLang }' }
+        '400': { description: Unknown language }
   /account/delete:
     post:
       tags: [account]

@@ -7,7 +7,7 @@ const { audit } = require('./audit.service');
 const hooks = require('./accountHooks');
 const { clearAuthCache } = require('../middlewares/authenticate');
 const { clock } = require('../utils/clock');
-const { conflict, notFound } = require('../utils/APIError');
+const { badRequest, conflict, notFound } = require('../utils/APIError');
 const { maskMobile } = require('../utils/mobile');
 
 async function ensureFree(mobile, tx) {
@@ -82,4 +82,12 @@ async function deleteAccount(userId, otp) {
   return { deleted: true };
 }
 
-module.exports = { startChangeMobile, confirmChangeMobile, adminChangeMobile, deleteAccount };
+// The user's language for the UI, notifications and WhatsApp.
+async function setLanguage(userId, lang) {
+  if (!['en', 'mr', 'hi'].includes(lang)) throw badRequest('preferredLang: choose en, mr or hi');
+  await query('UPDATE dbo.users SET preferred_lang = @l, updated_at = SYSUTCDATETIME() WHERE user_id = @id', { l: T.char(lang, 2), id: T.int(userId) });
+  clearAuthCache(userId);
+  return { preferredLang: lang };
+}
+
+module.exports = { startChangeMobile, confirmChangeMobile, adminChangeMobile, deleteAccount, setLanguage };
