@@ -87,7 +87,32 @@
     "studentRegister": "Register as a student",
     "becomeTeacher": "Become a Teacher",
     "applyAgain": "Apply again",
-    "goToLogin": "Go to login"
+    "goToLogin": "Go to login",
+    "step": "Step {{n}} of {{total}}",
+    "stepMobile": "Mobile number",
+    "stepDetails": "Your details",
+    "stepVerify": "Verify OTP",
+    "panelLogin": {
+      "title": "Welcome back",
+      "body": "Log in with your mobile number. No password to remember.",
+      "point1": "Continue your lessons where you stopped",
+      "point2": "Join live classes on time",
+      "point3": "See your test results and attendance"
+    },
+    "panelStudent": {
+      "title": "Start learning in a minute",
+      "body": "Create your free student account with your mobile number.",
+      "point1": "Watch demo videos and book a free live demo",
+      "point2": "Send an enroll request to the teacher you like",
+      "point3": "Learn on the website or in the mobile app"
+    },
+    "panelTeacher": {
+      "title": "Teach online, your way",
+      "body": "Your account is ready as soon as you verify your mobile number.",
+      "point1": "Recorded lessons, notes and live classes in one course",
+      "point2": "Tests with automatic marks and ranks",
+      "point3": "Attendance and student requests in one place"
+    }
   },
   "shell": {
     "skip": "Skip to content",
@@ -154,7 +179,10 @@
     "editDetails": "Edit details",
     "send": "Send request",
     "sentTitle": "Account created",
-    "sentBody": "Your teacher account is ready. Log in with your mobile number to open your dashboard."
+    "sentBody": "Your teacher account is ready. Log in with your mobile number to open your dashboard.",
+    "groupAbout": "About you",
+    "groupTeaching": "Your teaching",
+    "groupMore": "More details (optional)"
   },
   "teacherRequests": {
     "title": "Teacher requests",

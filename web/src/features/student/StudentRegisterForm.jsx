@@ -6,11 +6,13 @@ import { Banner, Button, Input, OtpInput } from '../../components';
 import { isValidMobile } from '../../utils/format';
 import { useOtp } from '../auth/useOtp';
 import { ConsentFields } from '../auth/ConsentFields';
+import { StepIndicator } from '../auth/AuthLayout';
 
 const EMPTY = { name: '', mobile: '', education: '', classStandard: '', city: '', email: '' };
 
 // Student registration (spec §4): name*, mobile*, OTP*, education*, city, email. Logs in on success.
-export function StudentRegisterForm({ onDone }) {
+// heading / intro / footer are optional slots so the step indicator sits above the page heading.
+export function StudentRegisterForm({ onDone, heading = null, intro = null, footer = null }) {
   const { t, i18n } = useTranslation();
   const { refreshMe } = useAuth();
   const otp = useOtp('student_register');
@@ -56,11 +58,11 @@ export function StudentRegisterForm({ onDone }) {
     }
   };
 
-  return !otp.sentTo ? (
+  const form = !otp.sentTo ? (
     <form onSubmit={onContinue} noValidate>
       <div className="grid grid--2">
         <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
-        <Input label={t('common.mobile')} type="tel" inputMode="numeric" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
+        <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
         <Input label={t('requests.education')} value={f.education} onChange={set('education')} error={errors.education} hint={t('demoForm.educationHint')} required />
         <Input label={optional(t('demoForm.classStandard'))} value={f.classStandard} onChange={set('classStandard')} />
         <Input label={optional(t('common.city'))} value={f.city} onChange={set('city')} />
@@ -68,17 +70,27 @@ export function StudentRegisterForm({ onDone }) {
       </div>
       <ConsentFields accept={accept} onAccept={setAccept} whatsapp={whatsapp} onWhatsapp={setWhatsapp} error={errors.accept} />
       {otp.error && <Banner kind="error" message={otp.error} />}
-      <Button type="submit" loading={otp.sending}>{t('teacherReg.continue')}</Button>
+      <Button type="submit" block loading={otp.sending}>{t('teacherReg.continue')}</Button>
     </form>
   ) : (
     <form onSubmit={onSubmit} className="stack" noValidate>
       <p>{t('auth.otpSentTo', { mobile: otp.sentTo })} <button type="button" className="btn btn--link" onClick={otp.reset}>{t('teacherReg.editDetails')}</button></p>
       <OtpInput value={code} onChange={setCode} autoFocus />
       {serverError && <Banner kind="error" message={serverError} />}
-      <Button type="submit" loading={busy} disabled={code.length !== 6}>{t('register.create')}</Button>
+      <Button type="submit" block loading={busy} disabled={code.length !== 6}>{t('register.create')}</Button>
       {otp.secondsLeft > 0 ? <p className="muted">{t('auth.resendIn', { s: otp.secondsLeft })}</p> : (
         <button type="button" className="btn btn--link" onClick={() => otp.send(otp.sentTo)}>{t('auth.resend')}</button>
       )}
     </form>
+  );
+
+  return (
+    <>
+      <StepIndicator step={otp.sentTo ? 2 : 1} label={otp.sentTo ? t('auth.stepVerify') : t('auth.stepDetails')} />
+      {heading}
+      {intro}
+      {form}
+      {!otp.sentTo && footer}
+    </>
   );
 }

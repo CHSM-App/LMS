@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button, Input, OtpInput, FileUpload, Card, Banner } from '../../components';
+import { Button, Input, OtpInput, FileUpload, Banner } from '../../components';
+import { AuthLayout, StepIndicator } from './AuthLayout';
 import { api } from '../../api/client';
 import { isValidMobile } from '../../utils/format';
 import { useOtp } from './useOtp';
@@ -68,38 +69,50 @@ export default function BecomeTeacherPage() {
 
   if (done) {
     return (
-      <div className="auth-card">
-        <Card>
-          <h1>{t('teacherReg.sentTitle')}</h1>
-          <p>{t('teacherReg.sentBody')}</p>
-          <Link to="/login">{t('auth.goToLogin')}</Link>
-        </Card>
-      </div>
+      <AuthLayout panel="auth.panelTeacher">
+        <h1 className="auth-split__heading">{t('teacherReg.sentTitle')}</h1>
+        <p>{t('teacherReg.sentBody')}</p>
+        <Link to="/login" className="btn btn--primary"><span className="btn__label">{t('auth.goToLogin')}</span></Link>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="container" style={{ maxWidth: 760 }}>
-      <h1>{t('teacherReg.title')}</h1>
-      <p className="muted">{t('teacherReg.intro')}</p>
-      <Card>
+    <AuthLayout panel="auth.panelTeacher" wide>
+        <StepIndicator step={otp.sentTo ? 2 : 1} label={otp.sentTo ? t('auth.stepVerify') : t('auth.stepDetails')} />
+        <h1 className="auth-split__heading">{t('teacherReg.title')}</h1>
+        <p className="muted">{t('teacherReg.intro')}</p>
         {!otp.sentTo ? (
           <form onSubmit={onContinue} noValidate>
-            <div className="grid grid--2">
-              <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
-              <Input label={t('common.mobile')} type="tel" inputMode="numeric" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
-              <Input label={t('teacherReg.course')} value={f.courseName} onChange={set('courseName')} error={errors.courseName} hint={t('teacherReg.courseHint')} required />
-              <Input label={t('teacherReg.subject')} value={f.subject} onChange={set('subject')} error={errors.subject} required />
-              <Input label={t('teacherReg.experience')} type="number" min="0" max="60" inputMode="numeric" value={f.experienceYears} onChange={set('experienceYears')} error={errors.experienceYears} required />
-              <Input label={optional(t('common.email'))} type="email" value={f.email} onChange={set('email')} error={errors.email} autoComplete="email" />
-              <Input label={optional(t('common.city'))} value={f.city} onChange={set('city')} />
-              <Input label={optional(t('teacherReg.qualification'))} value={f.qualification} onChange={set('qualification')} />
-              <FileUpload label={optional(t('teacherReg.photo'))} accept="image/jpeg,image/png,image/webp" maxMb={5} onFile={(file) => setFiles((x) => ({ ...x, photo: file }))} />
-              <FileUpload label={optional(t('teacherReg.idDocument'))} accept="image/*,application/pdf" maxMb={5} onFile={(file) => setFiles((x) => ({ ...x, idDocument: file }))} />
-            </div>
+            <fieldset className="form-group">
+              <legend className="form-group__title">{t('teacherReg.groupAbout')}</legend>
+              <div className="grid grid--2">
+                <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
+                <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
+              </div>
+            </fieldset>
+            <fieldset className="form-group">
+              <legend className="form-group__title">{t('teacherReg.groupTeaching')}</legend>
+              <div className="grid grid--2">
+                <Input label={t('teacherReg.course')} value={f.courseName} onChange={set('courseName')} error={errors.courseName} hint={t('teacherReg.courseHint')} required />
+                <Input label={t('teacherReg.subject')} value={f.subject} onChange={set('subject')} error={errors.subject} required />
+                <Input label={t('teacherReg.experience')} type="number" min="0" max="60" inputMode="numeric" value={f.experienceYears} onChange={set('experienceYears')} error={errors.experienceYears} required />
+                <Input label={optional(t('teacherReg.qualification'))} value={f.qualification} onChange={set('qualification')} />
+              </div>
+            </fieldset>
+            <fieldset className="form-group">
+              <legend className="form-group__title">{t('teacherReg.groupMore')}</legend>
+              <div className="grid grid--2">
+                <Input label={optional(t('common.email'))} type="email" value={f.email} onChange={set('email')} error={errors.email} autoComplete="email" />
+                <Input label={optional(t('common.city'))} value={f.city} onChange={set('city')} />
+                <FileUpload label={optional(t('teacherReg.photo'))} accept="image/jpeg,image/png,image/webp" maxMb={5} onFile={(file) => setFiles((x) => ({ ...x, photo: file }))} />
+                <FileUpload label={optional(t('teacherReg.idDocument'))} accept="image/*,application/pdf" maxMb={5} onFile={(file) => setFiles((x) => ({ ...x, idDocument: file }))} />
+              </div>
+            </fieldset>
             <ConsentFields accept={accept} onAccept={setAccept} whatsapp={whatsapp} onWhatsapp={setWhatsapp} error={errors.accept} />
             {otp.error && <Banner kind="error" message={otp.error} />}
-            <Button type="submit" loading={otp.sending}>{t('teacherReg.continue')}</Button>
+            <Button type="submit" block loading={otp.sending}>{t('teacherReg.continue')}</Button>
+            <p className="auth-split__switch"><Link to="/login">{t('enroll.haveAccount')}</Link></p>
           </form>
         ) : (
           <form onSubmit={onSubmit} className="stack" noValidate>
@@ -109,7 +122,7 @@ export default function BecomeTeacherPage() {
             </p>
             <OtpInput value={code} onChange={setCode} autoFocus />
             {serverError && <Banner kind="error" message={serverError} />}
-            <Button type="submit" loading={submitting} disabled={code.length !== 6}>{t('teacherReg.send')}</Button>
+            <Button type="submit" block loading={submitting} disabled={code.length !== 6}>{t('teacherReg.send')}</Button>
             {otp.secondsLeft > 0 ? (
               <p className="muted">{t('auth.resendIn', { s: otp.secondsLeft })}</p>
             ) : (
@@ -117,7 +130,6 @@ export default function BecomeTeacherPage() {
             )}
           </form>
         )}
-      </Card>
-    </div>
+    </AuthLayout>
   );
 }

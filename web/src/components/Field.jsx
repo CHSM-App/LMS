@@ -22,20 +22,24 @@ function describedBy(id, hint, error) {
   return undefined;
 }
 
-export const Input = forwardRef(function Input({ label, hint, error, required, id, className = '', ...rest }, ref) {
+// `prefix` shows fixed text in front of the value (e.g. "+91" for mobile numbers).
+export const Input = forwardRef(function Input({ label, hint, error, required, id, className = '', prefix, ...rest }, ref) {
   const auto = useId();
   const fid = id || auto;
+  const input = (
+    <input
+      ref={ref}
+      id={fid}
+      className={`input ${className}`}
+      aria-invalid={error ? 'true' : undefined}
+      aria-describedby={describedBy(fid, hint, error)}
+      aria-required={required || undefined}
+      {...rest}
+    />
+  );
   return (
     <FieldShell id={fid} label={label} hint={hint} error={error} required={required}>
-      <input
-        ref={ref}
-        id={fid}
-        className={`input ${className}`}
-        aria-invalid={error ? 'true' : undefined}
-        aria-describedby={describedBy(fid, hint, error)}
-        aria-required={required || undefined}
-        {...rest}
-      />
+      {prefix ? <div className="input-group"><span className="input-group__prefix" aria-hidden="true">{prefix}</span>{input}</div> : input}
     </FieldShell>
   );
 });

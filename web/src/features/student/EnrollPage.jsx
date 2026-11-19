@@ -6,6 +6,7 @@ import { api } from '../../api/client';
 import { useAuth, homeFor } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, Spinner, Textarea } from '../../components';
 import { StudentRegisterForm } from './StudentRegisterForm';
+import { AuthLayout } from '../auth/AuthLayout';
 
 // Enroll Now (spec §3.4): register if needed, then send the enrollment request to the course's teacher.
 export default function EnrollPage() {
@@ -51,12 +52,13 @@ export function StudentRegisterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   return (
-    <div className="auth-card" style={{ maxWidth: 720 }}>
-      <Card>
-        <h1>{t('enroll.createAccount')}</h1>
-        <p className="muted">{t('enroll.createIntro')} <Link to="/login">{t('enroll.haveAccount')}</Link></p>
-        <StudentRegisterForm onDone={() => navigate('/student', { replace: true })} />
-      </Card>
-    </div>
+    <AuthLayout panel="auth.panelStudent" wide>
+      <StudentRegisterForm
+        heading={<h1 className="auth-split__heading">{t('enroll.createAccount')}</h1>}
+        intro={<p className="muted">{t('enroll.createIntro')}</p>}
+        footer={<p className="auth-split__switch"><Link to="/login">{t('enroll.haveAccount')}</Link></p>}
+        onDone={() => navigate('/student', { replace: true })}
+      />
+    </AuthLayout>
   );
 }

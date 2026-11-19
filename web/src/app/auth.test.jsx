@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AuthContext } from './AuthProvider';
 import { RequireRole } from './RequireRole';
 import LoginPage from '../features/auth/LoginPage';
+import BecomeTeacherPage from '../features/auth/BecomeTeacherPage';
 import * as client from '../api/client';
 
 function withAuth(ui, value) {
@@ -59,4 +60,24 @@ test('login rejects an invalid mobile before calling the API', async () => {
   await userEvent.click(screen.getByRole('button', { name: /send otp/i }));
   expect(screen.getByText('Enter a valid 10-digit mobile number')).toBeInTheDocument();
   expect(spy).not.toHaveBeenCalled();
+});
+
+test('login: side panel, step indicator and +91 prefix', async () => {
+  vi.spyOn(client.api, 'post').mockResolvedValue({ success: true, data: { sent: true, resendAfterSec: 30 } });
+  render(withAuth(<MemoryRouter><LoginPage /></MemoryRouter>, {}));
+  expect(screen.getByRole('heading', { level: 2, name: 'Welcome back' })).toBeInTheDocument();
+  expect(screen.getByText('Step 1 of 2')).toBeInTheDocument();
+  expect(screen.getByText('+91')).toBeInTheDocument();
+  await userEvent.type(screen.getByLabelText(/mobile number/i), '9876543210');
+  await userEvent.click(screen.getByRole('button', { name: /send otp/i }));
+  expect(await screen.findByText('Step 2 of 2')).toBeInTheDocument();
+});
+
+test('become a teacher: form is grouped into sections, with a side panel', () => {
+  render(withAuth(<MemoryRouter><BecomeTeacherPage /></MemoryRouter>, {}));
+  expect(screen.getByRole('heading', { level: 2, name: 'Teach online, your way' })).toBeInTheDocument();
+  expect(screen.getByRole('group', { name: 'About you' })).toBeInTheDocument();
+  expect(screen.getByRole('group', { name: 'Your teaching' })).toBeInTheDocument();
+  expect(screen.getByRole('group', { name: 'More details (optional)' })).toBeInTheDocument();
+  expect(screen.getByText('Step 1 of 2')).toBeInTheDocument();
 });

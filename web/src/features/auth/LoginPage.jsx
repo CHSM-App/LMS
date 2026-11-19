@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Button, Input, OtpInput, Banner, Card } from '../../components';
+import { Button, Input, OtpInput, Banner } from '../../components';
+import { AuthLayout, StepIndicator } from './AuthLayout';
 import { useAuth, homeFor } from '../../app/AuthProvider';
 import { isValidMobile } from '../../utils/format';
 import { useOtp } from './useOtp';
@@ -55,9 +56,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-card">
-      <Card>
-        <h1>{t('auth.loginTitle')}</h1>
+    <AuthLayout panel="auth.panelLogin">
+        <StepIndicator step={otp.sentTo ? 2 : 1} label={otp.sentTo ? t('auth.stepVerify') : t('auth.stepMobile')} />
+        <h1 className="auth-split__heading">{t('auth.loginTitle')}</h1>
         <p className="muted">{t('auth.loginIntro')}</p>
         {sessionMessage && !otp.sentTo && <Banner kind="warning" message={sessionMessage} />}
         {!otp.sentTo ? (
@@ -68,6 +69,7 @@ export default function LoginPage() {
               type="tel"
               inputMode="numeric"
               autoComplete="tel"
+              prefix="+91"
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
               error={fieldError || otp.error}
@@ -95,12 +97,13 @@ export default function LoginPage() {
             {otp.error && <p className="field__error" role="alert">{otp.error}</p>}
           </form>
         )}
-        <p className="muted" style={{ marginTop: 'var(--space-5)' }}>
-          {t('auth.newHere')} <Link to="/register">{t('auth.studentRegister')}</Link>
-          {' · '}
-          <Link to="/become-teacher">{t('auth.becomeTeacher')}</Link>
-        </p>
-      </Card>
-    </div>
+        <div className="auth-split__alt">
+          <p className="muted">{t('auth.newHere')}</p>
+          <div className="auth-split__alt-links">
+            <Link to="/register" className="btn btn--secondary"><span className="btn__label">{t('auth.studentRegister')}</span></Link>
+            <Link to="/become-teacher" className="btn btn--secondary"><span className="btn__label">{t('auth.becomeTeacher')}</span></Link>
+          </div>
+        </div>
+    </AuthLayout>
   );
 }
