@@ -182,11 +182,11 @@ async function ensureTeacher(app, asAdmin, anon, today) {
   let user = await findUser(DEMO.teacher.mobile);
   if (!user) {
     const otp = await otpFor(anon, DEMO.teacher.mobile, 'teacher_register');
-    const { requestId } = await anon.form('/api/v1/teacher-requests', {
+    // Registration is auto-approved, so no admin accept step.
+    await anon.form('/api/v1/teacher-requests', {
       name: DEMO.teacher.name, mobile: DEMO.teacher.mobile, otp, courseName: 'Class 10 Maths (SSC)', subject: 'Maths',
       experienceYears: 8, email: 'demo.teacher@example.com', city: 'Pune', qualification: 'M.Sc. Mathematics, B.Ed.', acceptTerms: true, whatsappOptIn: true,
     });
-    await asAdmin.post(`/api/v1/admin/teacher-requests/${requestId}/accept`);
     user = await findUser(DEMO.teacher.mobile);
   }
   const sub = await one('SELECT 1 AS y FROM dbo.teacher_subscriptions WHERE teacher_id = @t', { t: T.int(user.user_id) });

@@ -232,7 +232,7 @@ paths:
   /teacher-requests:
     post:
       tags: [public]
-      summary: Become a Teacher (multipart; validated in the route)
+      summary: Become a Teacher (multipart; validated in the route). Auto-approved - the teacher account is created at once.
       requestBody:
         required: true
         content:
@@ -255,8 +255,8 @@ paths:
                 photo: { type: string, format: binary }
                 idDocument: { type: string, format: binary }
       responses:
-        '201': { description: '{ requestId, status: pending }' }
-        '409': { description: Already pending / already registered }
+        '201': { description: '{ requestId, status: approved } - teacher can log in straight away' }
+        '409': { description: Mobile already registered }
   /account/change-mobile/start:
     post:
       tags: [account]
@@ -328,7 +328,7 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
       responses:
-        '200': { description: Accepted; teacher account created }
+        '200': { description: Accepted; teacher account created (only older pending requests - new ones are auto-approved) }
         '409': { description: Not pending }
   /admin/teacher-requests/{id}/reject:
     post:

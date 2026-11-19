@@ -1,8 +1,8 @@
 // Server-side message templates for notifications / WhatsApp, per preferred_lang.
 const M = {
   en: {
-    'teacherRequest.new.title': 'New teacher request',
-    'teacherRequest.new.body': 'New teacher request: {name}',
+    'teacherRequest.new.title': 'New teacher registered',
+    'teacherRequest.new.body': 'New teacher registered: {name}',
     'teacherRequest.accepted.title': 'Welcome! Your teacher account is ready',
     'teacherRequest.accepted.body': 'Your request was accepted. Log in with your mobile number to open your dashboard.',
     'account.blocked.title': 'Your account has been blocked',
@@ -41,8 +41,8 @@ const M = {
     'wa.enrollmentApproved': 'You are enrolled in {course} ({batch}). Open the app to start learning.',
   },
   mr: {
-    'teacherRequest.new.title': 'नवीन शिक्षक विनंती',
-    'teacherRequest.new.body': 'नवीन शिक्षक विनंती: {name}',
+    'teacherRequest.new.title': 'नवीन शिक्षकाची नोंदणी',
+    'teacherRequest.new.body': 'नवीन शिक्षकाची नोंदणी: {name}',
     'teacherRequest.accepted.title': 'स्वागत! तुमचे शिक्षक खाते तयार आहे',
     'teacherRequest.accepted.body': 'तुमची विनंती स्वीकारली. डॅशबोर्ड उघडण्यासाठी मोबाईल नंबरने लॉग इन करा.',
     'account.blocked.title': 'तुमचे खाते ब्लॉक केले आहे',
@@ -81,8 +81,8 @@ const M = {
     'wa.enrollmentApproved': '{course} ({batch}) मध्ये तुमचा प्रवेश झाला. शिकायला सुरुवात करण्यासाठी ॲप उघडा.',
   },
   hi: {
-    'teacherRequest.new.title': 'नया शिक्षक अनुरोध',
-    'teacherRequest.new.body': 'नया शिक्षक अनुरोध: {name}',
+    'teacherRequest.new.title': 'नए शिक्षक का पंजीकरण',
+    'teacherRequest.new.body': 'नए शिक्षक का पंजीकरण: {name}',
     'teacherRequest.accepted.title': 'स्वागत है! आपका शिक्षक खाता तैयार है',
     'teacherRequest.accepted.body': 'आपका अनुरोध स्वीकार हुआ। डैशबोर्ड खोलने के लिए मोबाइल नंबर से लॉग इन करें।',
     'account.blocked.title': 'आपका खाता ब्लॉक किया गया है',

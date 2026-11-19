@@ -142,7 +142,7 @@
   },
   "teacherReg": {
     "title": "Become a Teacher",
-    "intro": "Tell us about your teaching. The admin reviews every request and you'll be able to log in once it's accepted.",
+    "intro": "Tell us about your teaching. Your teacher account is created as soon as you verify your mobile number.",
     "course": "Course you teach",
     "courseHint": "For example: Class 10 Maths (SSC)",
     "subject": "Subject",
@@ -153,8 +153,8 @@
     "continue": "Verify mobile number",
     "editDetails": "Edit details",
     "send": "Send request",
-    "sentTitle": "Request sent",
-    "sentBody": "The admin will review your request. Log in with your mobile number to check its status."
+    "sentTitle": "Account created",
+    "sentBody": "Your teacher account is ready. Log in with your mobile number to open your dashboard."
   },
   "teacherRequests": {
     "title": "Teacher requests",

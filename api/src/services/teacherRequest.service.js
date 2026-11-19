@@ -9,6 +9,39 @@ const { clock } = require('../utils/clock');
 const { conflict, notFound } = require('../utils/APIError');
 const { maskMobile } = require('../utils/mobile');
 
+// Builds the teacher account from a request row. Used on self-registration (auto-approved)
+// and when an admin accepts an older pending request.
+async function createTeacherFromRequest(r, reviewerId, tx) {
+  const taken = await one('SELECT user_id FROM dbo.users WHERE mobile = @m AND deleted_at IS NULL', { m: T.varchar(r.mobile, 20) }, tx);
+  if (taken) throw conflict('This number is already registered', 'MOBILE_REGISTERED');
+  const wa = await one("SELECT TOP 1 1 AS y FROM dbo.legal_consents WHERE mobile = @m AND consent_type = 'whatsapp'", { m: T.varchar(r.mobile, 20) }, tx);
+  const user = await one(
+    `INSERT INTO dbo.users (mobile, name, email, city, photo_key, role, status, whatsapp_opt_in)
+     OUTPUT INSERTED.user_id VALUES (@m, @n, @e, @c, @p, 'teacher', 'approved', @wa)`,
+    {
+      m: T.varchar(r.mobile, 20),
+      n: T.nvarchar(r.name, 120),
+      e: T.varchar(r.email, 160),
+      c: T.nvarchar(r.city, 80),
+      p: T.varchar(r.photo_key, 200),
+      wa: T.bit(!!wa),
+    },
+    tx,
+  );
+  await query(
+    `INSERT INTO dbo.teacher_profiles (user_id, subject, experience_years, qualification) VALUES (@u, @s, @e, @q)`,
+    { u: T.int(user.user_id), s: T.nvarchar(r.subject, 120), e: T.tinyint(r.experience_years), q: T.nvarchar(r.qualification, 160) },
+    tx,
+  );
+  await query(
+    `UPDATE dbo.teacher_requests SET status = 'approved', user_id = @u, reviewed_by = @a, reviewed_at = @now WHERE request_id = @id`,
+    { u: T.int(user.user_id), a: T.int(reviewerId ?? null), now: T.datetime(clock.now()), id: T.int(r.request_id) },
+    tx,
+  );
+  await consentService.linkToUser(r.mobile, user.user_id, tx);
+  return user;
+}
+
 async function create(fields, uploads, ip) {
   const existing = await one('SELECT user_id FROM dbo.users WHERE mobile = @m AND deleted_at IS NULL', { m: T.varchar(fields.mobile, 20) });
   if (existing) throw conflict('This number is already registered. Log in instead.', 'MOBILE_REGISTERED');
@@ -23,7 +56,7 @@ async function create(fields, uploads, ip) {
     return await withTransaction(async (tx) => {
       const row = await one(
         `INSERT INTO dbo.teacher_requests (mobile, name, course_name, subject, experience_years, email, city, qualification, photo_key, id_document_key)
-         OUTPUT INSERTED.request_id, INSERTED.status
+         OUTPUT INSERTED.*
          VALUES (@m, @n, @c, @s, @e, @em, @city, @q, @p, @d)`,
         {
           m: T.varchar(fields.mobile, 20),
@@ -41,13 +74,16 @@ async function create(fields, uploads, ip) {
       );
       await consentService.record({ mobile: fields.mobile, type: 'terms_privacy', ip }, tx);
       if (fields.whatsappOptIn) await consentService.record({ mobile: fields.mobile, type: 'whatsapp', ip }, tx);
-      await notifyAdmins({ key: 'teacherRequest.new', vars: { name: fields.name }, link: '/admin/teacher-requests' }, tx);
-      return { requestId: row.request_id, status: row.status };
+      // Self-registration is auto-approved (DECISIONS.md); admins are told and can block later.
+      const user = await createTeacherFromRequest(row, null, tx);
+      await notifyAdmins({ key: 'teacherRequest.new', vars: { name: fields.name }, link: '/admin/teachers' }, tx);
+      await notify(user.user_id, { key: 'teacherRequest.accepted', link: '/teacher' }, tx);
+      return { requestId: row.request_id, status: 'approved' };
     });
   } catch (err) {
     await storage.remove(photoKey);
     await storage.remove(docKey);
-    if (err.number === 2601 || err.number === 2627) throw conflict('A request is already pending', 'REQUEST_PENDING');
+    if (err.number === 2601 || err.number === 2627) throw conflict('This number is already registered. Log in instead.', 'MOBILE_REGISTERED');
     throw err;
   }
 }
@@ -96,34 +132,7 @@ async function lockPending(id, tx) {
 async function accept(id, adminId, ip) {
   return withTransaction(async (tx) => {
     const r = await lockPending(id, tx);
-    const taken = await one('SELECT user_id FROM dbo.users WHERE mobile = @m AND deleted_at IS NULL', { m: T.varchar(r.mobile, 20) }, tx);
-    if (taken) throw conflict('This number is already registered', 'MOBILE_REGISTERED');
-    const wa = await one("SELECT TOP 1 1 AS y FROM dbo.legal_consents WHERE mobile = @m AND consent_type = 'whatsapp'", { m: T.varchar(r.mobile, 20) }, tx);
-    const user = await one(
-      `INSERT INTO dbo.users (mobile, name, email, city, photo_key, role, status, whatsapp_opt_in)
-       OUTPUT INSERTED.user_id VALUES (@m, @n, @e, @c, @p, 'teacher', 'approved', @wa)`,
-      {
-        m: T.varchar(r.mobile, 20),
-        n: T.nvarchar(r.name, 120),
-        e: T.varchar(r.email, 160),
-        c: T.nvarchar(r.city, 80),
-        p: T.varchar(r.photo_key, 200),
-        wa: T.bit(!!wa),
-      },
-      tx,
-    );
-    await query(
-      `INSERT INTO dbo.teacher_profiles (user_id, subject, experience_years, qualification) VALUES (@u, @s, @e, @q)`,
-      { u: T.int(user.user_id), s: T.nvarchar(r.subject, 120), e: T.tinyint(r.experience_years), q: T.nvarchar(r.qualification, 160) },
-      tx,
-    );
-    const now = clock.now();
-    await query(
-      `UPDATE dbo.teacher_requests SET status = 'approved', user_id = @u, reviewed_by = @a, reviewed_at = @now WHERE request_id = @id`,
-      { u: T.int(user.user_id), a: T.int(adminId), now: T.datetime(now), id: T.int(id) },
-      tx,
-    );
-    await consentService.linkToUser(r.mobile, user.user_id, tx);
+    const user = await createTeacherFromRequest(r, adminId, tx);
     await audit({ adminId, action: 'teacher_request.accept', entityType: 'teacher_request', entityId: id, before: { status: 'pending' }, after: { status: 'approved', userId: user.user_id, mobile: maskMobile(r.mobile) }, ip }, tx);
     await notify(user.user_id, { key: 'teacherRequest.accepted', link: '/teacher' }, tx);
     return { id, status: 'approved' };

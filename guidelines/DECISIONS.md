@@ -23,6 +23,7 @@ Items marked **(assumed)** are defaults that still need the owner's confirmation
 ## Rules
 | Topic | Decision |
 |---|---|
+| Teacher registration | **Auto-approved** (changed 2026-11-19). "Become a Teacher" creates the teacher account as soon as the OTP is verified; the teacher can log in at once. Admins get a "New teacher registered" notification and can **block** the teacher from Teachers. Admin accept/reject stays only for requests that were pending before this change. |
 | Course status | **Draft → Published** only. "Pending" is ⏸️ greyed out (the column value is kept for the future, but nothing in the UI or API uses it in v1). |
 | Teacher subscription plans | Fixed list **Monthly / Quarterly / Half-yearly / Yearly** (the end date fills in automatically) + **Custom** (the admin picks the dates). |
 | Teacher subscription expired | **Limited mode:** the teacher can log in and current students keep learning, but the teacher **cannot publish courses or approve new enrollments** until renewed. A banner tells the teacher "Your subscription ended on {date}. Contact the admin to renew." |
