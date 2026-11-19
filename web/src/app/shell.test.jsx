@@ -84,3 +84,25 @@ test('student dashboard: live classes on the left (live-now first), compact My c
   expect(courses.querySelector('.my-courses--compact')).not.toBeNull();
   expect(screen.getByRole('heading', { level: 3, name: 'Class 10 Maths' })).toBeInTheDocument();
 });
+
+const course = (id) => ({ courseId: id, title: `Course ${id}`, teacher: 'Priya', batch: null, progressPct: 10, endDate: '2027-11-18', accessStatus: 'active', readOnly: false, thumbnailUrl: null });
+const cls = (id) => ({ id, topic: `Class ${id}`, course: 'Maths', startsAt: `2099-06-${10 + id}T12:30:00Z`, durationMin: 60, stage: 'upcoming', canJoin: false });
+
+test('student dashboard: "All" links only when there is more than fits', async () => {
+  mockGet({ myCourses: [course(1)], upcomingLiveClasses: [cls(1)], requests: [] });
+  const { unmount } = wrap(<StudentDashboard />, { path: '/student', user: { role: 'student', name: 'Rohan' } });
+  await screen.findByRole('region', { name: 'My courses' });
+  expect(screen.queryByRole('link', { name: /all my courses/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /all live classes/i })).not.toBeInTheDocument();
+  unmount();
+  vi.restoreAllMocks();
+
+  mockGet({ myCourses: [1, 2, 3, 4, 5].map(course), upcomingLiveClasses: [1, 2, 3, 4, 5, 6].map(cls), requests: [] });
+  wrap(<StudentDashboard />, { path: '/student', user: { role: 'student', name: 'Rohan' } });
+  const courses = await screen.findByRole('region', { name: 'My courses' });
+  expect(within(courses).getAllByRole('heading', { level: 3 })).toHaveLength(3);
+  expect(within(courses).getByRole('link', { name: 'All my courses (5)' })).toHaveAttribute('href', '/student/courses');
+  const live = screen.getByRole('region', { name: 'Live classes' });
+  expect(within(live).getAllByRole('listitem')).toHaveLength(4);
+  expect(within(live).getByRole('link', { name: 'All live classes (6)' })).toHaveAttribute('href', '/student/live-classes');
+});

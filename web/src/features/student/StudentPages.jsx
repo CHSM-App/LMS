@@ -85,6 +85,10 @@ export function StudentMyCoursesPage() {
   );
 }
 
+// How many items the dashboard shows before pointing to the full page.
+const COURSES_ON_DASH = 3;
+const LIVE_ON_DASH = 4;
+
 export function StudentDashboard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -130,13 +134,15 @@ export function StudentDashboard() {
         <section className="card dash-live" aria-labelledby="dash-live">
           <div className="row row--between">
             <h2 id="dash-live" className="card__title">{t('nav.liveClasses')}</h2>
-            <Link to="/student/live-classes" className="dash-side__all">{t('studentDash.allClasses')}</Link>
+            {liveFirst.length > LIVE_ON_DASH && (
+              <Link to="/student/live-classes" className="dash-side__all">{t('studentDash.allClasses', { n: liveFirst.length })}</Link>
+            )}
           </div>
           {liveFirst.length === 0 ? (
             <div className="dash-empty"><Icon name="calendar" size={24} /><p className="muted">{t('studentDash.noClasses')}</p></div>
           ) : (
             <ul className="side-list">
-              {liveFirst.map((c) => (
+              {liveFirst.slice(0, LIVE_ON_DASH).map((c) => (
                 <li key={c.id} className={`side-list__item${c.stage === 'live' ? ' side-list__item--live' : ''}`}>
                   {c.stage === 'live' && <LiveStageBadge stage="live" />}
                   <span className="side-list__title">{c.topic}</span>
@@ -150,9 +156,11 @@ export function StudentDashboard() {
         <section className="card dash-courses" aria-labelledby="dash-courses">
           <div className="row row--between">
             <h2 id="dash-courses" className="card__title">{t('nav.myCourses')}</h2>
-            <Link to="/student/courses" className="dash-side__all">{t('studentDash.allCourses')}</Link>
+            {d.myCourses.length > COURSES_ON_DASH && (
+              <Link to="/student/courses" className="dash-side__all">{t('studentDash.allCourses', { n: d.myCourses.length })}</Link>
+            )}
           </div>
-          <MyCourseCards courses={d.myCourses} compact />
+          <MyCourseCards courses={d.myCourses.slice(0, COURSES_ON_DASH)} compact />
         </section>
       </div>
       {d.requests.length > 0 && (
