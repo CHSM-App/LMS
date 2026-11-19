@@ -294,7 +294,7 @@
     "feeHint": "Shown on the course page. No payment happens on this site.",
     "thumbnail": "Thumbnail",
     "thumbnailUpload": "Upload thumbnail",
-    "thumbnailHint": "16:9 image, at least 1280×720, up to 5 MB",
+    "thumbnailHint": "16:9 image, at least 1280×720, up to 5 MB. Without one, a cover with the course name is made for you.",
     "demoVideos": "Demo videos",
     "demoVideosHint": "Exactly 2 demo videos. Anyone can watch them without logging in.",
     "demo1": "Demo video 1",
@@ -308,7 +308,6 @@
     "missing": {
       "title": "Add a course title",
       "description": "Write a description",
-      "thumbnail": "Add a thumbnail image",
       "demo_video_1": "Add demo video 1",
       "demo_video_2": "Add demo video 2",
       "content": "Add at least one lesson in the curriculum"

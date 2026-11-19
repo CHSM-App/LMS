@@ -10,7 +10,13 @@ export function CourseCard({ course }) {
     <article className="course-card">
       <Link to={paths.course(course.slug)} className="course-card__link">
         <div className="course-card__thumb">
-          {course.thumbnailUrl ? <img src={fileUrl(course.thumbnailUrl)} alt="" loading="lazy" /> : <span aria-hidden="true">{course.subject}</span>}
+          {course.thumbnailUrl ? <img src={fileUrl(course.thumbnailUrl)} alt="" loading="lazy" /> : (
+            // No thumbnail: a generated cover (DECISIONS "Course thumbnail is optional").
+            <div className="course-cover" aria-hidden="true" data-testid="course-cover">
+              <span className="course-cover__subject">{course.subject}</span>
+              <span className="course-cover__title">{course.title}</span>
+            </div>
+          )}
         </div>
         <h3 className="course-card__title">{course.title}</h3>
       </Link>

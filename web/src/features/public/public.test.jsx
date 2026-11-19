@@ -8,6 +8,7 @@ import * as client from '../../api/client';
 import HomePage from './HomePage';
 import CourseDetailsPage from './CourseDetailsPage';
 import { LiveDemoForm } from './LiveDemoForm';
+import { CourseCard } from './CourseCard';
 
 function wrap(ui, path = '/', route = '/') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -39,6 +40,20 @@ test('home lists course cards and searches after typing stops', async () => {
   await userEvent.type(screen.getByRole('searchbox'), 'zzz');
   await waitFor(() => expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ q: 'zzz' })), { timeout: 2000 });
   expect(await screen.findByText(/no courses match/i)).toBeInTheDocument();
+});
+
+test('a course without a thumbnail gets a generated cover with its subject and title', () => {
+  wrap(<CourseCard course={card} />);
+  const cover = screen.getByTestId('course-cover');
+  expect(within(cover).getByText('Maths')).toBeInTheDocument();
+  expect(within(cover).getByText('Class 10 Maths')).toBeInTheDocument();
+  expect(screen.queryByRole('img')).not.toBeInTheDocument();
+});
+
+test('a course with a thumbnail shows the image, not the generated cover', () => {
+  const { container } = wrap(<CourseCard course={{ ...card, thumbnailUrl: '/api/v1/files/thumbnail/a.png' }} />);
+  expect(container.querySelector('.course-card__thumb img')).toBeInTheDocument();
+  expect(screen.queryByTestId('course-cover')).not.toBeInTheDocument();
 });
 
 const details = {

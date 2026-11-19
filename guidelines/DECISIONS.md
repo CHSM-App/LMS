@@ -105,6 +105,14 @@ so a course can be fully recorded, fully live, or mixed (hybrid).
 3. Files are private (signed links), uploaded with `POST /uploads` kind `solution`. A question can
    only use the teacher's own solution uploads. Excel import does not carry images.
 
+## Course thumbnail is optional (added 2026-11-19)
+1. A course can be published **without a thumbnail**. Publishing still needs a title, a
+   description, both demo videos and at least one lesson.
+2. Where a course has no thumbnail, the web shows a **generated cover** instead: the course
+   subject and title on a brand-colour background (colours from the design tokens).
+3. The upload stays in the course editor as an optional field. The mobile app shows no course
+   thumbnails, so it needs no change.
+
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**
 - Student audience (school / college / competitive exams / skills) **(assumed: school + competitive exam coaching in Maharashtra)**

@@ -59,7 +59,7 @@ function DetailsTab({ course, onSaved }) {
       </Card>
       <Card title={t('courses.thumbnail')}>
         {f.thumbnailUrl && <img src={fileUrl(f.thumbnailUrl)} alt={t('courses.thumbnail')} className="thumb-lg" />}
-        <FileUpload label={t('courses.thumbnailUpload')} accept="image/jpeg,image/png,image/webp" maxMb={5} onFile={onThumb} error={thumbError} hint={t('courses.thumbnailHint')} required />
+        <FileUpload label={`${t('courses.thumbnailUpload')} (${t('common.optional')})`} accept="image/jpeg,image/png,image/webp" maxMb={5} onFile={onThumb} error={thumbError} hint={t('courses.thumbnailHint')} />
       </Card>
       <Card title={t('courses.demoVideos')}>
         <p className="muted">{t('courses.demoVideosHint')}</p>
@@ -73,7 +73,7 @@ function DetailsTab({ course, onSaved }) {
   );
 }
 
-const MISSING_KEYS = ['title', 'description', 'thumbnail', 'demo_video_1', 'demo_video_2', 'content'];
+const MISSING_KEYS = ['title', 'description', 'demo_video_1', 'demo_video_2', 'content'];
 
 export default function CourseEditorPage() {
   const { courseId } = useParams();

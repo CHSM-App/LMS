@@ -132,7 +132,6 @@ async function readiness(courseId) {
   const missing = [];
   if (!c.title) missing.push('title');
   if (!c.description) missing.push('description');
-  if (!c.thumbnail_key) missing.push('thumbnail');
   if (!c.demo1_source) missing.push('demo_video_1');
   if (!c.demo2_source) missing.push('demo_video_2');
   const content = await one('SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @id', { id: T.int(courseId) });

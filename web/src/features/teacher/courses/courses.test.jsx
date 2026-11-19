@@ -70,8 +70,18 @@ test('resumable upload continues from where the server stopped after a failed ch
 
 const course = {
   id: 7, title: 'Class 10 Maths', description: 'd', subject: 'Maths', language: 'mr', status: 'draft', slug: 'class-10-maths-abc',
-  thumbnailUrl: null, demoVideo1: null, demoVideo2: null, readiness: { ready: false, missing: ['thumbnail', 'demo_video_2'] },
+  thumbnailUrl: null, demoVideo1: null, demoVideo2: null, readiness: { ready: false, missing: ['demo_video_2'] },
 };
+
+test('the thumbnail upload is optional', async () => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path.endsWith('/curriculum')) return { data: { subjects: [] } };
+    if (path.endsWith('/batches')) return { data: [] };
+    return { data: course };
+  });
+  wrap(<CourseEditorPage />);
+  expect(await screen.findByLabelText('Upload thumbnail (optional)')).not.toBeRequired();
+});
 
 test('Publish shows what is missing', async () => {
   vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
@@ -79,11 +89,11 @@ test('Publish shows what is missing', async () => {
     if (path.endsWith('/batches')) return { data: [] };
     return { data: course };
   });
-  vi.spyOn(client.api, 'post').mockRejectedValue(new client.ApiError(422, 'Finish these before publishing', 'NOT_READY', { missing: ['thumbnail', 'demo_video_2'] }));
+  vi.spyOn(client.api, 'post').mockRejectedValue(new client.ApiError(422, 'Finish these before publishing', 'NOT_READY', { missing: ['content', 'demo_video_2'] }));
   wrap(<CourseEditorPage />);
   await userEvent.click(await screen.findByRole('button', { name: 'Publish course' }));
   const box = await screen.findByRole('alert');
-  expect(within(box).getByText('Add a thumbnail image')).toBeInTheDocument();
+  expect(within(box).getByText('Add at least one lesson in the curriculum')).toBeInTheDocument();
   expect(within(box).getByText('Add demo video 2')).toBeInTheDocument();
 });
 

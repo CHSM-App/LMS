@@ -495,7 +495,7 @@ paths:
     post:
       tags: [teacher-content]
       security: [{ bearerAuth: [] }]
-      summary: Create a draft course. Thumbnail and the 2 demo videos can be added later; publishing needs them.
+      summary: Create a draft course. The 2 demo videos can be added later; publishing needs them. The thumbnail is optional.
       requestBody:
         required: true
         content:
