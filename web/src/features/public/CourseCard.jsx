@@ -6,6 +6,7 @@ import { useBrowsePaths } from './browsePaths';
 export function CourseCard({ course }) {
   const { t } = useTranslation();
   const paths = useBrowsePaths();
+  const initial = (course.teacher.name || '?').trim().charAt(0).toUpperCase();
   return (
     <article className="course-card">
       <Link to={paths.course(course.slug)} className="course-card__link">
@@ -18,13 +19,24 @@ export function CourseCard({ course }) {
             </div>
           )}
         </div>
-        <h3 className="course-card__title">{course.title}</h3>
+        <div className="course-card__body">
+          <div className="course-card__tags">
+            <span className="tag tag--subject">{course.subject}</span>
+            <span className="tag">{t(`courses.lang.${course.language}`)}</span>
+          </div>
+          <h3 className="course-card__title">{course.title}</h3>
+        </div>
       </Link>
-      <p className="course-card__teacher">{course.teacher.name}</p>
-      <p className="course-card__meta muted">
-        {course.subject} · {t(`courses.lang.${course.language}`)}
-        {course.feeDisplay ? ` · ${course.feeDisplay}` : ''}
-      </p>
+      <div className="course-card__teacher">
+        {course.teacher.photoUrl
+          ? <img src={fileUrl(course.teacher.photoUrl)} alt="" className="course-card__avatar" loading="lazy" />
+          : <span className="course-card__avatar course-card__avatar--initial" aria-hidden="true">{initial}</span>}
+        <span>{course.teacher.name}</span>
+      </div>
+      <div className="course-card__foot">
+        <span className="course-card__fee">{course.feeDisplay || ''}</span>
+        <span className="tag tag--demo">{t('home.freeDemo')}</span>
+      </div>
     </article>
   );
 }

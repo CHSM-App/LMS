@@ -42,6 +42,40 @@ test('home lists course cards and searches after typing stops', async () => {
   expect(await screen.findByText(/no courses match/i)).toBeInTheDocument();
 });
 
+test('home: hero with subject chips that filter the list', async () => {
+  const get = vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/public/filters') return { data: { languages: ['mr'], subjects: ['Maths', 'Web Development'] } };
+    return { data: [card], pagination: { page: 1, limit: 12, total: 1 } };
+  });
+  wrap(<HomePage />);
+  expect(screen.getByRole('heading', { level: 1, name: 'Find the right teacher. Watch a free demo first.' })).toBeInTheDocument();
+  const chips = await screen.findByRole('group', { name: 'Popular subjects' });
+  expect(within(chips).getByRole('button', { name: 'All', pressed: true })).toBeInTheDocument();
+  await userEvent.click(await within(chips).findByRole('button', { name: 'Web Development' }));
+  expect(within(chips).getByRole('button', { name: 'Web Development', pressed: true })).toBeInTheDocument();
+  await waitFor(() => expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ subject: 'Web Development' })));
+});
+
+test('home: how it works in 3 steps, and a call to teachers', async () => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/public/filters') return { data: { languages: [], subjects: [] } };
+    return { data: [card], pagination: { page: 1, limit: 12, total: 1 } };
+  });
+  wrap(<HomePage />);
+  const steps = screen.getByRole('list', { name: 'How it works' });
+  expect(within(steps).getAllByRole('listitem')).toHaveLength(3);
+  expect(within(steps).getByText('Watch 2 demo videos')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Start teaching' })).toHaveAttribute('href', '/become-teacher');
+});
+
+test('course card shows the teacher, language, fee and the free demo tag', () => {
+  wrap(<CourseCard course={{ ...card, feeDisplay: '₹2,500', teacher: { ...card.teacher, photoUrl: '/api/v1/files/photo/p.png' } }} />);
+  expect(screen.getByText('Suresh')).toBeInTheDocument();
+  expect(screen.getByText('Marathi')).toBeInTheDocument();
+  expect(screen.getByText('₹2,500')).toBeInTheDocument();
+  expect(screen.getByText('Free live demo')).toBeInTheDocument();
+});
+
 test('a course without a thumbnail gets a generated cover with its subject and title', () => {
   wrap(<CourseCard course={card} />);
   const cover = screen.getByTestId('course-cover');

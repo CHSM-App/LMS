@@ -58,7 +58,8 @@
   .public-header__nav { width: 100%; margin-left: 0; gap: var(--space-2) var(--space-4); }
   .public-header__nav .btn { margin-left: auto; }
 }
-.public-main { flex: 1; padding: var(--space-7) 0 var(--space-8); }
+/* Public pages sit on white; the light-blue page tint stays for the signed-in app. */
+.public-main { flex: 1; padding: var(--space-7) 0 var(--space-8); background: var(--color-surface); }
 @media (max-width: 640px) { .public-main { padding: var(--space-5) 0 var(--space-7); } }
 .public-footer { background: var(--color-nav-bg); color: var(--color-nav-text); padding: var(--space-7) 0; font-size: var(--text-sm); }
 .public-footer a { color: var(--color-nav-text-muted); text-decoration-color: transparent; font-weight: var(--font-weight-regular); }
