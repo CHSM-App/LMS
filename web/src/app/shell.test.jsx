@@ -63,3 +63,21 @@ test('student dashboard: next-up card and quick stats', async () => {
   expect(within(stats).getByText('Enrolled courses')).toBeInTheDocument();
   expect(within(stats).getByText('36%')).toBeInTheDocument();
 });
+
+test('student dashboard: live classes take the main space, live-now first; no My courses grid', async () => {
+  mockGet({
+    myCourses: [{ courseId: 5, title: 'Class 10 Maths', teacher: 'Priya', batch: 'Morning', progressPct: 36, endDate: '2027-11-18', accessStatus: 'active', readOnly: false, thumbnailUrl: null }],
+    upcomingLiveClasses: [
+      { id: 1, topic: 'Tomorrow class', course: 'Maths', startsAt: '2099-06-16T12:30:00Z', durationMin: 60, stage: 'upcoming', canJoin: false },
+      { id: 2, topic: 'Now class', course: 'Maths', startsAt: '2026-06-15T12:30:00Z', durationMin: 60, stage: 'live', canJoin: true, meetLink: 'https://meet.google.com/abc-defg-hij' },
+    ],
+    requests: [],
+  });
+  wrap(<StudentDashboard />, { path: '/student', user: { role: 'student', name: 'Rohan' } });
+  const live = await screen.findByRole('region', { name: 'Live classes' });
+  const rows = within(live).getAllByRole('listitem');
+  expect(within(rows[0]).getByText('Now class')).toBeInTheDocument();
+  expect(within(rows[0]).getByText('Live now')).toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: 'My courses' })).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'All my courses' })).toHaveAttribute('href', '/student/courses');
+});

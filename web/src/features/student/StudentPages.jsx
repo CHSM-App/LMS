@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
-import { formatDate, formatDateTime, formatLongDay } from '../../utils/format';
+import { formatDate, formatDateTime, formatLongDay, formatTime } from '../../utils/format';
+import { LiveStageBadge } from '../../components/LiveStageBadge';
 import { Icon } from '../../components/Icon';
 
 // Marks the student present when they click Join (POST /student/live-classes/:id/join).
@@ -92,6 +93,8 @@ export function StudentDashboard() {
   const d = q.data.data;
   const next = d.myCourses.find((c) => !c.readOnly && c.accessStatus === 'active' && c.progressPct < 100);
   const active = d.myCourses.filter((c) => c.accessStatus === 'active');
+  // Classes running now come first, then the rest by start time.
+  const liveFirst = [...d.upcomingLiveClasses].sort((a, b) => (a.stage === 'live' ? 0 : 1) - (b.stage === 'live' ? 0 : 1) || new Date(a.startsAt) - new Date(b.startsAt));
   const avg = d.myCourses.length ? Math.round(d.myCourses.reduce((s, c) => s + c.progressPct, 0) / d.myCourses.length) : 0;
   const stats = [
     { label: t('studentDash.statCourses'), value: active.length, icon: 'book' },
@@ -122,29 +125,32 @@ export function StudentDashboard() {
           </div>
         </section>
       )}
-      <div className="dash-cols">
-        <section>
-          <h2 className="section-title">{t('nav.myCourses')}</h2>
-          <MyCourseCards courses={d.myCourses} />
-        </section>
-        <Card title={t('nav.liveClasses')}>
-          {d.upcomingLiveClasses.length === 0 ? (
-            <div className="dash-empty"><Icon name="calendar" size={28} /><p className="muted">{t('studentDash.noClasses')}</p></div>
-          ) : (
-            <ul className="agenda">
-              {d.upcomingLiveClasses.map((c) => (
-                <li key={c.id} className="agenda__row agenda__row--stack">
-                  <span className="agenda__body">
-                    <span className="agenda__title">{c.topic}</span>
-                    <span className="agenda__meta">{c.course} · {formatDateTime(c.startsAt, i18n.language)}</span>
-                  </span>
-                  <JoinOrWait c={c} className="btn btn--compact btn--sm" />
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
+      {!next && d.myCourses.length === 0 && <MyCourseCards courses={d.myCourses} />}
+      <section className="card" aria-labelledby="dash-live">
+        <div className="row row--between">
+          <h2 id="dash-live" className="card__title">{t('nav.liveClasses')}</h2>
+          <Link to="/student/live-classes">{t('studentDash.allClasses')}</Link>
+        </div>
+        {liveFirst.length === 0 ? (
+          <div className="dash-empty"><Icon name="calendar" size={28} /><p className="muted">{t('studentDash.noClasses')}</p></div>
+        ) : (
+          <ul className="agenda">
+            {liveFirst.map((c) => (
+              <li key={c.id} className={`agenda__row${c.stage === 'live' ? ' agenda__row--live' : ''}`}>
+                <span className="agenda__time">{formatTime(c.startsAt, i18n.language)}</span>
+                <span className="agenda__body">
+                  <span className="agenda__title">{c.topic} {c.stage === 'live' && <LiveStageBadge stage="live" />}</span>
+                  <span className="agenda__meta">{c.course} · {formatDate(c.startsAt, i18n.language)}</span>
+                </span>
+                <JoinOrWait c={c} className={c.stage === 'live' ? 'btn btn--primary btn--sm' : 'btn btn--compact btn--sm'} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      {d.myCourses.length > 0 && (
+        <p className="dash-more"><Link to="/student/courses">{t('studentDash.allCourses')}</Link></p>
+      )}
       {d.requests.length > 0 && (
         <Card title={t('studentDash.requests')}>
           <Table rowKey={(r) => r.id} rows={d.requests} columns={[

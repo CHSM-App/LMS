@@ -818,7 +818,9 @@
     "summary": "आपका सारांश",
     "statCourses": "दाखिल कोर्स",
     "statProgress": "औसत प्रगति",
-    "statClasses": "आने वाली लाइव क्लास"
+    "statClasses": "आने वाली लाइव क्लास",
+    "allClasses": "सभी लाइव क्लास",
+    "allCourses": "मेरे सभी कोर्स"
   },
   "studentDoubts": {
     "subtitle": "अटकने पर शिक्षक से पूछें।",
