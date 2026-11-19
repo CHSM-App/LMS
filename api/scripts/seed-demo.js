@@ -226,7 +226,7 @@ async function ensureTeacher(app, asAdmin, anon, today, who = DEMO.teacher, deta
 async function ensureProfile(teacher, user) {
   const p = await one('SELECT public_slug FROM dbo.teacher_profiles WHERE user_id = @t', { t: T.int(user.user_id) });
   if (p && p.public_slug === DEMO.teacher.slug) return;
-  const photoKey = (await teacher.upload('photo', PNG, 'photo.png')).key;
+  const photoKey = (await teacher.upload('photo', THUMB('priya-avatar.png'), 'photo.png')).key;
   await teacher.put('/api/v1/teacher/profile', {
     name: DEMO.teacher.name,
     email: 'demo.teacher@example.com',
@@ -467,6 +467,18 @@ async function ensureThumbnail(teacher, courseId, file) {
   });
 }
 
+// Same for teacher photos: swap a 1x1 placeholder for the initials avatar.
+async function ensurePhoto(teacher, file) {
+  const p = await teacher.get('/api/v1/teacher/profile');
+  const abs = p.photoKey && storage.absPath(p.photoKey);
+  if (abs && fs.existsSync(abs) && fs.statSync(abs).size > 1024) return;
+  const photoKey = (await teacher.upload('photo', THUMB(file), 'photo.png')).key;
+  await teacher.put('/api/v1/teacher/profile', {
+    name: p.name, email: p.email, photoKey, publicSlug: p.publicSlug, bio: p.bio, subjects: p.subjects, experienceYears: p.experienceYears,
+    qualification: p.qualification, languages: p.languages, introVideoUrl: p.introVideoUrl, preferredLang: p.preferredLang, socialLinks: p.socialLinks,
+  });
+}
+
 async function ensureHtmlTeacher(app, asAdmin, anon, today) {
   const who = DEMO.htmlTeacher;
   const user = await ensureTeacher(app, asAdmin, anon, today, who, {
@@ -478,7 +490,7 @@ async function ensureHtmlTeacher(app, asAdmin, anon, today) {
     await teacher.put('/api/v1/teacher/profile', {
       name: who.name,
       email: 'demo.html@example.com',
-      photoKey: (await teacher.upload('photo', PNG, 'photo.png')).key,
+      photoKey: (await teacher.upload('photo', THUMB('amit-avatar.png'), 'photo.png')).key,
       publicSlug: who.slug,
       bio: 'I teach web design to beginners in simple Marathi. Anyone can join: school students, college students and working people.',
       subjects: 'HTML, Web Development',
@@ -488,6 +500,7 @@ async function ensureHtmlTeacher(app, asAdmin, anon, today) {
       preferredLang: 'mr',
     });
   }
+  await ensurePhoto(teacher, 'amit-avatar.png');
   let course = await one('SELECT course_id, status FROM dbo.courses WHERE teacher_id = @t AND title = @title', { t: T.int(user.user_id), title: T.nvarchar(HTML_COURSE.title, 200) });
   if (!course) {
     const thumbnailKey = (await teacher.upload('thumbnail', THUMB('html-thumbnail.png'), 'thumbnail.png')).key;
@@ -511,6 +524,7 @@ async function seedDemo({ admin, log = console.log }) {
   const user = await ensureTeacher(app, asAdmin, anon, today);
   const teacher = await asUser(app, user);
   await ensureProfile(teacher, user);
+  await ensurePhoto(teacher, 'priya-avatar.png');
   const course = await ensureCourse(teacher, user);
   await ensureThumbnail(teacher, course.id, 'maths-thumbnail.png');
   const mods = await ensureCurriculum(teacher, course.id);

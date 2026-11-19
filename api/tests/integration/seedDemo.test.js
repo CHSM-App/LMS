@@ -91,6 +91,14 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   fs.writeFileSync(storage.absPath(tiny), Buffer.alloc(70));
   await one('UPDATE dbo.courses SET thumbnail_key = @k OUTPUT INSERTED.course_id WHERE course_id = @c', { ...h, k: T.varchar(tiny, 200) });
 
+  // Both demo teachers have a real avatar; a re-run replaces a tiny placeholder photo.
+  const photoSize = async (uid) => fs.statSync(storage.absPath((await one('SELECT photo_key k FROM dbo.users WHERE user_id = @u', { u: T.int(uid) })).k)).size;
+  expect(await photoSize(t.user_id)).toBeGreaterThan(5000);
+  expect(await photoSize(t2.user_id)).toBeGreaterThan(5000);
+  const tinyPhoto = (await one('SELECT photo_key k FROM dbo.users WHERE user_id = @u', { u: T.int(t2.user_id) })).k.replace(/[^/]+$/, `${require('crypto').randomUUID()}.png`);
+  fs.writeFileSync(storage.absPath(tinyPhoto), Buffer.alloc(70));
+  await one('UPDATE dbo.users SET photo_key = @k OUTPUT INSERTED.user_id WHERE user_id = @u', { u: T.int(t2.user_id), k: T.varchar(tinyPhoto, 200) });
+
   // Re-run: nothing new.
   const snapshot = async () => one(`SELECT
     (SELECT COUNT(*) FROM dbo.users) u, (SELECT COUNT(*) FROM dbo.contents) ct, (SELECT COUNT(*) FROM dbo.questions) q,
@@ -105,4 +113,5 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(new Date(reopened.starts_at).getTime() - 10 * 60000).toBeLessThanOrEqual(Date.now());
   expect(new Date(reopened.starts_at).getTime()).toBeGreaterThan(Date.now() - 60 * 60000);
   expect(await thumbSize(html.course_id)).toBeGreaterThan(10000);
+  expect(await photoSize(t2.user_id)).toBeGreaterThan(5000);
 });
