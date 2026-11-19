@@ -118,6 +118,12 @@ so a course can be fully recorded, fully live, or mixed (hybrid).
 2. The public course page and the app show however many demo videos the course has (1 or 2).
 3. Public text says "demo video" instead of "2 demo videos".
 
+## White page background (added 2026-11-19)
+1. Every page (public site, student, teacher, admin, and the mobile app) uses a **white** page
+   background. This overrides BRAND-THEME "Page background is Ice".
+2. Section backgrounds (e.g. a doubt reply box) use a very light navy tint (Navy 4%) instead of Ice.
+3. Ice stays in the palette for status badges (Draft / Paused / Expired) and thumbnails.
+
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**
 - Student audience (school / college / competitive exams / skills) **(assumed: school + competitive exam coaching in Maharashtra)**

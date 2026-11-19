@@ -7,8 +7,8 @@
   --color-brand-white: #FFFFFF;
   --color-brand-navy: #14264C;
   --color-functional-error: #C62828;
-  --color-bg-page: #EEF4FF;
-  --color-bg-section: #EEF4FF;
+  --color-bg-page: #FFFFFF;
+  --color-bg-section: rgba(20, 38, 76, 0.04);
   --color-surface: #FFFFFF;
   --color-text: #14264C;
   --color-heading: #14264C;

@@ -9,8 +9,8 @@ abstract final class AppTokens {
   static const Color brandWhite = Color(0xFFFFFFFF);
   static const Color brandNavy = Color(0xFF14264C);
   static const Color functionalError = Color(0xFFC62828);
-  static const Color bgPage = Color(0xFFEEF4FF);
-  static const Color bgSection = Color(0xFFEEF4FF);
+  static const Color bgPage = Color(0xFFFFFFFF);
+  static const Color bgSection = Color(0x0A14264C);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color text = Color(0xFF14264C);
   static const Color heading = Color(0xFF14264C);

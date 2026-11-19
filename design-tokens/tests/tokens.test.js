@@ -22,6 +22,11 @@ test('semantic colours only reference palette colours', () => {
   }
 });
 
+test('page background is white, not the light blue (DECISIONS "White page background")', () => {
+  assert.strictEqual(resolveColor(tokens, 'bgPage').hex, '#FFFFFF');
+  assert.notStrictEqual(tokens.color.semantic.bgSection.ref, 'brand.ice');
+});
+
 for (const [fg, bg, min, note] of tokens.contrastPairs) {
   test(`contrast ${fg} on ${bg} >= ${min} (${note})`, () => {
     const ratio = contrast(resolveColor(tokens, fg), resolveColor(tokens, bg));
