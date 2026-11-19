@@ -495,7 +495,7 @@ paths:
     post:
       tags: [teacher-content]
       security: [{ bearerAuth: [] }]
-      summary: Create a draft course. The 2 demo videos can be added later; publishing needs them. The thumbnail is optional.
+      summary: Create a draft course. Demo video 1 can be added later; publishing needs it. Demo video 2 and the thumbnail are optional.
       requestBody:
         required: true
         content:
@@ -1237,7 +1237,7 @@ paths:
     parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
     get:
       tags: [public]
-      summary: Course details with 2 demo videos; lesson titles only, preview links only for free lessons
+      summary: Course details with 1 or 2 demo videos; lesson titles only, preview links only for free lessons
       responses:
         '200': { description: Course details }
         '404': { description: Not found or not published }

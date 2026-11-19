@@ -65,7 +65,7 @@ function DetailsTab({ course, onSaved }) {
         <p className="muted">{t('courses.demoVideosHint')}</p>
         <div className="grid grid--2">
           <VideoSourceField label={t('courses.demo1')} kind="demo_video" value={f.demoVideo1} onChange={(v) => setF((x) => ({ ...x, demoVideo1: v }))} required />
-          <VideoSourceField label={t('courses.demo2')} kind="demo_video" value={f.demoVideo2} onChange={(v) => setF((x) => ({ ...x, demoVideo2: v }))} required />
+          <VideoSourceField label={`${t('courses.demo2')} (${t('common.optional')})`} kind="demo_video" value={f.demoVideo2} onChange={(v) => setF((x) => ({ ...x, demoVideo2: v }))} />
         </div>
       </Card>
       <div className="row"><Button type="submit" loading={save.isPending}>{t('common.save')}</Button></div>
@@ -73,7 +73,7 @@ function DetailsTab({ course, onSaved }) {
   );
 }
 
-const MISSING_KEYS = ['title', 'description', 'demo_video_1', 'demo_video_2', 'content'];
+const MISSING_KEYS = ['title', 'description', 'demo_video_1', 'content'];
 
 export default function CourseEditorPage() {
   const { courseId } = useParams();

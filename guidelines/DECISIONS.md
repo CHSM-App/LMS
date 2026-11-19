@@ -18,7 +18,7 @@ Items marked **(assumed)** are defaults that still need the owner's confirmation
 | WhatsApp | **Official WhatsApp Business API** (Meta Cloud API, approved template). **Fallback** until approval: "Send on WhatsApp" opens a `wa.me` link with the message already typed. |
 | Google Meet | **Created automatically** through the Google Calendar API (Workspace account, `MEET_PROVIDER=google`). **Fallback:** the teacher pastes a link. For live classes and live lessons the link is **optional when scheduling**: without the Google provider the class is saved with no link (never a made-up one), the teacher adds it later with **"Add Meet link"**, and the class reminder asks the teacher to add it if it is still missing. Teachers see **"Join"** (opens Meet any time); students see Join only in the join window and "The teacher will share the link soon" if it is class time with no link. (Updated 2026-11-18.) |
 | OTP | SMS provider (DLT-registered template). |
-| Videos (lessons + 2 demo videos) | **Both options:** the teacher picks either a **link** (YouTube unlisted / Vimeo / Bunny Stream) or an **upload** for each video. Uploads are chunked and resumable, with a progress bar. |
+| Videos (lessons + 1 required and 1 optional demo video) | **Both options:** the teacher picks either a **link** (YouTube unlisted / Vimeo / Bunny Stream) or an **upload** for each video. Uploads are chunked and resumable, with a progress bar. |
 
 ## Rules
 | Topic | Decision |
@@ -107,11 +107,16 @@ so a course can be fully recorded, fully live, or mixed (hybrid).
 
 ## Course thumbnail is optional (added 2026-11-19)
 1. A course can be published **without a thumbnail**. Publishing still needs a title, a
-   description, both demo videos and at least one lesson.
+   description, demo video 1 and at least one lesson.
 2. Where a course has no thumbnail, the web shows a **generated cover** instead: the course
    subject and title on a brand-colour background (colours from the design tokens).
 3. The upload stays in the course editor as an optional field. The mobile app shows no course
    thumbnails, so it needs no change.
+
+## Demo video 2 is optional (added 2026-11-19)
+1. **Demo video 1 is required** to publish a course. **Demo video 2 is optional.**
+2. The public course page and the app show however many demo videos the course has (1 or 2).
+3. Public text says "demo video" instead of "2 demo videos".
 
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**

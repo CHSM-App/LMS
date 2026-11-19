@@ -64,7 +64,7 @@ test('home: how it works in 3 steps, and a call to teachers', async () => {
   wrap(<HomePage />);
   const steps = screen.getByRole('list', { name: 'How it works' });
   expect(within(steps).getAllByRole('listitem')).toHaveLength(3);
-  expect(within(steps).getByText('Watch 2 demo videos')).toBeInTheDocument();
+  expect(within(steps).getByText('Watch the demo video')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Start teaching' })).toHaveAttribute('href', '/become-teacher');
 });
 

@@ -32,7 +32,7 @@ test('publish lists what is missing, then publishes when ready', async () => {
   const id = (await t.post('/api/v1/teacher/courses', baseCourse)).body.data.id;
   const res = await t.post(`/api/v1/teacher/courses/${id}/status`, { status: 'published' });
   expect(res.status).toBe(422);
-  expect(res.body.details.missing).toEqual(['demo_video_1', 'demo_video_2', 'content']);
+  expect(res.body.details.missing).toEqual(['demo_video_1', 'content']);
   const ready = await readyCourse(t);
   const ok = await t.post(`/api/v1/teacher/courses/${ready.courseId}/status`, { status: 'published' });
   expect(ok.status).toBe(200);
@@ -54,6 +54,19 @@ test('a course without a thumbnail can be published (thumbnail is optional)', as
   const ok = await t.post(`/api/v1/teacher/courses/${courseId}/status`, { status: 'published' });
   expect(ok.status).toBe(200);
   expect(ok.body.data.status).toBe('published');
+});
+
+test('a course with only demo video 1 can be published, and the public page lists one video', async () => {
+  const t = await teacher();
+  const { courseId } = await readyCourse(t);
+  const c = (await t.get(`/api/v1/teacher/courses/${courseId}`)).body.data;
+  const put = await t.put(`/api/v1/teacher/courses/${courseId}`, { ...baseCourse, thumbnailKey: c.thumbnailKey, demoVideo1: c.demoVideo1, demoVideo2: null });
+  expect(put.status).toBe(200);
+  expect(put.body.data.demoVideo2).toBeNull();
+  const ok = await t.post(`/api/v1/teacher/courses/${courseId}/status`, { status: 'published' });
+  expect(ok.status).toBe(200);
+  const pub = await t.get(`/api/v1/public/courses/${ok.body.data.slug}`);
+  expect(pub.body.data.demoVideos).toHaveLength(1);
 });
 
 test('pending status is greyed out in v1', async () => {
