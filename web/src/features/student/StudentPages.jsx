@@ -30,14 +30,15 @@ function JoinOrWait({ c, className }) {
 }
 
 // Enrolled courses as cards; shared by the dashboard and the My courses page.
-function MyCourseCards({ courses }) {
+// `compact`: small horizontal cards for the dashboard side column.
+function MyCourseCards({ courses, compact = false }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   if (courses.length === 0) {
     return <EmptyState title={t('studentDash.noCourses')} action={{ label: t('nav.browse'), onClick: () => navigate('/student/browse') }} />;
   }
   return (
-    <div className="my-courses">
+    <div className={`my-courses${compact ? ' my-courses--compact' : ''}`}>
       {courses.map((c) => (
         <article key={c.courseId} className="my-course">
           <CourseThumb course={c} />
@@ -126,11 +127,7 @@ export function StudentDashboard() {
         </section>
       )}
       <div className="dash-cols dash-cols--side">
-        <section>
-          <h2 className="section-title">{t('nav.myCourses')}</h2>
-          <MyCourseCards courses={d.myCourses} />
-        </section>
-        <section className="card dash-side" aria-labelledby="dash-live">
+        <section className="card dash-live" aria-labelledby="dash-live">
           <div className="row row--between">
             <h2 id="dash-live" className="card__title">{t('nav.liveClasses')}</h2>
             <Link to="/student/live-classes" className="dash-side__all">{t('studentDash.allClasses')}</Link>
@@ -149,6 +146,13 @@ export function StudentDashboard() {
               ))}
             </ul>
           )}
+        </section>
+        <section className="card dash-courses" aria-labelledby="dash-courses">
+          <div className="row row--between">
+            <h2 id="dash-courses" className="card__title">{t('nav.myCourses')}</h2>
+            <Link to="/student/courses" className="dash-side__all">{t('studentDash.allCourses')}</Link>
+          </div>
+          <MyCourseCards courses={d.myCourses} compact />
         </section>
       </div>
       {d.requests.length > 0 && (

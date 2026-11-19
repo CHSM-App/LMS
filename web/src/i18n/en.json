@@ -819,7 +819,8 @@
     "statCourses": "Enrolled courses",
     "statProgress": "Average progress",
     "statClasses": "Upcoming live classes",
-    "allClasses": "All live classes"
+    "allClasses": "All live classes",
+    "allCourses": "All my courses"
   },
   "studentDoubts": {
     "subtitle": "Ask your teacher when you're stuck.",

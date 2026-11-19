@@ -64,7 +64,7 @@ test('student dashboard: next-up card and quick stats', async () => {
   expect(within(stats).getByText('36%')).toBeInTheDocument();
 });
 
-test('student dashboard: My courses in the main column, live classes in a side panel with live-now first', async () => {
+test('student dashboard: live classes on the left (live-now first), compact My courses on the right', async () => {
   mockGet({
     myCourses: [{ courseId: 5, title: 'Class 10 Maths', teacher: 'Priya', batch: 'Morning', progressPct: 36, endDate: '2027-11-18', accessStatus: 'active', readOnly: false, thumbnailUrl: null }],
     upcomingLiveClasses: [
@@ -78,7 +78,9 @@ test('student dashboard: My courses in the main column, live classes in a side p
   const rows = within(live).getAllByRole('listitem');
   expect(within(rows[0]).getByText('Now class')).toBeInTheDocument();
   expect(within(rows[0]).getByText('Live now')).toBeInTheDocument();
-  expect(live).toHaveClass('dash-side');
-  expect(screen.getByRole('heading', { level: 2, name: 'My courses' })).toBeInTheDocument();
+  // Live classes come first (left), My courses second (right, compact cards).
+  const courses = screen.getByRole('region', { name: 'My courses' });
+  expect(live.compareDocumentPosition(courses) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(courses.querySelector('.my-courses--compact')).not.toBeNull();
   expect(screen.getByRole('heading', { level: 3, name: 'Class 10 Maths' })).toBeInTheDocument();
 });

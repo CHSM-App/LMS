@@ -819,7 +819,8 @@
     "statCourses": "प्रवेश घेतलेले कोर्स",
     "statProgress": "सरासरी प्रगती",
     "statClasses": "येणारे लाइव्ह क्लास",
-    "allClasses": "सर्व लाइव्ह क्लास"
+    "allClasses": "सर्व लाइव्ह क्लास",
+    "allCourses": "माझे सर्व कोर्स"
   },
   "studentDoubts": {
     "subtitle": "अडकलात तर शिक्षकांना विचारा.",

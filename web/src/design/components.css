@@ -311,9 +311,9 @@ a.kpi:hover { border-color: var(--color-input-border); box-shadow: var(--shadow-
 .card > .row:first-child { margin-bottom: var(--space-4); }
 .agenda__row--live .agenda__time { background: var(--color-accent-soft); }
 .agenda__title .badge { margin-left: var(--space-2); vertical-align: middle; }
-.dash-cols--side { grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr); }
+.dash-cols--side { grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); }
 /* Small side panel (student live classes). */
-.dash-side { padding: var(--space-4); position: sticky; top: 88px; }
+.dash-live, .dash-courses { padding: var(--space-4) var(--space-5); }
 .dash-side__all { font-size: var(--text-xs); }
 .side-list { list-style: none; margin: 0; padding: 0; }
 .side-list__item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: var(--space-3) 0; border-top: 1px solid var(--color-divider); }
@@ -327,8 +327,18 @@ a.kpi:hover { border-color: var(--color-input-border); box-shadow: var(--shadow-
 .side-list__item:not(.side-list__item--live) .side-list__title { grid-area: title; }
 .side-list__item:not(.side-list__item--live) .side-list__meta { grid-area: meta; margin-bottom: 0; }
 .side-list__item:not(.side-list__item--live) > :last-child { grid-area: action; justify-self: end; text-align: right; max-width: 150px; }
-.dash-side .dash-empty { padding: var(--space-4) 0; }
-@media (max-width: 1100px) { .dash-side { position: static; } .dash-cols--side { grid-template-columns: 1fr; } }
+.dash-live .dash-empty { padding: var(--space-4) 0; }
+/* Compact horizontal course cards (dashboard right column). */
+.my-courses--compact { grid-template-columns: 1fr; gap: 0; }
+.my-courses--compact .my-course { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: var(--space-3); align-items: start; border: 0; border-top: 1px solid var(--color-divider); border-radius: 0; padding: var(--space-3) 0; overflow: visible; }
+.my-courses--compact .my-course:first-child { border-top: 0; padding-top: 0; }
+.my-courses--compact .my-course > .my-course__thumb { border-radius: var(--radius-sm); }
+.my-courses--compact .my-course__body { padding: 0; gap: var(--space-1); }
+.my-courses--compact .my-course__title { font-size: var(--text-sm); }
+.my-courses--compact .my-course__meta, .my-courses--compact .my-course__foot { font-size: var(--text-xs); }
+.my-courses--compact .course-cover { padding: var(--space-2); }
+.my-courses--compact .course-cover__title { font-size: var(--text-xs); }
+@media (max-width: 1100px) { .dash-cols--side { grid-template-columns: 1fr; } }
 .agenda__time { flex: none; width: 92px; padding: var(--space-2) var(--space-2); border-radius: var(--radius-md); background: var(--color-bg-section); font-weight: var(--font-weight-semibold); font-size: var(--text-sm); text-align: center; font-variant-numeric: tabular-nums; }
 .agenda__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .agenda__title { font-weight: var(--font-weight-semibold); }
