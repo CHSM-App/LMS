@@ -5,6 +5,7 @@
 //   -> 4 enrolled students with lesson progress and exam results, 1 waiting for approval
 //   -> a held live class with attendance, an upcoming one, two live lessons (one recorded),
 //      doubts, demo requests, a class program.
+//   -> a second teacher with a skills course open to everyone (HTML for Beginners: 1 subject, 3 modules, 1 batch).
 // Every step checks first, so re-running adds only what is missing. Called by scripts/seed.js.
 const request = require('supertest');
 const { createApp } = require('../src/app');
@@ -24,6 +25,7 @@ const DEMO = {
     { mobile: '+919999900006', name: 'Kavya Shinde', batch: 'Evening Batch', skill: 8, final: true },
   ],
   pendingStudent: { mobile: '+919999900007', name: 'Om Jadhav' },
+  htmlTeacher: { mobile: '+919999900010', name: 'Amit Sawant', slug: 'amit-sawant' },
   demoRequests: [
     { mobile: '+919999900008', name: 'Isha More', preferredTime: 'Weekday evenings' },
     { mobile: '+919999900009', name: 'Yash Pawar', preferredTime: 'Saturday morning', schedule: true },
@@ -109,6 +111,29 @@ const CURRICULUM = [
     ],
   },
 ];
+// Second teacher: a course for everyone, with one subject (a small single-subject course).
+const HTML_COURSE = {
+  title: 'HTML for Beginners - Demo',
+  description: 'Learn to build web pages with HTML from zero. Open to everyone: school students from 8th standard, college students '
+    + 'and working people. Short video lessons, notes and a small project where you build your own page.',
+  subject: 'Web Development',
+  language: 'mr',
+  durationText: '6 weeks',
+  feeDisplay: '₹2,500 for the full course',
+  demoVideo1: { source: 'youtube', url: 'https://youtu.be/abcdefgh130' },
+  demoVideo2: { source: 'youtube', url: 'https://youtu.be/abcdefgh131' },
+};
+const HTML_CURRICULUM = [
+  {
+    subject: 'HTML',
+    modules: [
+      { key: 'basics', name: 'Tags and page structure', lessons: [video('What is HTML?', 'abcdefgh132', true), pdf('Common tags cheat sheet')], questions: [] },
+      { key: 'content', name: 'Text, links and images', lessons: [video('Headings, paragraphs and links', 'abcdefgh133'), link('Practice in the browser', 'https://example.com/html-playground')], questions: [] },
+      { key: 'forms', name: 'Tables and forms', lessons: [video('Building a contact form', 'abcdefgh134'), pdf('Forms notes')], questions: [] },
+    ],
+  },
+];
+
 const QUESTIONS = new Map(CURRICULUM.flatMap((s) => s.modules.flatMap((m) => m.questions)).map((q) => [q.text, q]));
 
 // ---------- Small helpers ----------
@@ -178,16 +203,15 @@ async function takeExam(app, student, examId, skill, salt) {
 }
 
 // ---------- Steps ----------
-async function ensureTeacher(app, asAdmin, anon, today) {
-  let user = await findUser(DEMO.teacher.mobile);
+const PRIYA_REQUEST = { courseName: 'Class 10 Maths (SSC)', subject: 'Maths', experienceYears: 8, email: 'demo.teacher@example.com', city: 'Pune', qualification: 'M.Sc. Mathematics, B.Ed.' };
+
+async function ensureTeacher(app, asAdmin, anon, today, who = DEMO.teacher, details = PRIYA_REQUEST) {
+  let user = await findUser(who.mobile);
   if (!user) {
-    const otp = await otpFor(anon, DEMO.teacher.mobile, 'teacher_register');
+    const otp = await otpFor(anon, who.mobile, 'teacher_register');
     // Registration is auto-approved, so no admin accept step.
-    await anon.form('/api/v1/teacher-requests', {
-      name: DEMO.teacher.name, mobile: DEMO.teacher.mobile, otp, courseName: 'Class 10 Maths (SSC)', subject: 'Maths',
-      experienceYears: 8, email: 'demo.teacher@example.com', city: 'Pune', qualification: 'M.Sc. Mathematics, B.Ed.', acceptTerms: true, whatsappOptIn: true,
-    });
-    user = await findUser(DEMO.teacher.mobile);
+    await anon.form('/api/v1/teacher-requests', { name: who.name, mobile: who.mobile, otp, ...details, acceptTerms: true, whatsappOptIn: true });
+    user = await findUser(who.mobile);
   }
   const sub = await one('SELECT 1 AS y FROM dbo.teacher_subscriptions WHERE teacher_id = @t', { t: T.int(user.user_id) });
   if (!sub) await asAdmin.post('/api/v1/admin/subscriptions', { teacherPublicId: user.public_id, planType: 'yearly', startDate: isoDay(today) });
@@ -235,9 +259,9 @@ async function ensureCourse(teacher, user) {
 }
 
 // Returns { moduleKey: moduleId }.
-async function ensureCurriculum(teacher, courseId) {
+async function ensureCurriculum(teacher, courseId, curriculum = CURRICULUM) {
   const ids = {};
-  for (const s of CURRICULUM) {
+  for (const s of curriculum) {
     const subj = await one('SELECT subject_id FROM dbo.subjects WHERE course_id = @c AND name = @n', { c: T.int(courseId), n: T.nvarchar(s.subject, 120) });
     const subjectId = subj ? subj.subject_id : (await teacher.post(`/api/v1/teacher/courses/${courseId}/subjects`, { name: s.subject })).id;
     for (const m of s.modules) {
@@ -425,6 +449,40 @@ async function ensureProgram(teacher, user, courseId, batches, today) {
   if (!has) await teacher.post('/api/v1/teacher/programs', { title, startsAt: at(addDays(today, 7), 4).toISOString(), courseId, batchId: batches['Evening Batch'] });
 }
 
+async function ensureHtmlTeacher(app, asAdmin, anon, today) {
+  const who = DEMO.htmlTeacher;
+  const user = await ensureTeacher(app, asAdmin, anon, today, who, {
+    courseName: 'HTML for Beginners', subject: 'Web Development', experienceYears: 5, email: 'demo.html@example.com', city: 'Kolhapur', qualification: 'B.E. Computer',
+  });
+  const teacher = await asUser(app, user);
+  const p = await one('SELECT public_slug FROM dbo.teacher_profiles WHERE user_id = @t', { t: T.int(user.user_id) });
+  if (!p || p.public_slug !== who.slug) {
+    await teacher.put('/api/v1/teacher/profile', {
+      name: who.name,
+      email: 'demo.html@example.com',
+      photoKey: (await teacher.upload('photo', PNG, 'photo.png')).key,
+      publicSlug: who.slug,
+      bio: 'I teach web design to beginners in simple Marathi. Anyone can join: school students, college students and working people.',
+      subjects: 'HTML, Web Development',
+      experienceYears: 5,
+      qualification: 'B.E. Computer',
+      languages: 'Marathi, English',
+      preferredLang: 'mr',
+    });
+  }
+  let course = await one('SELECT course_id, status FROM dbo.courses WHERE teacher_id = @t AND title = @title', { t: T.int(user.user_id), title: T.nvarchar(HTML_COURSE.title, 200) });
+  if (!course) {
+    const thumbnailKey = (await teacher.upload('thumbnail', PNG, 'thumbnail.png')).key;
+    course = { course_id: (await teacher.post('/api/v1/teacher/courses', { ...HTML_COURSE, thumbnailKey })).id, status: 'draft' };
+  }
+  await ensureCurriculum(teacher, course.course_id, HTML_CURRICULUM);
+  if (course.status !== 'published') await teacher.post(`/api/v1/teacher/courses/${course.course_id}/status`, { status: 'published' });
+  const batch = await one('SELECT 1 AS y FROM dbo.batches WHERE course_id = @c', { c: T.int(course.course_id) });
+  if (!batch) {
+    await teacher.post(`/api/v1/teacher/courses/${course.course_id}/batches`, { name: 'Weekend Batch', timingText: 'Sat-Sun, 10:00 - 11:30 AM', maxStudents: 40, startDate: isoDay(today) });
+  }
+}
+
 async function seedDemo({ admin, log = console.log }) {
   const app = createApp();
   const anon = client(app);
@@ -458,8 +516,10 @@ async function seedDemo({ admin, log = console.log }) {
   await ensureDoubts(app, teacher, course.id, students);
   await ensureDemoRequests(anon, teacher, course, today);
   await ensureProgram(teacher, user, course.id, batches, today);
+  await ensureHtmlTeacher(app, asAdmin, anon, today);
 
   log(`demo teacher: ${DEMO.teacher.mobile} (${DEMO.teacher.name}) - public profile /teachers/${DEMO.teacher.slug}, course "${COURSE_TITLE}"`);
+  log(`demo teacher 2: ${DEMO.htmlTeacher.mobile} (${DEMO.htmlTeacher.name}) - public profile /teachers/${DEMO.htmlTeacher.slug}, course "${HTML_COURSE.title}"`);
   log(`demo students: ${DEMO.students.map((s) => `${s.mobile} ${s.name}`).join(', ')}; waiting: ${DEMO.pendingStudent.mobile}`);
   return { teacher: DEMO.teacher, student: DEMO.student };
 }

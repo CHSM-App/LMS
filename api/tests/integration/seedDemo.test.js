@@ -68,6 +68,19 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(await count('SELECT COUNT(*) n FROM dbo.demo_requests WHERE course_id = @c', c)).toBe(2);
   expect(await count('SELECT COUNT(*) n FROM dbo.class_programs WHERE teacher_id = @t', { t: T.int(t.user_id) })).toBe(1);
 
+  // A second teacher with a skills course open to everyone: published HTML course, 1 subject, 3 modules, 1 batch.
+  const t2 = await one("SELECT * FROM dbo.users WHERE mobile = @m AND role = 'teacher' AND status = 'approved'", { m: T.varchar(DEMO.htmlTeacher.mobile, 20) });
+  expect(t2).toBeTruthy();
+  expect(await one('SELECT public_slug FROM dbo.teacher_profiles WHERE user_id = @t', { t: T.int(t2.user_id) })).toEqual({ public_slug: DEMO.htmlTeacher.slug });
+  const html = await one("SELECT * FROM dbo.courses WHERE teacher_id = @t AND status = 'published'", { t: T.int(t2.user_id) });
+  expect(html).toMatchObject({ title: 'HTML for Beginners - Demo', subject: 'Web Development' });
+  expect(html.thumbnail_key).toBeTruthy();
+  const h = { c: T.int(html.course_id) };
+  expect(await count('SELECT COUNT(*) n FROM dbo.subjects WHERE course_id = @c', h)).toBe(1);
+  expect(await count('SELECT COUNT(*) n FROM dbo.modules WHERE course_id = @c', h)).toBe(3);
+  expect(await count('SELECT COUNT(*) n FROM dbo.modules m WHERE m.course_id = @c AND NOT EXISTS (SELECT 1 FROM dbo.contents x WHERE x.module_id = m.module_id)', h)).toBe(0);
+  expect(await count('SELECT COUNT(*) n FROM dbo.batches WHERE course_id = @c', h)).toBe(1);
+
   // Re-run: nothing new.
   const snapshot = async () => one(`SELECT
     (SELECT COUNT(*) FROM dbo.users) u, (SELECT COUNT(*) FROM dbo.contents) ct, (SELECT COUNT(*) FROM dbo.questions) q,
