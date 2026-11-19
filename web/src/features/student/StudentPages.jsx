@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
-import { formatDate, formatDateTime, formatLongDay } from '../../utils/format';
+import { formatDate, formatDateTime, formatLongDay, formatRelativeDay } from '../../utils/format';
 import { LiveStageBadge } from '../../components/LiveStageBadge';
 import { Icon } from '../../components/Icon';
 
@@ -48,10 +48,19 @@ function MyCourseCards({ courses, compact = false }) {
               <StatusBadge status={c.readOnly ? 'paused' : c.accessStatus} />
             </div>
             <p className="muted my-course__meta">{c.teacher}{c.batch ? ` · ${c.batch}` : ''}</p>
+            {compact && c.nextLesson && <p className="my-course__next">{t('studentDash.nextLesson', { title: c.nextLesson.title })}</p>}
             <ProgressBar value={c.progressPct} label={c.title} />
             <div className="row row--between my-course__foot">
-              <span className="muted">{t('studentDash.until', { date: formatDate(c.endDate, i18n.language) })}</span>
-              <Link to={`/student/courses/${c.courseId}`}>{t('studentDash.open')}</Link>
+              <span className="muted">
+                {compact && c.lastStudiedAt
+                  ? t('studentDash.lastStudied', { when: formatRelativeDay(c.lastStudiedAt, i18n.language) })
+                  : t('studentDash.until', { date: formatDate(c.endDate, i18n.language) })}
+              </span>
+              {compact && c.nextLesson && !c.readOnly ? (
+                <Link to={courseLink(c)} aria-label={t('studentDash.continueCourse', { title: c.title })}>{t('studentDash.continue')}</Link>
+              ) : (
+                <Link to={`/student/courses/${c.courseId}`}>{t('studentDash.open')}</Link>
+              )}
             </div>
             {c.readOnly && <p className="field__hint">{t('player.readOnly')}</p>}
           </div>
@@ -60,6 +69,9 @@ function MyCourseCards({ courses, compact = false }) {
     </div>
   );
 }
+
+// Opens the course on its next lesson when there is one.
+const courseLink = (c) => `/student/courses/${c.courseId}${c.nextLesson ? `?lesson=${c.nextLesson.id}` : ''}`;
 
 // Course image, or the generated cover when the teacher added none.
 function CourseThumb({ course, className = '' }) {
@@ -119,14 +131,15 @@ export function StudentDashboard() {
         ))}
       </ul>
       {next && (
-        <section className="next-up" aria-label={t('studentDash.nextUp')}>
+        <section className="next-up" aria-label={next.lastStudiedAt ? t('studentDash.leftOff') : t('studentDash.nextUp')}>
           <CourseThumb course={next} className="next-up__thumb" />
           <div className="next-up__body">
-            <p className="next-up__eyebrow">{t('studentDash.nextUp')}</p>
+            <p className="next-up__eyebrow">{next.lastStudiedAt ? t('studentDash.leftOff') : t('studentDash.nextUp')}</p>
             <h2 className="next-up__title">{next.title}</h2>
             <p className="muted">{next.teacher}{next.batch ? ` · ${next.batch}` : ''}</p>
+            {next.nextLesson && <p className="next-up__lesson">{t('studentDash.nextLesson', { title: next.nextLesson.title })}</p>}
             <ProgressBar value={next.progressPct} label={next.title} />
-            <Link className="btn btn--primary" to={`/student/courses/${next.courseId}`}><span className="btn__label">{t('studentDash.continue')}</span></Link>
+            <Link className="btn btn--primary" to={courseLink(next)}><span className="btn__label">{t('studentDash.continue')}</span></Link>
           </div>
         </section>
       )}

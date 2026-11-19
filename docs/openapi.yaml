@@ -1304,7 +1304,12 @@ paths:
       tags: [student]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: 'myCourses (progress, end date, batch, readOnly), upcomingLiveClasses, requests' }
+        '200':
+          description: >-
+            myCourses (progress, end date, batch, readOnly, lastStudiedAt: date-time|null,
+            nextLesson: { id, title }|null), upcomingLiveClasses, requests.
+            myCourses is ordered: courses studied most recently first, then never-started courses by title,
+            finished (100%) courses last.
   /student/enrollments:
     get:
       tags: [student]

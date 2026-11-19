@@ -73,16 +73,40 @@ async function enrolledCourses(studentId) {
             (SELECT COUNT(*) FROM dbo.content_progress p JOIN dbo.contents x ON x.content_id = p.content_id
               LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
               WHERE p.student_id = e.student_id AND x.course_id = e.course_id AND p.completed_at IS NOT NULL
-                AND ${visibleSql('e.batch_id')}) AS done_lessons
+                AND ${visibleSql('e.batch_id')}) AS done_lessons,
+            (SELECT MAX(p.updated_at) FROM dbo.content_progress p JOIN dbo.contents x ON x.content_id = p.content_id
+              WHERE p.student_id = e.student_id AND x.course_id = e.course_id) AS last_studied_at,
+            nx.content_id AS next_content_id, nx.title AS next_title
      FROM dbo.enrollments e
      JOIN dbo.courses c ON c.course_id = e.course_id
      JOIN dbo.users u ON u.user_id = e.teacher_id
      LEFT JOIN dbo.batches b ON b.batch_id = e.batch_id
      LEFT JOIN dbo.student_subscriptions s ON s.enrollment_id = e.enrollment_id
+     -- Next lesson = first unfinished visible lesson in player order (subject, module, lesson).
+     OUTER APPLY (
+       SELECT TOP 1 x.content_id, x.title
+       FROM dbo.contents x
+       JOIN dbo.modules m ON m.module_id = x.module_id
+       JOIN dbo.subjects sb ON sb.subject_id = m.subject_id
+       LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
+       LEFT JOIN dbo.content_progress p ON p.content_id = x.content_id AND p.student_id = e.student_id
+       WHERE x.course_id = e.course_id AND p.completed_at IS NULL AND ${visibleSql('e.batch_id')}
+       ORDER BY sb.sort_order, m.sort_order, x.sort_order
+     ) nx
      WHERE e.student_id = @s AND e.status = 'approved'
      ORDER BY c.title`,
     { s: T.int(studentId) },
   );
+}
+
+// Dashboard order: most recently studied first, then not-started by title (SQL order), finished courses last.
+function byStudyOrder(a, b) {
+  const doneA = a.progressPct >= 100;
+  const doneB = b.progressPct >= 100;
+  if (doneA !== doneB) return doneA ? 1 : -1;
+  const ta = a.lastStudiedAt ? new Date(a.lastStudiedAt).getTime() : 0;
+  const tb = b.lastStudiedAt ? new Date(b.lastStudiedAt).getTime() : 0;
+  return tb - ta;
 }
 
 const courseOut = (r) => ({
@@ -96,6 +120,8 @@ const courseOut = (r) => ({
   endDate: iso(r.end_date),
   accessStatus: accessStatus(r),
   readOnly: r.teacher_status === 'blocked',
+  lastStudiedAt: r.last_studied_at ? new Date(r.last_studied_at).toISOString() : null,
+  nextLesson: r.next_content_id ? { id: r.next_content_id, title: r.next_title } : null,
 });
 
 async function liveClasses(studentId, { upcomingOnly = true } = {}) {
@@ -160,7 +186,7 @@ async function joinLiveClass(studentId, liveClassId) {
 }
 
 async function dashboard(studentId) {
-  const courses = (await enrolledCourses(studentId)).map(courseOut);
+  const courses = (await enrolledCourses(studentId)).map(courseOut).sort(byStudyOrder);
   const pending = (await myEnrollments(studentId)).filter((e) => e.status !== 'approved');
   return { myCourses: courses, upcomingLiveClasses: (await liveClasses(studentId)).slice(0, 5), requests: pending };
 }

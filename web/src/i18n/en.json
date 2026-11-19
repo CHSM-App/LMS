@@ -820,7 +820,11 @@
     "statProgress": "Average progress",
     "statClasses": "Upcoming live classes",
     "allClasses": "All live classes ({{n}})",
-    "allCourses": "All my courses ({{n}})"
+    "allCourses": "All my courses ({{n}})",
+    "leftOff": "Continue where you left off",
+    "nextLesson": "Next: {{title}}",
+    "lastStudied": "Last studied {{when}}",
+    "continueCourse": "Continue {{title}}"
   },
   "studentDoubts": {
     "subtitle": "Ask your teacher when you're stuck.",

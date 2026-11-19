@@ -52,6 +52,37 @@ describe('dashboard, player and progress', () => {
     expect((await pending.get('/api/v1/student/dashboard')).body.data.myCourses).toHaveLength(0);
   });
 
+  test('dashboard: each course has its next lesson and when it was last studied; most recent first, finished last', async () => {
+    const w = await world();
+    const first = (await w.s.get('/api/v1/student/dashboard')).body.data.myCourses[0];
+    expect(first.lastStudiedAt).toBeNull();
+    expect(first.nextLesson).toEqual({ id: w.contents[0].content_id, title: w.contents[0].title });
+
+    await w.s.post(`/api/v1/student/contents/${w.contents[0].content_id}/progress`, { completed: true });
+    const after = (await w.s.get('/api/v1/student/dashboard')).body.data.myCourses[0];
+    expect(after.lastStudiedAt).toBeTruthy();
+    expect(after.nextLesson).toEqual({ id: w.contents[1].content_id, title: w.contents[1].title });
+
+    // A second course, studied more recently, comes first.
+    const t2 = await teacher({ name: 'Amit' });
+    const c2 = await readyCourse(t2);
+    await t2.post(`/api/v1/teacher/courses/${c2.courseId}/status`, { status: 'published' });
+    const b2 = (await t2.post(`/api/v1/teacher/courses/${c2.courseId}/batches`, { name: 'Weekend', startDate: '2026-01-01' })).body.data;
+    const { activeEnrollment } = require('../../setup/operations');
+    await activeEnrollment(c2.courseId, t2.user.user_id, w.s.user.user_id, b2.id);
+    await query("UPDATE dbo.content_progress SET updated_at = DATEADD(DAY, -3, SYSUTCDATETIME()) WHERE student_id = @s", { s: T.int(w.s.user.user_id) });
+    const c2Lesson = await one('SELECT content_id FROM dbo.contents WHERE course_id = @c', { c: T.int(c2.courseId) });
+    await w.s.post(`/api/v1/student/contents/${c2Lesson.content_id}/progress`, { positionSec: 10 });
+    let list = (await w.s.get('/api/v1/student/dashboard')).body.data.myCourses;
+    expect(list.map((c) => c.courseId)).toEqual([c2.courseId, w.courseId]);
+
+    // Finishing every lesson of course 2 moves it to the end.
+    await w.s.post(`/api/v1/student/contents/${c2Lesson.content_id}/progress`, { completed: true });
+    list = (await w.s.get('/api/v1/student/dashboard')).body.data.myCourses;
+    expect(list.map((c) => c.courseId)).toEqual([w.courseId, c2.courseId]);
+    expect(list[1]).toMatchObject({ progressPct: 100, nextLesson: null });
+  });
+
   test('completing lessons updates progress once; position is remembered', async () => {
     const w = await world();
     const [first] = w.contents;

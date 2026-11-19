@@ -106,3 +106,23 @@ test('student dashboard: "All" links only when there is more than fits', async (
   expect(within(live).getAllByRole('listitem')).toHaveLength(4);
   expect(within(live).getByRole('link', { name: 'All live classes (6)' })).toHaveAttribute('href', '/student/live-classes');
 });
+
+test('student dashboard: continue where you left off, with the next lesson; each course has its own Continue', async () => {
+  const daysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString();
+  mockGet({
+    myCourses: [
+      { ...course(7), title: 'HTML for Beginners', progressPct: 20, lastStudiedAt: daysAgo(1), nextLesson: { id: 71, title: 'Headings and links' } },
+      { ...course(5), title: 'Class 10 Maths', progressPct: 36, lastStudiedAt: daysAgo(3), nextLesson: { id: 51, title: 'Quadratic equations' } },
+    ],
+    upcomingLiveClasses: [], requests: [],
+  });
+  wrap(<StudentDashboard />, { path: '/student', user: { role: 'student', name: 'Rohan' } });
+  const hero = await screen.findByRole('region', { name: 'Continue where you left off' });
+  expect(within(hero).getByRole('heading', { name: 'HTML for Beginners' })).toBeInTheDocument();
+  expect(within(hero).getByText('Next: Headings and links')).toBeInTheDocument();
+  expect(within(hero).getByRole('link', { name: 'Continue' })).toHaveAttribute('href', '/student/courses/7?lesson=71');
+  const courses = screen.getByRole('region', { name: 'My courses' });
+  expect(within(courses).getByText('Next: Quadratic equations')).toBeInTheDocument();
+  expect(within(courses).getByText('Last studied 3 days ago')).toBeInTheDocument();
+  expect(within(courses).getByRole('link', { name: 'Continue Class 10 Maths' })).toHaveAttribute('href', '/student/courses/5?lesson=51');
+});

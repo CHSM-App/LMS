@@ -29,4 +29,11 @@ export function formatLongDay(value, lang = 'en') {
   return new Date(value).toLocaleDateString(locale(lang), { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
-export const todayISO =() => new Date().toISOString().slice(0, 10);
+// "today", "yesterday", "3 days ago" (calendar days, in the viewer's language).
+export function formatRelativeDay(value, lang = 'en', now = new Date()) {
+  const startOf = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOf(now) - startOf(new Date(value))) / 86400000);
+  return new Intl.RelativeTimeFormat(locale(lang), { numeric: 'auto' }).format(-days, 'day');
+}
+
+export const todayISO = () => new Date().toISOString().slice(0, 10);

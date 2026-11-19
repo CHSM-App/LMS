@@ -820,7 +820,11 @@
     "statProgress": "औसत प्रगति",
     "statClasses": "आने वाली लाइव क्लास",
     "allClasses": "सभी लाइव क्लास ({{n}})",
-    "allCourses": "मेरे सभी कोर्स ({{n}})"
+    "allCourses": "मेरे सभी कोर्स ({{n}})",
+    "leftOff": "जहाँ रुके थे वहीं से जारी रखें",
+    "nextLesson": "अगला: {{title}}",
+    "lastStudied": "आख़िरी पढ़ाई {{when}}",
+    "continueCourse": "{{title}} जारी रखें"
   },
   "studentDoubts": {
     "subtitle": "अटकने पर शिक्षक से पूछें।",
