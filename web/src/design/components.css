@@ -311,7 +311,7 @@ a.kpi:hover { border-color: var(--color-input-border); box-shadow: var(--shadow-
 .card > .row:first-child { margin-bottom: var(--space-4); }
 .agenda__row--live .agenda__time { background: var(--color-accent-soft); }
 .agenda__title .badge { margin-left: var(--space-2); vertical-align: middle; }
-.dash-cols--side { grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr); }
+.dash-cols--side { grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr); }
 /* Small side panel (student live classes). */
 .dash-side { padding: var(--space-4); position: sticky; top: 88px; }
 .dash-side__all { font-size: var(--text-xs); }
@@ -322,6 +322,11 @@ a.kpi:hover { border-color: var(--color-input-border); box-shadow: var(--shadow-
 .side-list__title { font-weight: var(--font-weight-semibold); font-size: var(--text-sm); line-height: 1.35; }
 .side-list__meta { color: var(--color-text-secondary); font-size: var(--text-xs); margin-bottom: var(--space-2); }
 .side-list__item .muted { font-size: var(--text-xs); }
+/* Upcoming rows use the wider panel: title and time on the left, Join / "opens soon" on the right. */
+.side-list__item:not(.side-list__item--live) { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "title action" "meta action"; column-gap: var(--space-4); align-items: center; }
+.side-list__item:not(.side-list__item--live) .side-list__title { grid-area: title; }
+.side-list__item:not(.side-list__item--live) .side-list__meta { grid-area: meta; margin-bottom: 0; }
+.side-list__item:not(.side-list__item--live) > :last-child { grid-area: action; justify-self: end; text-align: right; max-width: 150px; }
 .dash-side .dash-empty { padding: var(--space-4) 0; }
 @media (max-width: 1100px) { .dash-side { position: static; } .dash-cols--side { grid-template-columns: 1fr; } }
 .agenda__time { flex: none; width: 92px; padding: var(--space-2) var(--space-2); border-radius: var(--radius-md); background: var(--color-bg-section); font-weight: var(--font-weight-semibold); font-size: var(--text-sm); text-align: center; font-variant-numeric: tabular-nums; }
