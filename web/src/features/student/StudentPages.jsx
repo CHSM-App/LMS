@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
-import { formatDate, formatDateTime, formatLongDay, formatTime } from '../../utils/format';
+import { formatDate, formatDateTime, formatLongDay } from '../../utils/format';
 import { LiveStageBadge } from '../../components/LiveStageBadge';
 import { Icon } from '../../components/Icon';
 
@@ -125,32 +125,32 @@ export function StudentDashboard() {
           </div>
         </section>
       )}
-      {!next && d.myCourses.length === 0 && <MyCourseCards courses={d.myCourses} />}
-      <section className="card" aria-labelledby="dash-live">
-        <div className="row row--between">
-          <h2 id="dash-live" className="card__title">{t('nav.liveClasses')}</h2>
-          <Link to="/student/live-classes">{t('studentDash.allClasses')}</Link>
-        </div>
-        {liveFirst.length === 0 ? (
-          <div className="dash-empty"><Icon name="calendar" size={28} /><p className="muted">{t('studentDash.noClasses')}</p></div>
-        ) : (
-          <ul className="agenda">
-            {liveFirst.map((c) => (
-              <li key={c.id} className={`agenda__row${c.stage === 'live' ? ' agenda__row--live' : ''}`}>
-                <span className="agenda__time">{formatTime(c.startsAt, i18n.language)}</span>
-                <span className="agenda__body">
-                  <span className="agenda__title">{c.topic} {c.stage === 'live' && <LiveStageBadge stage="live" />}</span>
-                  <span className="agenda__meta">{c.course} · {formatDate(c.startsAt, i18n.language)}</span>
-                </span>
-                <JoinOrWait c={c} className={c.stage === 'live' ? 'btn btn--primary btn--sm' : 'btn btn--compact btn--sm'} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-      {d.myCourses.length > 0 && (
-        <p className="dash-more"><Link to="/student/courses">{t('studentDash.allCourses')}</Link></p>
-      )}
+      <div className="dash-cols dash-cols--side">
+        <section>
+          <h2 className="section-title">{t('nav.myCourses')}</h2>
+          <MyCourseCards courses={d.myCourses} />
+        </section>
+        <section className="card dash-side" aria-labelledby="dash-live">
+          <div className="row row--between">
+            <h2 id="dash-live" className="card__title">{t('nav.liveClasses')}</h2>
+            <Link to="/student/live-classes" className="dash-side__all">{t('studentDash.allClasses')}</Link>
+          </div>
+          {liveFirst.length === 0 ? (
+            <div className="dash-empty"><Icon name="calendar" size={24} /><p className="muted">{t('studentDash.noClasses')}</p></div>
+          ) : (
+            <ul className="side-list">
+              {liveFirst.map((c) => (
+                <li key={c.id} className={`side-list__item${c.stage === 'live' ? ' side-list__item--live' : ''}`}>
+                  {c.stage === 'live' && <LiveStageBadge stage="live" />}
+                  <span className="side-list__title">{c.topic}</span>
+                  <span className="side-list__meta">{formatDateTime(c.startsAt, i18n.language)}</span>
+                  <JoinOrWait c={c} className={c.stage === 'live' ? 'btn btn--primary btn--sm btn--block' : 'btn btn--compact btn--sm'} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
       {d.requests.length > 0 && (
         <Card title={t('studentDash.requests')}>
           <Table rowKey={(r) => r.id} rows={d.requests} columns={[
