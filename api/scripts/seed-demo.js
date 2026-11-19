@@ -7,7 +7,10 @@
 //      doubts, demo requests, a class program.
 //   -> a second teacher with a skills course open to everyone (HTML for Beginners: 1 subject, 3 modules, 1 batch).
 // Every step checks first, so re-running adds only what is missing. Called by scripts/seed.js.
+const fs = require('fs');
+const path = require('path');
 const request = require('supertest');
+const storage = require('../src/providers/storage');
 const { createApp } = require('../src/app');
 const { one, query, T } = require('../src/db/query');
 const tokenService = require('../src/services/token.service');
@@ -38,6 +41,8 @@ const MEET = 'https://meet.google.com/dem-oabc-xyz';
 
 // Smallest valid PNG and PDF, enough for the upload checks. Replace them from the UI for a real demo.
 const PNG = Buffer.from('89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6300010000050001', 'hex');
+// Real 1280x720 course thumbnails, drawn in the brand colours.
+const THUMB = (name) => fs.readFileSync(path.join(__dirname, 'demo-assets', name));
 const PDF = Buffer.from('%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n');
 
 // ---------- Curriculum and question bank ----------
@@ -242,7 +247,7 @@ async function ensureProfile(teacher, user) {
 async function ensureCourse(teacher, user) {
   const existing = await one('SELECT course_id, slug, status FROM dbo.courses WHERE teacher_id = @t AND title = @title', { t: T.int(user.user_id), title: T.nvarchar(COURSE_TITLE, 200) });
   if (existing) return { id: existing.course_id, slug: existing.slug, published: existing.status === 'published' };
-  const thumbnailKey = (await teacher.upload('thumbnail', PNG, 'thumbnail.png')).key;
+  const thumbnailKey = (await teacher.upload('thumbnail', THUMB('maths-thumbnail.png'), 'thumbnail.png')).key;
   const c = await teacher.post('/api/v1/teacher/courses', {
     title: COURSE_TITLE,
     description: 'Complete Class 10 SSC Maths: Algebra (linear and quadratic equations) and Geometry (similar triangles and circles). '
@@ -449,6 +454,19 @@ async function ensureProgram(teacher, user, courseId, batches, today) {
   if (!has) await teacher.post('/api/v1/teacher/programs', { title, startsAt: at(addDays(today, 7), 4).toISOString(), courseId, batchId: batches['Evening Batch'] });
 }
 
+// Older seeds used a 1x1 placeholder image. Swap it (or a missing one) for the real thumbnail.
+async function ensureThumbnail(teacher, courseId, file) {
+  const c = await teacher.get(`/api/v1/teacher/courses/${courseId}`);
+  const abs = c.thumbnailKey && storage.absPath(c.thumbnailKey);
+  if (abs && fs.existsSync(abs) && fs.statSync(abs).size > 1024) return;
+  const thumbnailKey = (await teacher.upload('thumbnail', THUMB(file), 'thumbnail.png')).key;
+  const video = (v) => (v ? (v.source === 'upload' ? { source: 'upload', fileKey: v.fileKey } : { source: v.source, url: v.url }) : null);
+  await teacher.put(`/api/v1/teacher/courses/${courseId}`, {
+    title: c.title, subject: c.subject, language: c.language, description: c.description, durationText: c.durationText || null,
+    feeDisplay: c.feeDisplay || null, thumbnailKey, demoVideo1: video(c.demoVideo1), demoVideo2: video(c.demoVideo2),
+  });
+}
+
 async function ensureHtmlTeacher(app, asAdmin, anon, today) {
   const who = DEMO.htmlTeacher;
   const user = await ensureTeacher(app, asAdmin, anon, today, who, {
@@ -472,9 +490,10 @@ async function ensureHtmlTeacher(app, asAdmin, anon, today) {
   }
   let course = await one('SELECT course_id, status FROM dbo.courses WHERE teacher_id = @t AND title = @title', { t: T.int(user.user_id), title: T.nvarchar(HTML_COURSE.title, 200) });
   if (!course) {
-    const thumbnailKey = (await teacher.upload('thumbnail', PNG, 'thumbnail.png')).key;
+    const thumbnailKey = (await teacher.upload('thumbnail', THUMB('html-thumbnail.png'), 'thumbnail.png')).key;
     course = { course_id: (await teacher.post('/api/v1/teacher/courses', { ...HTML_COURSE, thumbnailKey })).id, status: 'draft' };
   }
+  await ensureThumbnail(teacher, course.course_id, 'html-thumbnail.png');
   await ensureCurriculum(teacher, course.course_id, HTML_CURRICULUM);
   if (course.status !== 'published') await teacher.post(`/api/v1/teacher/courses/${course.course_id}/status`, { status: 'published' });
   const batch = await one('SELECT 1 AS y FROM dbo.batches WHERE course_id = @c', { c: T.int(course.course_id) });
@@ -493,6 +512,7 @@ async function seedDemo({ admin, log = console.log }) {
   const teacher = await asUser(app, user);
   await ensureProfile(teacher, user);
   const course = await ensureCourse(teacher, user);
+  await ensureThumbnail(teacher, course.id, 'maths-thumbnail.png');
   const mods = await ensureCurriculum(teacher, course.id);
   if (!course.published) await teacher.post(`/api/v1/teacher/courses/${course.id}/status`, { status: 'published' });
   const batches = await ensureBatches(teacher, course.id, today);

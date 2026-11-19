@@ -1,5 +1,7 @@
 const { one, T, reset, closeAll, createUser } = require('../setup/helpers');
+const fs = require('fs');
 const { seedDemo, DEMO } = require('../../scripts/seed-demo');
+const storage = require('../../src/providers/storage');
 
 beforeEach(reset);
 afterAll(closeAll);
@@ -81,6 +83,14 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(await count('SELECT COUNT(*) n FROM dbo.modules m WHERE m.course_id = @c AND NOT EXISTS (SELECT 1 FROM dbo.contents x WHERE x.module_id = m.module_id)', h)).toBe(0);
   expect(await count('SELECT COUNT(*) n FROM dbo.batches WHERE course_id = @c', h)).toBe(1);
 
+  // Both demo courses carry a real 1280x720 thumbnail, and a re-run replaces a tiny placeholder one.
+  const thumbSize = async (id) => fs.statSync(storage.absPath((await one('SELECT thumbnail_key k FROM dbo.courses WHERE course_id = @c', { c: T.int(id) })).k)).size;
+  expect(await thumbSize(course.course_id)).toBeGreaterThan(10000);
+  expect(await thumbSize(html.course_id)).toBeGreaterThan(10000);
+  const tiny = (await one('SELECT thumbnail_key k FROM dbo.courses WHERE course_id = @c', h)).k.replace(/[^/]+$/, `${require('crypto').randomUUID()}.png`);
+  fs.writeFileSync(storage.absPath(tiny), Buffer.alloc(70));
+  await one('UPDATE dbo.courses SET thumbnail_key = @k OUTPUT INSERTED.course_id WHERE course_id = @c', { ...h, k: T.varchar(tiny, 200) });
+
   // Re-run: nothing new.
   const snapshot = async () => one(`SELECT
     (SELECT COUNT(*) FROM dbo.users) u, (SELECT COUNT(*) FROM dbo.contents) ct, (SELECT COUNT(*) FROM dbo.questions) q,
@@ -94,4 +104,5 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   const reopened = await one('SELECT l.starts_at FROM dbo.live_classes l JOIN dbo.contents x ON x.live_class_id = l.live_class_id WHERE x.content_id = @id', { id: T.int(liveNow.content_id) });
   expect(new Date(reopened.starts_at).getTime() - 10 * 60000).toBeLessThanOrEqual(Date.now());
   expect(new Date(reopened.starts_at).getTime()).toBeGreaterThan(Date.now() - 60 * 60000);
+  expect(await thumbSize(html.course_id)).toBeGreaterThan(10000);
 });
