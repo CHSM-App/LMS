@@ -189,10 +189,12 @@ async function dashboard(teacherId) {
   const start = new Date(`${today}T00:00:00+05:30`);
   const end = new Date(start.getTime() + 86400000);
   const classes = await query(
-    `SELECT l.live_class_id, l.topic, l.starts_at, l.meet_link, l.status, c.title AS course_title, b.name AS batch_name
+    `SELECT l.live_class_id, l.topic, l.starts_at, l.duration_min, l.meet_link, l.status, c.title AS course_title, b.name AS batch_name
      FROM dbo.live_classes l JOIN dbo.courses c ON c.course_id = l.course_id LEFT JOIN dbo.batches b ON b.batch_id = l.batch_id
-     WHERE c.teacher_id = @t AND l.status <> 'cancelled' AND l.starts_at >= @s AND l.starts_at < @e ORDER BY l.starts_at`,
-    { t: T.int(teacherId), s: T.datetime(start), e: T.datetime(end) },
+     WHERE c.teacher_id = @t AND l.status NOT IN ('cancelled', 'completed') AND l.starts_at >= @s AND l.starts_at < @e
+       AND DATEADD(MINUTE, l.duration_min, l.starts_at) > @now
+     ORDER BY l.starts_at`,
+    { t: T.int(teacherId), s: T.datetime(start), e: T.datetime(end), now: T.datetime(clock.now()) },
   );
   const active = await studentCount.countActiveByTeacher([teacherId]);
   return {

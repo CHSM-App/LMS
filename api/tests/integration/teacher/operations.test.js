@@ -222,4 +222,19 @@ describe('doubts, programs and profile', () => {
     const d = await t.get('/api/v1/teacher/dashboard');
     expect(d.body.data).toMatchObject({ pendingDemoRequests: 1, pendingEnrollments: 1, openDoubts: 0, activeStudents: 1, todaysClasses: [] });
   });
+
+  test("dashboard today's classes drop a class once it has ended, so the next one moves up", async () => {
+    const { t, courseId } = await setup();
+    clock.set(new Date('2026-06-15T05:00:00Z'));
+    await t.post('/api/v1/teacher/live-classes', { courseId, topic: 'Noon', startsAt: '2026-06-15T06:30:00Z', durationMin: 60 });
+    await t.post('/api/v1/teacher/live-classes', { courseId, topic: 'Evening', startsAt: '2026-06-15T13:42:00Z', durationMin: 60 });
+    const topics = async () => (await t.get('/api/v1/teacher/dashboard')).body.data.todaysClasses.map((c) => c.topic);
+    expect(await topics()).toEqual(['Noon', 'Evening']);
+    clock.set(new Date('2026-06-15T07:00:00Z'));
+    expect(await topics()).toEqual(['Noon', 'Evening']);
+    clock.set(new Date('2026-06-15T07:31:00Z'));
+    expect(await topics()).toEqual(['Evening']);
+    clock.set(new Date('2026-06-15T14:43:00Z'));
+    expect(await topics()).toEqual([]);
+  });
 });
