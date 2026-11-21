@@ -35,6 +35,7 @@ async function parse(courseId, b, tx) {
     attemptLimit: intOrNull(b.attemptLimit),
     startsAt: b.startsAt ? new Date(b.startsAt) : null,
     endsAt: b.endsAt ? new Date(b.endsAt) : null,
+    allowLate: b.allowLate === undefined || b.allowLate === null ? true : bool(b.allowLate),
     batchIds: Array.isArray(b.batchIds) ? [...new Set(b.batchIds.map(Number))] : [],
     questionIds: Array.isArray(b.questionIds) ? [...new Set(b.questionIds.map(Number))] : [],
     randomMix: Array.isArray(b.randomMix) ? b.randomMix : [],
@@ -112,6 +113,7 @@ const fieldParams = (f) => ({
   al: T.int(f.attemptLimit),
   sa: T.datetime(f.startsAt),
   ea: T.datetime(f.endsAt),
+  late: T.bit(f.allowLate),
 });
 
 async function get(examId, tx) {
@@ -139,6 +141,7 @@ async function get(examId, tx) {
     attemptLimit: e.attempt_limit,
     startsAt: iso(e.starts_at),
     endsAt: iso(e.ends_at),
+    allowLate: e.allow_late,
     status: e.status,
     publishedAt: iso(e.published_at),
     moduleIds: mods.map((m) => m.module_id),
@@ -153,9 +156,9 @@ async function create(courseId, body) {
     const f = await parse(courseId, body, tx);
     const row = await one(
       `INSERT INTO dbo.exams (course_id, title, scope, mode, selection, category, weightage, total_marks, negative_marking, time_limit_min,
-         passing_pct, shuffle_questions, shuffle_options, attempt_limit, starts_at, ends_at)
+         passing_pct, shuffle_questions, shuffle_options, attempt_limit, starts_at, ends_at, allow_late)
        OUTPUT INSERTED.exam_id
-       VALUES (@c, @title, @scope, @mode, @sel, @cat, @w, @tm, @neg, @tl, @pp, @shq, @sho, @al, @sa, @ea)`,
+       VALUES (@c, @title, @scope, @mode, @sel, @cat, @w, @tm, @neg, @tl, @pp, @shq, @sho, @al, @sa, @ea, @late)`,
       { ...fieldParams(f), c: T.int(courseId) },
       tx,
     );
@@ -171,12 +174,24 @@ async function attemptCount(examId, tx) {
 
 async function update(exam, body) {
   await withTransaction(async (tx) => {
-    if (await attemptCount(exam.id, tx)) throw conflict('Students have already taken this exam. Create a new exam instead.', 'EXAM_HAS_ATTEMPTS');
+    if (await attemptCount(exam.id, tx)) {
+      // Students have taken it: questions, marks and rules are frozen, but the teacher can still fix the schedule
+      // (e.g. reopen a closed exam so students who missed it can take it and unlock the Final).
+      const startsAt = body.startsAt ? new Date(body.startsAt) : null;
+      const endsAt = body.endsAt ? new Date(body.endsAt) : null;
+      if ([startsAt, endsAt].some((d) => d && Number.isNaN(d.getTime()))) throw badRequest('Dates must be valid');
+      if (startsAt && endsAt && endsAt <= startsAt) throw badRequest('End date must be after start date');
+      const allowLate = body.allowLate === undefined || body.allowLate === null ? Boolean(exam.allow_late) : bool(body.allowLate);
+      await query('UPDATE dbo.exams SET starts_at = @sa, ends_at = @ea, allow_late = @late WHERE exam_id = @id', {
+        sa: T.datetime(startsAt), ea: T.datetime(endsAt), late: T.bit(allowLate), id: T.int(exam.id),
+      }, tx);
+      return;
+    }
     const f = await parse(exam.course_id, body, tx);
     await query(
       `UPDATE dbo.exams SET title = @title, scope = @scope, mode = @mode, selection = @sel, category = @cat, weightage = @w, total_marks = @tm,
          negative_marking = @neg, time_limit_min = @tl, passing_pct = @pp, shuffle_questions = @shq, shuffle_options = @sho,
-         attempt_limit = @al, starts_at = @sa, ends_at = @ea WHERE exam_id = @id`,
+         attempt_limit = @al, starts_at = @sa, ends_at = @ea, allow_late = @late WHERE exam_id = @id`,
       { ...fieldParams(f), id: T.int(exam.id) },
       tx,
     );

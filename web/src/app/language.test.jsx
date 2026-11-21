@@ -25,7 +25,8 @@ test('after login: with no choice on this device, the account language is used',
 test('switching language while signed in saves it to the account', async () => {
   const put = vi.spyOn(client.api, 'put').mockResolvedValue({ data: { preferredLang: 'mr' } });
   render(<AuthContext.Provider value={{ user: { role: 'teacher', name: 'Priya' } }}><LanguageSwitcher /></AuthContext.Provider>);
-  await userEvent.selectOptions(screen.getByLabelText('Language'), 'mr');
+  await userEvent.click(screen.getByRole('button', { name: /language/i }));
+  await userEvent.click(screen.getByRole('option', { name: 'मराठी' }));
   expect(put).toHaveBeenCalledWith('/account/language', { preferredLang: 'mr' });
   expect(localStorage.getItem('langChosen')).toBe('1');
 });
@@ -33,7 +34,8 @@ test('switching language while signed in saves it to the account', async () => {
 test('switching language when signed out only remembers it on this device', async () => {
   const put = vi.spyOn(client.api, 'put');
   render(<AuthContext.Provider value={{ user: null }}><LanguageSwitcher /></AuthContext.Provider>);
-  await userEvent.selectOptions(screen.getByLabelText('Language'), 'hi');
+  await userEvent.click(screen.getByRole('button', { name: /language/i }));
+  await userEvent.click(screen.getByRole('option', { name: 'हिन्दी' }));
   expect(put).not.toHaveBeenCalled();
   expect(localStorage.getItem('langChosen')).toBe('1');
 });

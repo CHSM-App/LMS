@@ -141,6 +141,51 @@ describe('enrollments and access', () => {
     expect((await check()).message).toBe('Your access to this course is paused');
   });
 
+  test('student list shows attendance per enrollment (a student in two courses gets one figure per course)', async () => {
+    const { t, courseId, batch } = await setup();
+    const s = await student({ name: 'Asha' });
+    await activeEnrollment(courseId, t.user.user_id, s.user_id, batch.id);
+    const mk = async (topic) => (await query(
+      `INSERT INTO dbo.live_classes (course_id, batch_id, topic, starts_at, duration_min, meet_link)
+       OUTPUT INSERTED.live_class_id VALUES (@c, NULL, @t, '2026-01-10T05:00:00', 60, 'https://meet.google.com/abc-defg-hij')`,
+      { c: T.int(courseId), t: T.nvarchar(topic, 200) },
+    ))[0].live_class_id;
+    const c1 = await mk('One');
+    const c2 = await mk('Two');
+    await query('INSERT INTO dbo.attendance (live_class_id, student_id, present) VALUES (@l, @s, 1)', { l: T.int(c1), s: T.int(s.user_id) });
+    await query('INSERT INTO dbo.attendance (live_class_id, student_id, present) VALUES (@l, @s, 0)', { l: T.int(c2), s: T.int(s.user_id) });
+    const list = await t.get(`/api/v1/teacher/students?course=${courseId}`);
+    expect(list.body.data[0].attendance).toEqual({ held: 2, attended: 1, pct: 50 });
+  });
+
+  test('attendance calendar: one student in two courses, per day, month bounds in IST, owner only', async () => {
+    const { t, courseId, batch } = await setup();
+    const c2 = await readyCourse(t);
+    const s = await student({ name: 'Asha' });
+    await activeEnrollment(courseId, t.user.user_id, s.user_id, batch.id);
+    await activeEnrollment(c2.courseId, t.user.user_id, s.user_id, null);
+    const mk = async (course, topic, startsAt) => (await query(
+      `INSERT INTO dbo.live_classes (course_id, batch_id, topic, starts_at, duration_min, meet_link)
+       OUTPUT INSERTED.live_class_id VALUES (@c, NULL, @t, @s, 60, 'https://meet.google.com/abc-defg-hij')`,
+      { c: T.int(course), t: T.nvarchar(topic, 200), s: T.datetime(new Date(startsAt)) },
+    ))[0].live_class_id;
+    const mark = (l, present) => query('INSERT INTO dbo.attendance (live_class_id, student_id, present) VALUES (@l, @s, @p)', { l: T.int(l), s: T.int(s.user_id), p: T.bit(present) });
+    await mark(await mk(courseId, 'A1', '2026-01-10T05:00:00Z'), true);
+    await mark(await mk(c2.courseId, 'B1', '2026-01-10T11:00:00Z'), false); // same IST day, other course
+    await mark(await mk(courseId, 'Edge', '2026-01-31T19:00:00Z'), true); // 1 Feb 00:30 IST -> February
+    const r = await t.get(`/api/v1/teacher/students/${s.public_id}/attendance?month=2026-01`);
+    expect(r.status).toBe(200);
+    expect(r.body.data.student.name).toBe('Asha');
+    expect(r.body.data.courses.map((c) => c.id).sort()).toEqual([courseId, c2.courseId].sort());
+    expect(r.body.data.days.map((d) => d.date)).toEqual(['2026-01-10']);
+    expect(r.body.data.days[0].classes.map((c) => [c.topic, c.present])).toEqual([['A1', true], ['B1', false]]);
+    const feb = await t.get(`/api/v1/teacher/students/${s.public_id}/attendance?month=2026-02`);
+    expect(feb.body.data.days.map((d) => d.date)).toEqual(['2026-02-01']);
+    expect((await t.get(`/api/v1/teacher/students/${s.public_id}/attendance?month=bad`)).status).toBe(400);
+    const other = await teacher({ name: 'Other' });
+    expect((await other.get(`/api/v1/teacher/students/${s.public_id}/attendance?month=2026-01`)).status).toBe(404);
+  });
+
   test('student count only counts approved, active, current access', async () => {
     const { t, courseId, batch } = await setup();
     await activeEnrollment(courseId, t.user.user_id, (await student()).user_id, batch.id);

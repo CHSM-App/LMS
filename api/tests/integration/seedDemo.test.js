@@ -26,7 +26,7 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(p.social_links_json).toBeTruthy();
 
   // Course: published, 2 subjects, 4 modules, lessons in every module, 2 batches.
-  const course = await one("SELECT * FROM dbo.courses WHERE teacher_id = @t AND status = 'published'", { t: T.int(t.user_id) });
+  const course = await one("SELECT * FROM dbo.courses WHERE teacher_id = @t AND status = 'published' AND title = 'Class 10 Maths (SSC) - Demo'", { t: T.int(t.user_id) });
   const c = { c: T.int(course.course_id) };
   expect(await count('SELECT COUNT(*) n FROM dbo.subjects WHERE course_id = @c', c)).toBe(2);
   expect(await count('SELECT COUNT(*) n FROM dbo.modules WHERE course_id = @c', c)).toBe(4);
@@ -44,6 +44,19 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(await count('SELECT COUNT(DISTINCT a.student_id) n FROM dbo.exam_attempts a JOIN dbo.exams e ON e.exam_id = a.exam_id WHERE e.course_id = @c AND a.submitted_at IS NOT NULL', c)).toBe(4);
   expect(await count("SELECT COUNT(*) n FROM dbo.exam_attempts a JOIN dbo.exams e ON e.exam_id = a.exam_id WHERE e.course_id = @c AND e.category = 'final' AND a.submitted_at IS NOT NULL", c)).toBeGreaterThanOrEqual(1);
   expect(await count('SELECT COUNT(*) n FROM dbo.content_progress')).toBeGreaterThan(0);
+
+  // Priya's second demo course: published, with a batch, and the first demo student is enrolled in both of her courses.
+  const second = await one("SELECT * FROM dbo.courses WHERE teacher_id = @t AND status = 'published' AND title = 'Class 9 Maths (SSC) - Demo'", { t: T.int(t.user_id) });
+  expect(second).toBeTruthy();
+  expect(second.thumbnail_key).toBeTruthy();
+  const s2 = { c: T.int(second.course_id) };
+  expect(await count('SELECT COUNT(*) n FROM dbo.modules m WHERE m.course_id = @c AND NOT EXISTS (SELECT 1 FROM dbo.contents x WHERE x.module_id = m.module_id)', s2)).toBe(0);
+  expect(await count('SELECT COUNT(*) n FROM dbo.batches WHERE course_id = @c', s2)).toBe(1);
+  expect(await count(
+    `SELECT COUNT(*) n FROM dbo.enrollments en JOIN dbo.users u ON u.user_id = en.student_id
+     WHERE u.mobile = @m AND en.status = 'approved' AND en.course_id IN (@a, @b)`,
+    { m: T.varchar(DEMO.student.mobile, 20), a: T.int(course.course_id), b: T.int(second.course_id) },
+  )).toBe(2);
 
   // Operations: a held class with attendance and an upcoming one, doubts, demo requests, a class program.
   const standalone = 'NOT EXISTS (SELECT 1 FROM dbo.contents x WHERE x.live_class_id = l.live_class_id)';
@@ -103,6 +116,7 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   const snapshot = async () => one(`SELECT
     (SELECT COUNT(*) FROM dbo.users) u, (SELECT COUNT(*) FROM dbo.contents) ct, (SELECT COUNT(*) FROM dbo.questions) q,
     (SELECT COUNT(*) FROM dbo.exams) e, (SELECT COUNT(*) FROM dbo.exam_attempts) a, (SELECT COUNT(*) FROM dbo.live_classes) l,
+    (SELECT COUNT(*) FROM dbo.courses) co, (SELECT COUNT(*) FROM dbo.enrollments) en, (SELECT COUNT(*) FROM dbo.batches) b,
     (SELECT COUNT(*) FROM dbo.doubts) d, (SELECT COUNT(*) FROM dbo.demo_requests) dr, (SELECT COUNT(*) FROM dbo.class_programs) cp`);
   const before = await snapshot();
   // Re-seeding later (after the demo class ended) re-opens it so Join works again.

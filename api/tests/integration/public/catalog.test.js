@@ -47,7 +47,10 @@ test('search matches title, subject or teacher in any case or script; filters wo
   expect(await q('language=en')).toEqual(['English Grammar']);
   const filters = await request(app).get('/api/v1/public/filters');
   expect(filters.body.data.languages.sort()).toEqual(['en', 'mr']);
-  expect(filters.body.data.subjects.sort()).toEqual(['English', 'Maths']);
+  expect([...filters.body.data.subjects].sort()).toEqual(['English', 'Maths']);
+  // Most courses first (ties by name), with the count for each subject.
+  expect(filters.body.data.subjectCounts).toEqual([{ subject: 'English', count: 1 }, { subject: 'Maths', count: 1 }]);
+  expect(filters.body.data.subjects).toEqual(['English', 'Maths']);
 });
 
 test('course details: 2 public demo videos, titles only for paid lessons, preview links for free ones, no private keys', async () => {

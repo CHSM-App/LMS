@@ -11,6 +11,9 @@ const { APIError, badRequest, conflict, notFound } = require('../utils/APIError'
 
 const round2 = (n) => Math.round(n * 100) / 100;
 
+// The End date is a due date: unless the teacher turned off allow_late, an attempt started after it is just tagged late.
+const startedLate = (exam, attempt) => Boolean(exam.ends_at && attempt.started_at && new Date(attempt.started_at) > new Date(exam.ends_at));
+
 async function examForStudent(examId, studentId) {
   const e = await one("SELECT * FROM dbo.exams WHERE exam_id = @e AND status = 'published'", { e: T.int(Number(examId)) });
   if (!e) throw notFound('Exam not found');
@@ -76,7 +79,6 @@ async function createAttempt(exam, studentId, attemptNo) {
   const now = clock.now();
   let deadline = null;
   if (exam.mode === 'mock' && exam.time_limit_min) deadline = new Date(now.getTime() + exam.time_limit_min * 60000);
-  if (exam.mode === 'mock' && exam.ends_at && (!deadline || new Date(exam.ends_at) < deadline)) deadline = new Date(exam.ends_at);
   return withTransaction(async (tx) => {
     const row = await one(
       `INSERT INTO dbo.exam_attempts (exam_id, student_id, attempt_no, seed, started_at, deadline_at)
@@ -110,7 +112,7 @@ async function startOrResume(examId, studentId) {
   if (open) return { created: false, data: await paper(open, exam) };
   const now = clock.now();
   if (exam.starts_at && now < new Date(exam.starts_at)) throw new APIError(403, 'This exam has not opened yet', 'EXAM_NOT_OPEN');
-  if (exam.ends_at && now > new Date(exam.ends_at)) throw new APIError(403, 'This exam has closed', 'EXAM_CLOSED');
+  if (exam.ends_at && !exam.allow_late && now > new Date(exam.ends_at)) throw new APIError(403, 'This exam has closed', 'EXAM_CLOSED');
   if (exam.category === 'final' && !(await results.isFinalUnlocked(exam.course_id, studentId))) {
     throw new APIError(403, 'Complete the Unit Tests first', 'FINAL_LOCKED');
   }
@@ -234,6 +236,7 @@ async function result(publicId, studentId) {
     pct: a.max_score > 0 ? round2((a.score / a.max_score) * 100) : 0,
     passed: a.passed,
     autoSubmitted: a.auto_submitted,
+    late: startedLate(exam, a),
     submittedAt: a.submitted_at,
     rank: mine ? mine.rank : null,
     of: ranked.length,
@@ -284,6 +287,12 @@ async function examsForCourse(courseId, studentId) {
       locked: e.category === 'final' && !unlocked,
       attemptsUsed: atts.length,
       attemptsLeft: e.mode === 'mock' && e.attempt_limit ? Math.max(0, e.attempt_limit - atts.length) : null,
+      // Past the due date and nothing submitted yet: still open, shown as overdue.
+      allowLate: !!e.allow_late,
+      closed: Boolean(e.ends_at && !e.allow_late && clock.now() > new Date(e.ends_at)),
+      notOpen: Boolean(e.starts_at && clock.now() < new Date(e.starts_at)),
+      overdue: Boolean(e.ends_at && clock.now() > new Date(e.ends_at) && !submitted.length),
+      lastAttemptLate: submitted.length ? startedLate(e, submitted[submitted.length - 1]) : false,
       openAttemptId: open ? open.public_id : null,
       lastAttemptId: submitted.length ? submitted[submitted.length - 1].public_id : null,
       best: best ? { score: Number(best.score), max: Number(best.max_score), pct: best.max_score > 0 ? round2((best.score / best.max_score) * 100) : 0 } : null,

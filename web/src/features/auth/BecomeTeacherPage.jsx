@@ -86,25 +86,25 @@ export default function BecomeTeacherPage() {
           <form onSubmit={onContinue} noValidate>
             <fieldset className="form-group">
               <legend className="form-group__title">{t('teacherReg.groupAbout')}</legend>
-              <div className="grid grid--2">
+              <div className="grid reg-cols reg-cols--3">
                 <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
                 <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
+                <Input label={t('common.email')} placeholder={t('common.optional')} type="email" value={f.email} onChange={set('email')} error={errors.email} autoComplete="email" />
               </div>
             </fieldset>
             <fieldset className="form-group">
               <legend className="form-group__title">{t('teacherReg.groupTeaching')}</legend>
-              <div className="grid grid--2">
-                <Input label={t('teacherReg.course')} value={f.courseName} onChange={set('courseName')} error={errors.courseName} hint={t('teacherReg.courseHint')} required />
+              <div className="grid reg-cols reg-cols--3">
+                <Input label={t('teacherReg.course')} value={f.courseName} onChange={set('courseName')} error={errors.courseName} placeholder={t('teacherReg.courseHint')} required />
                 <Input label={t('teacherReg.subject')} value={f.subject} onChange={set('subject')} error={errors.subject} required />
                 <Input label={t('teacherReg.experience')} type="number" min="0" max="60" inputMode="numeric" value={f.experienceYears} onChange={set('experienceYears')} error={errors.experienceYears} required />
-                <Input label={optional(t('teacherReg.qualification'))} value={f.qualification} onChange={set('qualification')} />
               </div>
             </fieldset>
             <fieldset className="form-group">
               <legend className="form-group__title">{t('teacherReg.groupMore')}</legend>
-              <div className="grid grid--2">
-                <Input label={optional(t('common.email'))} type="email" value={f.email} onChange={set('email')} error={errors.email} autoComplete="email" />
-                <Input label={optional(t('common.city'))} value={f.city} onChange={set('city')} />
+              <div className="grid reg-cols reg-cols--2">
+                <Input label={t('teacherReg.qualification')} placeholder={t('common.optional')} value={f.qualification} onChange={set('qualification')} />
+                <Input label={t('common.city')} placeholder={t('common.optional')} value={f.city} onChange={set('city')} />
                 <FileUpload label={optional(t('teacherReg.photo'))} accept="image/jpeg,image/png,image/webp" maxMb={5} onFile={(file) => setFiles((x) => ({ ...x, photo: file }))} />
                 <FileUpload label={optional(t('teacherReg.idDocument'))} accept="image/*,application/pdf" maxMb={5} onFile={(file) => setFiles((x) => ({ ...x, idDocument: file }))} />
               </div>

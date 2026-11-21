@@ -113,6 +113,7 @@ components:
         attemptLimit: { type: integer, nullable: true }
         startsAt: { type: string, nullable: true }
         endsAt: { type: string, nullable: true }
+        allowLate: { type: boolean, default: true, description: 'When false, a new attempt is refused after endsAt (EXAM_CLOSED). When true the attempt is allowed and marked late.' }
         batchIds: { type: array, items: { type: integer } }
     LiveClassInput:
       type: object
@@ -925,7 +926,7 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters: [{ name: batch, in: query, schema: { type: integer } }]
       responses:
-        '200': { description: Best attempt per student with rank }
+        '200': { description: 'Best attempt per student with rank and late flag' }
   /teacher/courses/{courseId}/final-results:
     parameters: [{ $ref: '#/components/parameters/CourseId' }]
     get:
@@ -1050,7 +1051,20 @@ paths:
         - { name: batch, in: query, schema: { type: integer } }
         - { name: q, in: query, schema: { type: string, maxLength: 100 } }
       responses:
-        '200': { description: Enrolled students with batch and access status }
+        '200': { description: 'Enrolled students (one row per course enrollment) with batch, access status and attendance { held, attended, pct } for that course' }
+  /teacher/students/{studentPublicId}/attendance:
+    parameters:
+      - { name: studentPublicId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [teacher-ops]
+      summary: Attendance calendar of one student across all their courses with this teacher
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: month, in: query, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }, description: 'IST month, YYYY-MM' }
+      responses:
+        '200': { description: 'student, month, courses [{id,title}] and days [{date, classes [{liveClassId, course, topic, time, present}]}]; only classes where attendance was taken' }
+        '400': { description: Bad month }
+        '404': { description: Not this teacher's student }
   /teacher/students/{studentPublicId}/access/{courseId}:
     parameters:
       - { name: studentPublicId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1245,7 +1259,7 @@ paths:
     get:
       tags: [public]
       responses:
-        '200': { description: Languages and subjects that have published courses }
+        '200': { description: "Languages and subjects that have published courses. `subjects` is ordered most-courses first; `subjectCounts` is [{ subject, count }] in the same order." }
   /public/courses/{slug}:
     parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
     get:
@@ -1323,6 +1337,8 @@ paths:
             nextLesson: { id, title }|null), upcomingLiveClasses, requests.
             myCourses is ordered: courses studied most recently first, then never-started courses by title,
             finished (100%) courses last.
+            latestExam: the newest published, unlocked exam of my active courses, with my status
+            (notStarted / inProgress / completed), or null.
   /student/enrollments:
     get:
       tags: [student]
@@ -1406,13 +1422,20 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         '200': { description: 'Per course lessons, attendance percent and exam performance' }
+  /student/attendance:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: 'Attendance history per enrolled course: classesHeld, classesAttended, attendancePct and classes[{ id, topic, startsAt, present }] newest first'
+      responses:
+        '200': { description: 'Only classes where the teacher took attendance, for my batch or all batches; no record means absent' }
   /student/courses/{courseId}/exams:
     parameters: [{ $ref: '#/components/parameters/CourseId' }]
     get:
       tags: [student]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: 'Exams for my batch with locked, attemptsLeft and best result' }
+        '200': { description: 'Exams for my batch with locked, notOpen (before Start date), overdue (past End date and not yet submitted), closed (past End date and allowLate is false), allowLate, lastAttemptLate, attemptsLeft and best result' }
   /student/exams/{examId}/attempts:
     parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
     post:
@@ -1422,7 +1445,7 @@ paths:
       responses:
         '201': { description: Started }
         '200': { description: Resumed }
-        '403': { description: Locked or closed or no attempts left }
+        '403': { description: 'Locked, not opened yet (Start date) or no attempts left. The End date is a due date: a later attempt is allowed and marked late, unless the exam has allowLate false (then 403 EXAM_CLOSED).' }
   /student/attempts/{attemptId}/answers/{questionId}:
     parameters:
       - { name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -1451,7 +1474,7 @@ paths:
       tags: [student]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Marks and rank with per-question review }
+        '200': { description: 'Marks and rank with per-question review; late is true when the attempt started after the End date' }
         '403': { description: Not submitted yet }
   /student/courses/{courseId}/final-result:
     parameters: [{ $ref: '#/components/parameters/CourseId' }]

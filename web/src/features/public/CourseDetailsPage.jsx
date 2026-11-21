@@ -4,10 +4,48 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { Button, Card, EmptyState, Modal, Spinner, VideoFrame } from '../../components';
+import { Icon } from '../../components/Icon';
 import { Markdown } from '../../components/Markdown';
 import { formatDate } from '../../utils/format';
 import { LiveDemoForm } from './LiveDemoForm';
 import { useBrowsePaths } from './browsePaths';
+import { useMyEnrollments } from './useMyEnrollments';
+
+// What the student can do next depends on where they stand with this course (Udemy/Coursera show the same:
+// "Go to course" when joined, a waiting state when requested, never a second "Enroll").
+function EnrollAction({ mine, course, paths }) {
+  const { t } = useTranslation();
+  const status = mine?.status;
+  if (status === 'enrolled') {
+    return (
+      <>
+        <p className="muted course-details__state">{t('courseDetails.enrolledNote')}</p>
+        <Link className="btn btn--primary btn--block" to={`/student/courses/${mine.courseId}`}><span className="btn__label">{t('courseDetails.goToCourse')}</span></Link>
+      </>
+    );
+  }
+  if (status === 'pending') {
+    return (
+      <div className="course-details__state">
+        <strong>{t('courseDetails.pendingTitle')}</strong>
+        <p className="muted">{t('courseDetails.pendingNote', { teacher: mine.teacher || course.teacher.name })}</p>
+      </div>
+    );
+  }
+  if (status === 'blocked') return <p className="muted course-details__state">{t('courseDetails.blockedNote')}</p>;
+  return (
+    <>
+      {status === 'rejected' && (
+        <p className="muted course-details__state">
+          {mine.rejectReason ? t('courseDetails.rejectedNote', { reason: mine.rejectReason }) : t('courseDetails.rejectedNoReason')}
+        </p>
+      )}
+      <Link className="btn btn--compact btn--block" to={paths.enroll(course.slug)}>
+        <span className="btn__label">{status === 'rejected' ? t('courseDetails.enrollAgain') : t('courseDetails.enroll')}</span>
+      </Link>
+    </>
+  );
+}
 
 export default function CourseDetailsPage() {
   const { slug } = useParams();
@@ -15,6 +53,7 @@ export default function CourseDetailsPage() {
   const [demoOpen, setDemoOpen] = useState(false);
   const paths = useBrowsePaths();
   const navigate = useNavigate();
+  const mine = useMyEnrollments().bySlug[slug];
   const q = useQuery({ queryKey: ['public', 'course', slug], queryFn: () => api.get(`/public/courses/${slug}`) });
   const c = q.data?.data;
 
@@ -30,6 +69,13 @@ export default function CourseDetailsPage() {
 
   return (
     <div className={paths.inStudent ? 'course-details' : 'container course-details'}>
+      <nav className="crumbs" aria-label={t('courseDetails.breadcrumb')}>
+        <Link to={paths.list} className="crumbs__back"><Icon name="arrowLeft" size={16} /><span>{t('courseDetails.browse')}</span></Link>
+        <Icon name="chevronRight" size={14} className="crumbs__sep" />
+        <span>{c.subject}</span>
+        <Icon name="chevronRight" size={14} className="crumbs__sep" />
+        <span className="crumbs__current" aria-current="page">{c.title}</span>
+      </nav>
       <div className="course-details__main stack">
         <p className="muted">{c.subject} · {t(`courses.lang.${c.language}`)}{c.durationText ? ` · ${c.durationText}` : ''}</p>
         <h1>{c.title}</h1>
@@ -71,8 +117,8 @@ export default function CourseDetailsPage() {
           {c.feeDisplay && <p className="course-details__fee">{c.feeDisplay}</p>}
           <p className="muted">{t('courseDetails.noPayment')}</p>
           <div className="stack" style={{ gap: 'var(--space-2)' }}>
-            <Button block onClick={() => setDemoOpen(true)}>{t('courseDetails.bookDemo')}</Button>
-            <Link className="btn btn--compact btn--block" to={paths.enroll(c.slug)}><span className="btn__label">{t('courseDetails.enroll')}</span></Link>
+            {mine?.status !== 'enrolled' && <Button block onClick={() => setDemoOpen(true)}>{t('courseDetails.bookDemo')}</Button>}
+            <EnrollAction mine={mine} course={c} paths={paths} />
           </div>
           {c.batches.length > 0 && (
             <>
@@ -93,8 +139,8 @@ export default function CourseDetailsPage() {
           {c.teacher.slug && <Link to={paths.teacher(c.teacher.slug)}>{t('courseDetails.moreFromTeacher')}</Link>}
         </Card>
       </aside>
-      <Modal open={demoOpen} size="lg" title={t('courseDetails.bookDemoTitle', { course: c.title })} onClose={() => setDemoOpen(false)}>
-        {demoOpen && <LiveDemoForm courseSlug={c.slug} />}
+      <Modal open={demoOpen} size="xl" flush title={t('courseDetails.bookDemoTitle', { course: c.title })} onClose={() => setDemoOpen(false)}>
+        {demoOpen && <LiveDemoForm courseSlug={c.slug} courseTitle={c.title} />}
       </Modal>
     </div>
   );

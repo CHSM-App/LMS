@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
-import { Button, Card, Input, Modal, PageHeader, Spinner, EmptyState, StatusBadge, Table, Textarea, useToast } from '../../components';
+import { BackLink, Button, Card, Input, Modal, PageHeader, Spinner, EmptyState, StatusBadge, Table, Textarea, useToast } from '../../components';
 import { formatDate, isValidMobile } from '../../utils/format';
 import { BlockDialog, useActivate } from './TeachersPage';
 import { SubscriptionForm } from './SubscriptionForm';
@@ -55,6 +55,7 @@ export default function TeacherDetailPage() {
 
   return (
     <div className="stack">
+      <div><BackLink to="/admin/teachers">{t('teachers.back')}</BackLink></div>
       <PageHeader
         title={d.name}
         subtitle={<StatusBadge status={d.status} />}

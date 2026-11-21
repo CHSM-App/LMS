@@ -2,6 +2,8 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, homeFor } from '../AuthProvider';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { CourseSearch } from './CourseSearch';
+import { SubjectsMenu } from './SubjectsMenu';
 import { SupportLink } from '../../features/auth/SupportLink';
 import '../../design/shell.css';
 
@@ -14,6 +16,8 @@ export function PublicLayout() {
       <header className="public-header">
         <div className="container public-header__inner">
           <Link to="/" className="public-header__brand">{t('app.name')}</Link>
+          <SubjectsMenu />
+          <CourseSearch />
           <nav className="public-header__nav" aria-label={t('shell.navigation')}>
             <NavLink to={user && user.role === 'student' ? '/student/browse' : '/courses'}>{t('nav.browse')}</NavLink>
             <NavLink to="/become-teacher">{t('nav.becomeTeacher')}</NavLink>

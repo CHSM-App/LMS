@@ -5,6 +5,7 @@
 //   -> 4 enrolled students with lesson progress and exam results, 1 waiting for approval
 //   -> a held live class with attendance, an upcoming one, two live lessons (one recorded),
 //      doubts, demo requests, a class program.
+//   -> a second Priya course (Class 9 Maths, 1 batch) that Rohan also joins, so one student has 2 courses with the same teacher.
 //   -> a second teacher with a skills course open to everyone (HTML for Beginners: 1 subject, 3 modules, 1 batch).
 // Every step checks first, so re-running adds only what is missing. Called by scripts/seed.js.
 const fs = require('fs');
@@ -135,6 +136,28 @@ const HTML_CURRICULUM = [
       { key: 'basics', name: 'Tags and page structure', lessons: [video('What is HTML?', 'abcdefgh132', true), pdf('Common tags cheat sheet')], questions: [] },
       { key: 'content', name: 'Text, links and images', lessons: [video('Headings, paragraphs and links', 'abcdefgh133'), link('Practice in the browser', 'https://example.com/html-playground')], questions: [] },
       { key: 'forms', name: 'Tables and forms', lessons: [video('Building a contact form', 'abcdefgh134'), pdf('Forms notes')], questions: [] },
+    ],
+  },
+];
+
+// Priya's second course: a smaller Class 9 course. Rohan (the first demo student) is enrolled in both of her courses.
+const MATHS9_COURSE = {
+  title: 'Class 9 Maths (SSC) - Demo',
+  description: 'Class 9 SSC Maths made simple: polynomials and linear equations, step by step in Marathi, '
+    + 'with short video lessons, notes and weekend doubt classes.',
+  subject: 'Maths',
+  language: 'mr',
+  durationText: '4 months',
+  feeDisplay: '₹4,000 for the full course',
+  demoVideo1: { source: 'youtube', url: 'https://youtu.be/abcdefgh140' },
+  demoVideo2: { source: 'youtube', url: 'https://youtu.be/abcdefgh141' },
+};
+const MATHS9_CURRICULUM = [
+  {
+    subject: 'Algebra',
+    modules: [
+      { key: 'polynomials', name: 'Polynomials', lessons: [video('What is a polynomial?', 'abcdefgh142', true), pdf('Polynomials notes')], questions: [] },
+      { key: 'linear1', name: 'Linear equations in one variable', lessons: [video('Solving linear equations', 'abcdefgh143'), link('Practice sheet (link)', 'https://example.com/practice-9')], questions: [] },
     ],
   },
 ];
@@ -515,6 +538,23 @@ async function ensureHtmlTeacher(app, asAdmin, anon, today) {
   }
 }
 
+// Returns { id, slug, batchId }. The student joins it through the normal request -> teacher approval flow.
+async function ensureMaths9Course(teacher, user, today) {
+  let course = await one('SELECT course_id, slug, status FROM dbo.courses WHERE teacher_id = @t AND title = @title', { t: T.int(user.user_id), title: T.nvarchar(MATHS9_COURSE.title, 200) });
+  if (!course) {
+    const thumbnailKey = (await teacher.upload('thumbnail', THUMB('maths-thumbnail.png'), 'thumbnail.png')).key;
+    const c = await teacher.post('/api/v1/teacher/courses', { ...MATHS9_COURSE, thumbnailKey });
+    course = { course_id: c.id, slug: c.slug, status: 'draft' };
+  }
+  await ensureCurriculum(teacher, course.course_id, MATHS9_CURRICULUM);
+  if (course.status !== 'published') await teacher.post(`/api/v1/teacher/courses/${course.course_id}/status`, { status: 'published' });
+  let batch = await one('SELECT batch_id FROM dbo.batches WHERE course_id = @c', { c: T.int(course.course_id) });
+  if (!batch) {
+    batch = { batch_id: (await teacher.post(`/api/v1/teacher/courses/${course.course_id}/batches`, { name: 'Weekend Batch', timingText: 'Sat-Sun, 4:00 - 5:30 PM', maxStudents: 30, startDate: isoDay(today) })).id };
+  }
+  return { id: course.course_id, slug: course.slug, batchId: batch.batch_id };
+}
+
 async function seedDemo({ admin, log = console.log }) {
   const app = createApp();
   const anon = client(app);
@@ -552,7 +592,12 @@ async function seedDemo({ admin, log = console.log }) {
   await ensureProgram(teacher, user, course.id, batches, today);
   await ensureHtmlTeacher(app, asAdmin, anon, today);
 
-  log(`demo teacher: ${DEMO.teacher.mobile} (${DEMO.teacher.name}) - public profile /teachers/${DEMO.teacher.slug}, course "${COURSE_TITLE}"`);
+  const maths9 = await ensureMaths9Course(teacher, user, today);
+  const rohan = students[0].user;
+  await ensureStudent(app, anon, DEMO.student, maths9);
+  await ensureEnrolled(teacher, rohan, maths9, maths9.batchId, today);
+
+  log(`demo teacher: ${DEMO.teacher.mobile} (${DEMO.teacher.name}) - public profile /teachers/${DEMO.teacher.slug}, courses "${COURSE_TITLE}", "${MATHS9_COURSE.title}"`);
   log(`demo teacher 2: ${DEMO.htmlTeacher.mobile} (${DEMO.htmlTeacher.name}) - public profile /teachers/${DEMO.htmlTeacher.slug}, course "${HTML_COURSE.title}"`);
   log(`demo students: ${DEMO.students.map((s) => `${s.mobile} ${s.name}`).join(', ')}; waiting: ${DEMO.pendingStudent.mobile}`);
   return { teacher: DEMO.teacher, student: DEMO.student };

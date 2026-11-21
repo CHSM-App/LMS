@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../api/client';
-import { Button, Card, Checkbox, EmptyState, Input, PageHeader, Select, Spinner, StatusBadge, useToast } from '../../../components';
+import { BackLink, Button, Card, Checkbox, EmptyState, Input, PageHeader, Select, Spinner, StatusBadge, useToast } from '../../../components';
 
 const DEFAULTS = {
   title: '', scope: 'module', moduleIds: [], mode: 'mock', selection: 'random', randomMix: [], questionIds: [], category: 'unit_test_1',
   weightage: 20, totalMarks: '', negativeMarking: false, timeLimitMin: 30, passingPct: 40, shuffleQuestions: true, shuffleOptions: true,
-  attemptLimit: 1, startsAt: '', endsAt: '', batchIds: [],
+  attemptLimit: 1, startsAt: '', endsAt: '', allowLate: true, batchIds: [],
 };
 
 const toLocalInput = (iso) => (iso ? new Date(iso).toISOString().slice(0, 16) : '');
@@ -24,7 +24,7 @@ function toBody(f) {
     title: f.title, scope: f.scope, moduleIds: f.moduleIds, mode: f.mode, selection: f.selection, randomMix: f.randomMix, questionIds: f.questionIds,
     category: f.category, weightage: Number(f.weightage || 0), totalMarks: num(f.totalMarks), negativeMarking: f.negativeMarking,
     timeLimitMin: num(f.timeLimitMin), passingPct: num(f.passingPct), shuffleQuestions: f.shuffleQuestions, shuffleOptions: f.shuffleOptions,
-    attemptLimit: num(f.attemptLimit), startsAt: fromLocalInput(f.startsAt), endsAt: fromLocalInput(f.endsAt), batchIds: f.batchIds,
+    attemptLimit: num(f.attemptLimit), startsAt: fromLocalInput(f.startsAt), endsAt: fromLocalInput(f.endsAt), allowLate: f.allowLate, batchIds: f.batchIds,
   };
 }
 
@@ -117,7 +117,7 @@ export default function ExamBuilderPage() {
 
   return (
     <div className="stack">
-      <p><Link to="/teacher/exams">{t('examBuilder.back')}</Link></p>
+      <p><BackLink to="/teacher/exams">{t('examBuilder.back')}</BackLink></p>
       <PageHeader
         title={isNew ? t('examBuilder.newTitle') : f.title || t('examBuilder.untitled')}
         subtitle={!isNew && <StatusBadge status={examQ.data.data.status} />}
@@ -206,9 +206,19 @@ export default function ExamBuilderPage() {
             {!practice && <Input label={t('examBuilder.timeLimit')} type="number" min="1" value={f.timeLimitMin} onChange={set('timeLimitMin')} />}
             {!practice && <Input label={t('examBuilder.passing')} type="number" min="0" max="100" value={f.passingPct} onChange={set('passingPct')} />}
             {!practice && <Input label={`${t('examBuilder.attempts')} (${t('common.optional')})`} type="number" min="1" value={f.attemptLimit} onChange={set('attemptLimit')} hint={t('examBuilder.attemptsHint')} />}
-            <Input label={`${t('examBuilder.startsAt')} (${t('common.optional')})`} type="datetime-local" value={f.startsAt} onChange={set('startsAt')} />
-            <Input label={`${t('examBuilder.endsAt')} (${t('common.optional')})`} type="datetime-local" value={f.endsAt} onChange={set('endsAt')} />
+            <Input label={`${t('examBuilder.startsAt')} (${t('common.optional')})`} type="datetime-local" value={f.startsAt} onChange={set('startsAt')} hint={t('examBuilder.startsHint')} />
+            <Input label={`${t('examBuilder.endsAt')} (${t('common.optional')})`} type="datetime-local" value={f.endsAt} onChange={set('endsAt')} hint={t('examBuilder.endsHint')} />
           </div>
+          <fieldset className="video-field">
+            <legend className="field__label">{t('examBuilder.afterDue')}</legend>
+            {[true, false].map((v) => (
+              <label key={String(v)} className="checkbox">
+                <input type="radio" name="allowLate" checked={f.allowLate === v} onChange={() => update({ allowLate: v })} />
+                {t(v ? 'examBuilder.lateYes' : 'examBuilder.lateNo')}
+              </label>
+            ))}
+            {!f.allowLate && <p className="field__hint">{t('examBuilder.allowLateOff')}</p>}
+          </fieldset>
           <Checkbox label={t('examBuilder.negative')} checked={f.negativeMarking} onChange={set('negativeMarking')} />
           <Checkbox label={t('examBuilder.shuffleQ')} checked={f.shuffleQuestions} onChange={set('shuffleQuestions')} />
           <Checkbox label={t('examBuilder.shuffleO')} checked={f.shuffleOptions} onChange={set('shuffleOptions')} />

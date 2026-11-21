@@ -119,6 +119,7 @@
     "navigation": "Main navigation"
   },
   "nav": {
+    "subjects": "Subjects",
     "account": "Account",
     "teacherRequests": "Teacher requests",
     "teachers": "Teachers",
@@ -156,7 +157,14 @@
     "markAll": "Mark all as read",
     "markRead": "Mark as read",
     "empty": "You're all caught up",
-    "unread": "Unread only"
+    "unread": "Unread",
+    "subtitle": "Updates about your requests, classes and doubts.",
+    "emptyHint": "New updates will show up here.",
+    "group": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "earlier": "Earlier"
+    }
   },
   "validation": {
     "required": "This field is required",
@@ -249,7 +257,8 @@
     "changeMobile": "Change mobile number",
     "changeMobileTitle": "Change mobile number for {{name}}",
     "changeMobileIntro": "Use this when the teacher lost their SIM. They are logged out everywhere.",
-    "changeMobileReasonHint": "For example: lost SIM card"
+    "changeMobileReasonHint": "For example: lost SIM card",
+    "back": "Back to teachers"
   },
   "subscriptions": {
     "subtitle": "Access periods for teachers. No payments happen here.",
@@ -307,6 +316,16 @@
   "courses": {
     "subtitle": "Build your courses, then publish them when they're ready.",
     "new": "New course",
+    "manage": "Manage",
+    "search": "Search courses",
+    "filterAll": "All",
+    "noMatch": "No courses match your search.",
+    "stats": {
+      "total": "Total courses",
+      "published": "Published",
+      "drafts": "Drafts",
+      "lessons": "Total lessons"
+    },
     "createDraft": "Create draft",
     "title": "Course title",
     "subject": "Subject",
@@ -544,17 +563,24 @@
     "attempts": "Attempt limit",
     "attemptsHint": "Leave empty for unlimited",
     "startsAt": "Opens at",
-    "endsAt": "Closes at",
+    "endsAt": "Due date",
     "negative": "Use negative marking",
     "shuffleQ": "Shuffle question order",
-    "shuffleO": "Shuffle option order"
+    "shuffleO": "Shuffle option order",
+    "startsHint": "Students cannot start the exam before this time.",
+    "endsHint": "A due date, not a lock. After it students can still take the exam and it is marked Late. To stop it completely, unpublish the exam.",
+    "allowLateOff": "After the Due date nobody can start this exam. Students who did not take it will not unlock the Final Exam, so use this carefully.",
+    "afterDue": "After the due date",
+    "lateYes": "Students can still take the exam (shown as Late)",
+    "lateNo": "Exam is closed (nobody can start it)"
   },
   "results": {
     "title": "Results: {{exam}}",
     "subtitle": "Best attempt per student. Equal marks rank the earlier submission first.",
     "empty": "No submitted attempts yet",
     "rank": "Rank",
-    "marks": "Marks"
+    "marks": "Marks",
+    "late": "Late"
   },
   "requests": {
     "subtitle": "Live demo requests and students who want to enroll.",
@@ -588,12 +614,18 @@
     "rejectEnrollTitle": "Reject enrollment of {{name}}",
     "reasonHint": "The student sees this reason.",
     "noDemos": "No demo requests here",
-    "noEnrollments": "No enrollment requests here"
+    "noEnrollments": "No enrollment requests here",
+    "student": "Student"
   },
   "students": {
     "subtitle": "Students enrolled in your courses.",
     "searchHint": "Name or mobile",
     "enrolled": "Enrolled",
+    "attendance": "Attendance",
+    "attendanceValue": "{{pct}}% ({{attended}}/{{held}})",
+    "attendanceTitle": "Attendance calendar: {{name}}",
+    "noClassesMonth": "No classes with attendance this month.",
+    "calendar": "Calendar",
     "access": "Access",
     "manage": "Manage access",
     "accessTitle": "{{name}} — {{course}}",
@@ -691,6 +723,10 @@
     "shortcutAttendance": "Check attendance",
     "shortcutProfile": "Edit public profile"
   },
+  "subjectsMenu": {
+    "find": "Find a subject…",
+    "none": "No subject found"
+  },
   "home": {
     "title": "Find the right teacher. Watch a free demo first.",
     "lead": "Courses from independent teachers in Marathi, Hindi and English. Watch a demo video, book a free live class, then enroll.",
@@ -699,6 +735,9 @@
     "clear": "Clear filters",
     "noMatch": "No courses match your search. Try other words or clear the filters.",
     "popularSubjects": "Popular subjects",
+    "popular": "Popular:",
+    "showingSubject": "Showing:",
+    "clearSubject": "Remove {{subject}} filter",
     "pointsLabel": "Why learn here",
     "point1Title": "Demo videos",
     "point1Body": "See how the teacher explains before you decide.",
@@ -717,7 +756,12 @@
     "teachTitle": "Are you a teacher?",
     "teachBody": "Put your classes online: recorded lessons, live classes, tests and attendance in one place.",
     "teachCta": "Start teaching",
-    "freeDemo": "Free live demo"
+    "freeDemo": "Free live demo",
+    "showMore": "Show {{count}} more",
+    "resultCount_one": "{{count}} course",
+    "resultCount_other": "{{count}} courses",
+    "enrolledBadge": "Enrolled",
+    "requestedBadge": "Requested"
   },
   "courseDetails": {
     "demo": "Demo video {{n}}",
@@ -734,16 +778,35 @@
     "teacher": "Your teacher",
     "moreFromTeacher": "More from this teacher",
     "notFound": "This course isn't available",
-    "browse": "Browse courses"
+    "browse": "Browse courses",
+    "goToCourse": "Go to course",
+    "enrolledNote": "You're enrolled in this course.",
+    "pendingTitle": "Request sent",
+    "pendingNote": "Waiting for {{teacher}} to approve. You'll be notified.",
+    "rejectedNote": "Your last request was declined: {{reason}}",
+    "rejectedNoReason": "Your last request was declined.",
+    "enrollAgain": "Send a new request",
+    "blockedNote": "The teacher has not allowed enrollment for you in this course.",
+    "breadcrumb": "Breadcrumb"
   },
   "demoForm": {
     "educationHint": "For example: 10th, 12th Science, B.Com",
+    "educationPlaceholder": "10th, 12th, B.Com",
     "classStandard": "Class / standard",
     "preferredTime": "Preferred time",
     "preferredTimeHint": "For example: weekday evenings",
     "whatsappHint": "Without WhatsApp consent, the teacher will call you instead.",
     "send": "Send demo request",
-    "sent": "Request sent. {{teacher}} will message you on WhatsApp with the date and time."
+    "sent": "Request sent. {{teacher}} will message you on WhatsApp with the date and time.",
+    "badge": "FREE",
+    "headline": "See a real class before you decide",
+    "perk1": "Live class with the teacher",
+    "perk2": "Ask your doubts on the spot",
+    "perk3": "No payment, no commitment",
+    "trust": "Your number is shared only with this teacher.",
+    "stepsLabel": "Progress",
+    "step1": "Your details",
+    "step2": "Verify"
   },
   "teacherPage": {
     "courses": "Courses",
@@ -776,7 +839,9 @@
     "openLink": "Open link",
     "noLessons": "No lessons yet",
     "downloadInApp": "To watch offline, download this video in the mobile app.",
-    "readOnly": "Your teacher's account is inactive. You can still open lessons you completed."
+    "readOnly": "Your teacher's account is inactive. You can still open lessons you completed.",
+    "back": "Back to my courses",
+    "backToCourse": "Back to course"
   },
   "studentExams": {
     "subtitle": "Unit tests, final exam and practice tests for your courses.",
@@ -790,7 +855,30 @@
     "noneLeft": "No attempts left",
     "attemptsLeft": "Attempts left: {{n}}",
     "viewResult": "View result",
-    "finalResult": "Final result"
+    "finalResult": "Final result",
+    "bestScore": "Best score {{pct}}%",
+    "status": {
+      "locked": "Locked",
+      "inProgress": "In progress",
+      "completed": "Completed",
+      "notStarted": "Not started",
+      "overdue": "Past due date",
+      "closed": "Closed",
+      "notOpen": "Not open yet"
+    },
+    "groups": {
+      "unit": "Unit tests",
+      "final": "Final exam",
+      "practice": "Practice"
+    },
+    "summary": {
+      "done": "Exams done",
+      "average": "Average score",
+      "attemptsLeft": "Attempts left"
+    },
+    "late": "Late",
+    "due": "Due {{date}}",
+    "opens": "Opens {{date}}"
   },
   "result": {
     "rank": "Rank {{rank}} of {{of}}",
@@ -801,7 +889,8 @@
     "correctAnswer": "Correct answer",
     "back": "Back to exams",
     "passMark": "Pass mark: {{pct}}%",
-    "solutionImage": "Solution image"
+    "solutionImage": "Solution image",
+    "late": "Late"
   },
   "studentCourses": {
     "subtitle": "Every course you're enrolled in, with your progress."
@@ -824,7 +913,9 @@
     "leftOff": "Continue where you left off",
     "nextLesson": "Next: {{title}}",
     "lastStudied": "Last studied {{when}}",
-    "continueCourse": "Continue {{title}}"
+    "continueCourse": "Continue {{title}}",
+    "latestExam": "Latest exam",
+    "allExams": "All exams"
   },
   "studentDoubts": {
     "subtitle": "Ask your teacher when you're stuck.",
@@ -839,6 +930,12 @@
     "lessons": "{{done}} of {{total}} lessons completed",
     "attendance": "Attendance: {{pct}}% ({{attended}} of {{held}} classes)"
   },
+  "attendancePage": {
+    "subtitle": "Your attendance in every course, class by class.",
+    "summary": "{{pct}}% present ({{attended}} of {{held}} classes)",
+    "empty": "No classes with attendance yet.",
+    "topic": "Class"
+  },
   "studentProfile": {
     "mobileHint": "Change your number in Account.",
     "whatsappOff": "WhatsApp messages are off. Turn them on to get Meet links on WhatsApp."
@@ -851,7 +948,14 @@
     "notStudent": "Enrollment is for student accounts.",
     "messageHint": "For example, the batch timing you prefer.",
     "send": "Send enrollment request",
-    "sent": "Request sent. You'll be notified when {{teacher}} approves it."
+    "sent": "Request sent. You'll be notified when {{teacher}} approves it.",
+    "backToCourse": "Back to course",
+    "badge": "ENROLL",
+    "perk1": "Recorded lessons and live classes",
+    "perk2": "Tests, results and progress in one place",
+    "perk3": "Fees are arranged with the teacher",
+    "trust": "No payment happens on this site.",
+    "sendTitle": "Send your enrollment request"
   },
   "register": {
     "create": "Create account"

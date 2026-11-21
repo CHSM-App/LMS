@@ -22,6 +22,7 @@ router.post('/student/progress/sync', h((req) => students.syncProgress(req.user.
 router.get('/student/live-classes', h((req) => students.liveClasses(req.user.id)));
 router.post('/student/live-classes/:id/join', h((req) => students.joinLiveClass(req.user.id, req.params.id)));
 router.get('/student/progress', h((req) => students.progress(req.user.id)));
+router.get('/student/attendance', h((req) => students.attendanceHistory(req.user.id)));
 
 // Exams
 router.get('/student/courses/:courseId/exams', h((req) => attempts.examsForCourse(req.params.courseId, req.user.id)));

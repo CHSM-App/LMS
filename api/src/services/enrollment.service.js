@@ -131,14 +131,35 @@ async function moveBatch(id, teacherId, body) {
 
 // Teacher's enrolled students (approved), with access status.
 async function students(teacherId, { courseId, batchId, q }) {
+  const params = { t: T.int(teacherId), c: T.int(courseId ? Number(courseId) : null), b: T.int(batchId ? Number(batchId) : null), q: T.nvarchar(q ? `%${q}%` : null, 140) };
   const rows = await query(
     `${SELECT} WHERE e.teacher_id = @t AND e.status = 'approved' AND u.deleted_at IS NULL
        AND (@c IS NULL OR e.course_id = @c) AND (@b IS NULL OR e.batch_id = @b)
        AND (@q IS NULL OR u.name LIKE @q OR u.mobile LIKE @q)
      ORDER BY u.name`,
-    { t: T.int(teacherId), c: T.int(courseId ? Number(courseId) : null), b: T.int(batchId ? Number(batchId) : null), q: T.nvarchar(q ? `%${q}%` : null, 140) },
+    params,
   );
+  // Attendance per enrollment (so a student in two courses gets one figure per course).
+  // Held = this enrollment's classes (course-wide or its batch) where attendance was taken, same rule as the student's own progress.
+  const att = new Map();
+  if (rows.length) {
+    const stats = await query(
+      `SELECT e.enrollment_id,
+              (SELECT COUNT(*) FROM dbo.live_classes l
+                WHERE l.course_id = e.course_id AND (l.batch_id IS NULL OR l.batch_id = e.batch_id) AND l.status <> 'cancelled'
+                  AND EXISTS (SELECT 1 FROM dbo.attendance a WHERE a.live_class_id = l.live_class_id)) AS held,
+              (SELECT COUNT(*) FROM dbo.attendance a JOIN dbo.live_classes l ON l.live_class_id = a.live_class_id
+                WHERE l.course_id = e.course_id AND a.student_id = e.student_id AND a.present = 1) AS attended
+       FROM dbo.enrollments e JOIN dbo.users u ON u.user_id = e.student_id
+       WHERE e.teacher_id = @t AND e.status = 'approved' AND u.deleted_at IS NULL
+         AND (@c IS NULL OR e.course_id = @c) AND (@b IS NULL OR e.batch_id = @b)
+         AND (@q IS NULL OR u.name LIKE @q OR u.mobile LIKE @q)`,
+      params,
+    );
+    stats.forEach((x) => att.set(x.enrollment_id, { held: x.held, attended: x.attended, pct: x.held > 0 ? Math.round((x.attended / x.held) * 100) : 0 }));
+  }
   return rows.map((r) => ({
+    attendance: att.get(r.enrollment_id) || { held: 0, attended: 0, pct: 0 },
     enrollmentId: r.enrollment_id,
     publicId: r.student_public_id,
     name: r.student_name,
@@ -152,6 +173,58 @@ async function students(teacherId, { courseId, batchId, q }) {
     accessEnabled: r.access_enabled,
     subscriptionStatus: accessStatus(r),
   }));
+}
+
+// Attendance calendar of one student across all of this teacher's courses they are enrolled in.
+// Days are IST days; only classes where attendance was taken (and not cancelled) appear.
+async function studentAttendance(teacherId, studentPublicId, month) {
+  const m = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(String(month || ''));
+  if (!m) throw badRequest('month: use YYYY-MM');
+  const [year, mon] = [Number(m[1]), Number(m[2])];
+  const IST = 330 * 60000;
+  const from = new Date(Date.UTC(year, mon - 1, 1) - IST);
+  const to = new Date(Date.UTC(year, mon, 1) - IST);
+  const stu = await one(
+    `SELECT u.user_id, u.public_id, u.name FROM dbo.users u
+     WHERE u.public_id = @p AND u.deleted_at IS NULL
+       AND EXISTS (SELECT 1 FROM dbo.enrollments e WHERE e.student_id = u.user_id AND e.teacher_id = @t AND e.status = 'approved')`,
+    { p: T.uuid(studentPublicId), t: T.int(teacherId) },
+  );
+  if (!stu) throw notFound('Student not found');
+  const courses = await query(
+    `SELECT c.course_id, c.title FROM dbo.enrollments e JOIN dbo.courses c ON c.course_id = e.course_id
+     WHERE e.student_id = @s AND e.teacher_id = @t AND e.status = 'approved' ORDER BY c.title`,
+    { s: T.int(stu.user_id), t: T.int(teacherId) },
+  );
+  const rows = await query(
+    `SELECT l.live_class_id, l.course_id, c.title AS course_title, l.topic, l.starts_at, a.present
+     FROM dbo.attendance a
+     JOIN dbo.live_classes l ON l.live_class_id = a.live_class_id
+     JOIN dbo.courses c ON c.course_id = l.course_id
+     WHERE a.student_id = @s AND l.status <> 'cancelled' AND l.starts_at >= @from AND l.starts_at < @to
+       AND EXISTS (SELECT 1 FROM dbo.enrollments e WHERE e.student_id = @s AND e.teacher_id = @t AND e.status = 'approved' AND e.course_id = l.course_id)
+     ORDER BY l.starts_at, l.live_class_id`,
+    { s: T.int(stu.user_id), t: T.int(teacherId), from: T.datetime(from), to: T.datetime(to) },
+  );
+  const days = new Map();
+  for (const r of rows) {
+    const ist = new Date(new Date(r.starts_at).getTime() + IST).toISOString();
+    const date = ist.slice(0, 10);
+    if (!days.has(date)) days.set(date, { date, classes: [] });
+    days.get(date).classes.push({
+      liveClassId: r.live_class_id,
+      course: { id: r.course_id, title: r.course_title },
+      topic: r.topic,
+      time: ist.slice(11, 16),
+      present: !!r.present,
+    });
+  }
+  return {
+    student: { publicId: stu.public_id, name: stu.name },
+    month: `${m[1]}-${m[2]}`,
+    courses: courses.map((c) => ({ id: c.course_id, title: c.title })),
+    days: [...days.values()],
+  };
 }
 
 async function setAccess(teacherId, studentPublicId, courseId, body) {
@@ -179,4 +252,4 @@ async function setAccess(teacherId, studentPublicId, courseId, body) {
   return { startDate, endDate, accessEnabled };
 }
 
-module.exports = { list, approve, reject, moveBatch, students, setAccess, accessStatus };
+module.exports = { list, approve, reject, moveBatch, students, studentAttendance, setAccess, accessStatus };

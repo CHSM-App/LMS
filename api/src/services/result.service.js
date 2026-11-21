@@ -1,6 +1,7 @@
 const { query, T } = require('../db/query');
 const { tableExists } = require('./accountHooks');
 const { finalResult, rankRows } = require('../domain/exam');
+const { clock } = require('../utils/clock');
 
 const pct = (score, max) => (max > 0 ? Math.round((score / max) * 10000) / 100 : 0);
 
@@ -20,8 +21,9 @@ async function examResults(examId, { batchId } = {}) {
        WHERE a.exam_id = @e AND a.submitted_at IS NOT NULL ${batchFilter}
      )
      SELECT b.attempt_id, b.score, b.max_score, b.passed, b.submitted_at, b.attempts, b.auto_submitted,
+            CASE WHEN x.ends_at IS NOT NULL AND b.started_at > x.ends_at THEN 1 ELSE 0 END AS late,
             u.public_id AS student_public_id, u.name AS student_name, u.mobile AS student_mobile
-     FROM best b JOIN dbo.users u ON u.user_id = b.student_id
+     FROM best b JOIN dbo.users u ON u.user_id = b.student_id JOIN dbo.exams x ON x.exam_id = b.exam_id
      WHERE b.rn = 1`,
     params,
   );
@@ -38,6 +40,7 @@ async function examResults(examId, { batchId } = {}) {
       passed: r.passed,
       attempts: r.attempts,
       autoSubmitted: r.auto_submitted,
+      late: !!r.late,
       submittedAt: r.submitted_at,
     })),
   );
@@ -98,8 +101,10 @@ async function isFinalUnlocked(courseId, studentId) {
   const missing = await query(
     `SELECT e.exam_id FROM dbo.exams e
      WHERE e.course_id = @c AND e.status = 'published' AND e.category IN ('unit_test_1', 'unit_test_2')
-       AND NOT EXISTS (SELECT 1 FROM dbo.exam_attempts a WHERE a.exam_id = e.exam_id AND a.student_id = @s AND a.submitted_at IS NOT NULL)`,
-    { c: T.int(courseId), s: T.int(studentId) },
+       AND NOT EXISTS (SELECT 1 FROM dbo.exam_attempts a WHERE a.exam_id = e.exam_id AND a.student_id = @s AND a.submitted_at IS NOT NULL)
+       -- A unit test the teacher closed (no late attempts) and whose End date has passed cannot be taken any more, so it must not block the Final.
+       AND NOT (e.allow_late = 0 AND e.ends_at IS NOT NULL AND e.ends_at < @now)`,
+    { c: T.int(courseId), s: T.int(studentId), now: T.datetime(clock.now()) },
   );
   return missing.length === 0;
 }

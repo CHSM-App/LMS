@@ -1,12 +1,19 @@
-import { render, screen, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthContext } from './AuthProvider';
 import { AppShell } from './layouts/AppShell';
+import { PublicLayout } from './layouts/PublicLayout';
 import { TEACHER_NAV, STUDENT_NAV } from './nav';
 import * as client from '../api/client';
 import TeacherDashboard from '../features/teacher/ops/TeacherDashboard';
 import { StudentDashboard } from '../features/student/StudentPages';
+
+function Loc() {
+  const l = useLocation();
+  return <span data-testid="loc">{l.pathname + l.search}</span>;
+}
 
 function wrap(ui, { path = '/', user }) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -14,7 +21,7 @@ function wrap(ui, { path = '/', user }) {
     <QueryClientProvider client={qc}>
       <AuthContext.Provider value={{ user, loading: false, logout: vi.fn() }}>
         <MemoryRouter initialEntries={[path]}>
-          <Routes><Route path="*" element={ui} /></Routes>
+          <Routes><Route path="*" element={<>{ui}<Loc /></>} /></Routes>
         </MemoryRouter>
       </AuthContext.Provider>
     </QueryClientProvider>,
@@ -34,6 +41,40 @@ test('sidebar groups links, shows the role, and the top bar names the current pa
   expect(within(side).getByRole('link', { name: 'Courses' })).toHaveAttribute('aria-current', 'page');
   const top = screen.getByRole('banner');
   expect(within(top).getByRole('heading', { name: 'Courses' })).toBeInTheDocument();
+});
+
+test('student top bar shows the course search only on Browse courses and puts the query in the URL; teachers get none', async () => {
+  mockGet([]);
+  const dash = wrap(<AppShell nav={STUDENT_NAV} />, { path: '/student', user: { role: 'student', name: 'Rohan' } });
+  expect(within(screen.getByRole('banner')).queryByRole('searchbox')).not.toBeInTheDocument();
+  dash.unmount();
+  const { unmount } = wrap(<AppShell nav={STUDENT_NAV} />, { path: '/student/browse', user: { role: 'student', name: 'Rohan' } });
+  const box = within(screen.getByRole('banner')).getByRole('searchbox', { name: 'Search' });
+  await userEvent.type(box, 'maths{Enter}');
+  expect(screen.getByTestId('loc')).toHaveTextContent('/student/browse?q=maths');
+  unmount();
+  wrap(<AppShell nav={TEACHER_NAV} />, { path: '/teacher', user: { role: 'teacher', name: 'Priya' } });
+  expect(within(screen.getByRole('banner')).queryByRole('searchbox')).not.toBeInTheDocument();
+});
+
+test('student top bar search updates the URL as you type, without pressing Enter', async () => {
+  mockGet([]);
+  wrap(<AppShell nav={STUDENT_NAV} />, { path: '/student/browse', user: { role: 'student', name: 'Rohan' } });
+  await userEvent.type(within(screen.getByRole('banner')).getByRole('searchbox', { name: 'Search' }), 'algebra');
+  await waitFor(() => expect(screen.getByTestId('loc')).toHaveTextContent('/student/browse?q=algebra'), { timeout: 2000 });
+});
+
+test('public header: Subjects menu lists subjects with counts, filters as you type, and opens the catalogue for the pick', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: { languages: ['mr'], subjects: ['Maths', 'Science', 'Art'], subjectCounts: [{ subject: 'Maths', count: 12 }, { subject: 'Science', count: 5 }, { subject: 'Art', count: 1 }] } });
+  wrap(<PublicLayout />, { path: '/', user: null });
+  await userEvent.click(await screen.findByRole('button', { name: 'Subjects' }));
+  const panel = screen.getByRole('region', { name: 'Subjects' });
+  expect(within(panel).getByRole('button', { name: /Maths/ })).toHaveTextContent('12');
+  await userEvent.type(within(panel).getByRole('searchbox'), 'sci');
+  expect(within(panel).queryByRole('button', { name: /Maths/ })).not.toBeInTheDocument();
+  await userEvent.click(within(panel).getByRole('button', { name: /Science/ }));
+  expect(screen.getByTestId('loc')).toHaveTextContent('/courses?subject=Science');
+  expect(screen.queryByRole('region', { name: 'Subjects' })).not.toBeInTheDocument();
 });
 
 test('student sidebar has its own groups', () => {

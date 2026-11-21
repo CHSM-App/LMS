@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { useAuth } from '../../app/AuthProvider';
-import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
+import { BackLink, Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, ProgressBar, Select, Spinner, StatusBadge, Table, Textarea, useToast } from '../../components';
 import { formatDate, formatDateTime, formatLongDay, formatRelativeDay } from '../../utils/format';
 import { LiveStageBadge } from '../../components/LiveStageBadge';
 import { markLanguageChosen } from '../../i18n/preference';
@@ -102,6 +102,37 @@ export function StudentMyCoursesPage() {
 const COURSES_ON_DASH = 3;
 const LIVE_ON_DASH = 4;
 
+const EXAM_TONE = { notStarted: 'neutral', inProgress: 'pending', completed: 'approved', closed: 'rejected', notOpen: 'neutral', overdue: 'pending' };
+
+// Newest exam of my courses: Start / Resume, or the result once done.
+function LatestExamCard({ exam, t, lang }) {
+  const state = exam.status === 'notStarted' || exam.status === 'completed' ? (exam.closed ? 'closed' : exam.notOpen ? 'notOpen' : exam.status === 'notStarted' && exam.overdue ? 'overdue' : exam.status) : exam.status;
+  const canStart = !exam.closed && !exam.notOpen;
+  const canRetry = exam.status === 'completed' && exam.attemptsLeft !== 0 && canStart;
+  return (
+    <section className="card" aria-labelledby="dash-exam">
+      <div className="row row--between">
+        <h2 id="dash-exam" className="card__title">{t('studentDash.latestExam')}</h2>
+        <span className={`badge badge--${EXAM_TONE[state]}`}>{t(`studentExams.status.${state}`)}</span>
+      </div>
+      <p><strong>{exam.title}</strong></p>
+      <p className="muted">{[exam.course, exam.timeLimitMin ? t('studentExams.minutes', { n: exam.timeLimitMin }) : null].filter(Boolean).join(' · ')}</p>
+      {(exam.notOpen ? exam.startsAt : exam.endsAt) && <p className="muted">{exam.notOpen ? t('studentExams.opens', { date: formatDateTime(exam.startsAt, lang) }) : t('studentExams.due', { date: formatDateTime(exam.endsAt, lang) })}</p>}
+      {exam.best && <p className="muted">{t('studentExams.best', { pct: exam.best.pct })}</p>}
+      <div className="row">
+        {exam.status !== 'completed' && canStart && (
+          <Link className="btn btn--primary btn--sm" to={`/student/exams/${exam.id}/take`}><span className="btn__label">{t(exam.status === 'inProgress' ? 'studentExams.resume' : 'studentExams.start')}</span></Link>
+        )}
+        {exam.status === 'completed' && exam.lastAttemptId && (
+          <Link className="btn btn--secondary btn--sm" to={`/student/attempts/${exam.lastAttemptId}/result`}><span className="btn__label">{t('studentExams.viewResult')}</span></Link>
+        )}
+        {canRetry && <Link className="btn btn--primary btn--sm" to={`/student/exams/${exam.id}/take`}><span className="btn__label">{t('studentExams.start')}</span></Link>}
+        <Link className="dash-side__all" to="/student/exams">{t('studentDash.allExams')}</Link>
+      </div>
+    </section>
+  );
+}
+
 export function StudentDashboard() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -145,6 +176,7 @@ export function StudentDashboard() {
         </section>
       )}
       <div className="dash-cols dash-cols--side">
+        <div className="stack">
         <section className="card dash-live" aria-labelledby="dash-live">
           <div className="row row--between">
             <h2 id="dash-live" className="card__title">{t('nav.liveClasses')}</h2>
@@ -167,6 +199,8 @@ export function StudentDashboard() {
             </ul>
           )}
         </section>
+        {d.latestExam && <LatestExamCard exam={d.latestExam} t={t} lang={i18n.language} />}
+        </div>
         <section className="card dash-courses" aria-labelledby="dash-courses">
           <div className="row row--between">
             <h2 id="dash-courses" className="card__title">{t('nav.myCourses')}</h2>
@@ -207,7 +241,8 @@ export function ResultPage() {
   const correctText = (x) => (x.correctAnswer.acceptedAnswers ? x.correctAnswer.acceptedAnswers.join(' / ') : x.options.filter((o) => x.correctAnswer.optionIds.includes(o.id)).map((o) => o.text).join(', '));
   return (
     <div className="stack">
-      <PageHeader title={r.exam.title} subtitle={formatDateTime(r.submittedAt, i18n.language)} />
+      <div><BackLink to="/student/exams">{t('result.back')}</BackLink></div>
+      <PageHeader title={r.exam.title} subtitle={`${formatDateTime(r.submittedAt, i18n.language)}${r.late ? ` · ${t('result.late')}` : ''}`} />
       <Card accent>
         <p className="stat__value">{r.score} / {r.max} ({r.pct}%)</p>
         <p className="row">
@@ -227,7 +262,6 @@ export function ResultPage() {
           {x.explanationImageUrl && <img src={fileUrl(x.explanationImageUrl)} alt={t('result.solutionImage')} className="solution-img" loading="lazy" />}
         </Card>
       ))}
-      <Link to="/student/exams">{t('result.back')}</Link>
     </div>
   );
 }
@@ -241,6 +275,7 @@ export function FinalResultPage() {
   const r = q.data.data;
   return (
     <div className="stack">
+      <div><BackLink to={`/student/courses/${courseId}`}>{t('player.backToCourse')}</BackLink></div>
       <PageHeader title={t('studentExams.finalResult')} />
       <Card accent>
         <p className="stat__value">{r.weightedPct}%</p>
@@ -337,6 +372,34 @@ export function StudentProgressPage() {
           <p className="muted">{t('progressPage.lessons', { done: c.completedLessons, total: c.totalLessons })}</p>
           <p>{t('progressPage.attendance', { pct: c.attendancePct, attended: c.classesAttended, held: c.classesHeld })}</p>
           {c.exams.length > 0 && <ul>{c.exams.map((e) => <li key={e.examId}>{e.title}: {e.bestPct}%</li>)}</ul>}
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function StudentAttendancePage() {
+  const { t, i18n } = useTranslation();
+  const q = useQuery({ queryKey: ['student', 'attendance'], queryFn: () => api.get('/student/attendance') });
+  if (q.isLoading) return <Spinner label={t('common.loading')} />;
+  if (q.error) return <EmptyState title={q.error.message} />;
+  const courses = q.data.data.courses;
+  return (
+    <div className="stack">
+      <PageHeader title={t('nav.attendance')} subtitle={t('attendancePage.subtitle')} />
+      {courses.length === 0 && <EmptyState title={t('studentDash.noCourses')} />}
+      {courses.map((c) => (
+        <Card key={c.courseId} title={c.title}>
+          {c.classes.length === 0 ? <p className="muted">{t('attendancePage.empty')}</p> : (
+            <>
+              <ProgressBar value={c.attendancePct} label={t('attendancePage.summary', { pct: c.attendancePct, attended: c.classesAttended, held: c.classesHeld })} />
+              <Table rows={c.classes} columns={[
+                { key: 'topic', header: t('attendancePage.topic') },
+                { key: 'startsAt', header: t('common.date'), render: (x) => formatDateTime(x.startsAt, i18n.language) },
+                { key: 'present', header: t('common.status'), render: (x) => <StatusBadge status={x.present ? 'present' : 'absent'} /> },
+              ]} />
+            </>
+          )}
         </Card>
       ))}
     </div>

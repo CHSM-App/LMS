@@ -2,7 +2,6 @@
 export const ADMIN_NAV = [
   { group: null, items: [
     { to: '/admin', label: 'common.dashboard', icon: 'dashboard', end: true },
-    { to: '/notifications', label: 'nav.notifications', icon: 'bell' },
   ] },
   { group: 'nav.groupTeachers', items: [
     { to: '/admin/teacher-requests', label: 'nav.teacherRequests', icon: 'inbox' },
@@ -17,7 +16,6 @@ export const ADMIN_NAV = [
 export const TEACHER_NAV = [
   { group: null, items: [
     { to: '/teacher', label: 'common.dashboard', icon: 'dashboard', end: true },
-    { to: '/notifications', label: 'nav.notifications', icon: 'bell' },
   ] },
   { group: 'nav.groupStudents', items: [
     { to: '/teacher/requests', label: 'nav.requests', icon: 'inbox' },
@@ -39,13 +37,13 @@ export const TEACHER_NAV = [
 export const STUDENT_NAV = [
   { group: null, items: [
     { to: '/student', label: 'common.dashboard', icon: 'dashboard', end: true },
-    { to: '/notifications', label: 'nav.notifications', icon: 'bell' },
   ] },
   { group: 'nav.groupLearning', items: [
     { to: '/student/courses', label: 'nav.myCourses', icon: 'book' },
     { to: '/student/live-classes', label: 'nav.liveClasses', icon: 'video' },
     { to: '/student/exams', label: 'nav.exams', icon: 'clipboard' },
     { to: '/student/progress', label: 'nav.progress', icon: 'chart' },
+    { to: '/student/attendance', label: 'nav.attendance', icon: 'check' },
     { to: '/student/doubts', label: 'nav.doubts', icon: 'help' },
   ] },
   { group: 'nav.groupDiscover', items: [

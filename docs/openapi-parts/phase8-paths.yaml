@@ -15,7 +15,7 @@
     get:
       tags: [public]
       responses:
-        '200': { description: Languages and subjects that have published courses }
+        '200': { description: "Languages and subjects that have published courses. `subjects` is ordered most-courses first; `subjectCounts` is [{ subject, count }] in the same order." }
   /public/courses/{slug}:
     parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
     get:

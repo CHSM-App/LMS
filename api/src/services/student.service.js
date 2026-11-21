@@ -3,6 +3,7 @@ const { query, one, T } = require('../db/query');
 const { withTransaction } = require('../db/tx');
 const { notify } = require('./notification.service');
 const catalog = require('./publicCatalog.service');
+const attempts = require('./attempt.service');
 const storage = require('../providers/storage');
 const { accessStatus } = require('./enrollment.service');
 const { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql } = require('./studentAccess');
@@ -185,10 +186,41 @@ async function joinLiveClass(studentId, liveClassId) {
   return { meetLink: c.meetLink, present: true };
 }
 
+// The newest published exam across my usable (access on, teacher not blocked) courses, with my state on it.
+async function latestExam(studentId, courses) {
+  const usable = courses.filter((c) => !c.readOnly && c.accessStatus === 'active');
+  if (!usable.length) return null;
+  const rows = await query(
+    `SELECT e.exam_id, e.course_id
+     FROM dbo.exams e
+     JOIN dbo.enrollments n ON n.course_id = e.course_id AND n.student_id = @s AND n.status = 'approved'
+     WHERE e.status = 'published' AND e.course_id IN (${usable.map((c) => Number(c.courseId)).join(',')})
+       AND (NOT EXISTS (SELECT 1 FROM dbo.exam_batches b WHERE b.exam_id = e.exam_id)
+            OR EXISTS (SELECT 1 FROM dbo.exam_batches b WHERE b.exam_id = e.exam_id AND b.batch_id = n.batch_id))
+     ORDER BY e.published_at DESC, e.exam_id DESC`,
+    { s: T.int(studentId) },
+  );
+  // Locked final exams are skipped, so the card always has something the student can open.
+  for (const r of rows) {
+    const list = await attempts.examsForCourse(r.course_id, studentId);
+    const e = list.find((x) => x.id === r.exam_id);
+    if (!e || e.locked) continue;
+    const course = usable.find((c) => c.courseId === r.course_id);
+    const status = e.openAttemptId ? 'inProgress' : e.best ? 'completed' : 'notStarted';
+    return {
+      id: e.id, title: e.title, category: e.category, mode: e.mode, timeLimitMin: e.timeLimitMin,
+      courseId: r.course_id, course: course.title, status, locked: false,
+      attemptsLeft: e.attemptsLeft, best: e.best, lastAttemptId: e.lastAttemptId,
+      startsAt: e.startsAt, endsAt: e.endsAt, allowLate: e.allowLate, closed: e.closed, notOpen: e.notOpen, overdue: e.overdue, lastAttemptLate: e.lastAttemptLate,
+    };
+  }
+  return null;
+}
+
 async function dashboard(studentId) {
   const courses = (await enrolledCourses(studentId)).map(courseOut).sort(byStudyOrder);
   const pending = (await myEnrollments(studentId)).filter((e) => e.status !== 'approved');
-  return { myCourses: courses, upcomingLiveClasses: (await liveClasses(studentId)).slice(0, 5), requests: pending };
+  return { myCourses: courses, upcomingLiveClasses: (await liveClasses(studentId)).slice(0, 5), requests: pending, latestExam: await latestExam(studentId, courses) };
 }
 
 // ---------- Player ----------
@@ -361,6 +393,34 @@ async function progress(studentId) {
   return { courses: out };
 }
 
+// ---------- Attendance history (course-wise) ----------
+// A class counts once the teacher has taken attendance for it; no record for this student = absent.
+async function attendanceHistory(studentId) {
+  const courses = await enrolledCourses(studentId);
+  const out = [];
+  for (const r of courses) {
+    const rows = await query(
+      `SELECT l.live_class_id, l.topic, l.starts_at, CAST(ISNULL(a.present, 0) AS BIT) AS present
+       FROM dbo.live_classes l
+       LEFT JOIN dbo.attendance a ON a.live_class_id = l.live_class_id AND a.student_id = @s
+       WHERE l.course_id = @c AND (l.batch_id IS NULL OR l.batch_id = @b) AND l.status <> 'cancelled'
+         AND EXISTS (SELECT 1 FROM dbo.attendance x WHERE x.live_class_id = l.live_class_id)
+       ORDER BY l.starts_at DESC, l.live_class_id DESC`,
+      { s: T.int(studentId), c: T.int(r.course_id), b: T.int(r.batch_id) },
+    );
+    const attended = rows.filter((x) => x.present).length;
+    out.push({
+      courseId: r.course_id,
+      title: r.title,
+      classesHeld: rows.length,
+      classesAttended: attended,
+      attendancePct: pct(attended, rows.length),
+      classes: rows.map((x) => ({ id: x.live_class_id, topic: x.topic, startsAt: x.starts_at, present: !!x.present })),
+    });
+  }
+  return { courses: out };
+}
+
 // ---------- Doubts ----------
 async function askDoubt(studentId, { courseId, question }, attachment) {
   const id = Number(courseId);
@@ -430,5 +490,5 @@ async function saveProfile(studentId, b) {
 
 module.exports = {
   requestEnrollment, myEnrollments, dashboard, liveClasses, joinLiveClass, courseView, contentView, saveProgress, syncProgress, upsertProgress,
-  progress, askDoubt, myDoubts, profile, saveProfile,
+  progress, attendanceHistory, askDoubt, myDoubts, profile, saveProfile,
 };

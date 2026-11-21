@@ -3,12 +3,13 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
-import { Card, EmptyState, Spinner } from '../../components';
+import { BackLink, Card, EmptyState, Spinner } from '../../components';
 import { CourseCard } from './CourseCard';
 import { useBrowsePaths } from './browsePaths';
 
 export default function TeacherPublicPage() {
-  const { inStudent } = useBrowsePaths();
+  const paths = useBrowsePaths();
+  const { inStudent } = paths;
   const { slug } = useParams();
   const { t } = useTranslation();
   const q = useQuery({ queryKey: ['public', 'teacher', slug], queryFn: () => api.get(`/public/teachers/${slug}`) });
@@ -21,6 +22,7 @@ export default function TeacherPublicPage() {
   const social = Object.entries(d.socialLinks || {});
   return (
     <div className={inStudent ? 'stack' : 'container stack'}>
+      <div><BackLink to={paths.list}>{t('courseDetails.browse')}</BackLink></div>
       <Card>
         <div className="row" style={{ alignItems: 'flex-start' }}>
           {d.photoUrl && <img src={fileUrl(d.photoUrl)} alt="" className="avatar-lg" />}

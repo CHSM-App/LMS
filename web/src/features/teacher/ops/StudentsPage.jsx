@@ -5,6 +5,9 @@ import { api } from '../../../api/client';
 import { Button, Checkbox, Input, Modal, PageHeader, Select, StatusBadge, Table, useToast } from '../../../components';
 import { formatDate } from '../../../utils/format';
 import { useCourseModules } from '../exams/useCourseModules';
+import { StudentAttendanceCalendar } from './StudentAttendanceCalendar';
+
+const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 
 function AccessDialog({ student, onClose, onDone }) {
   const { t } = useTranslation();
@@ -54,6 +57,7 @@ export default function StudentsPage() {
   const [batchId, setBatchId] = useState('');
   const [q, setQ] = useState('');
   const [editing, setEditing] = useState(null);
+  const [calendarFor, setCalendarFor] = useState(null);
   const { courses } = useCourseModules('');
   const batches = useQuery({ queryKey: ['teacher', 'batches', Number(courseId)], queryFn: () => api.get(`/teacher/courses/${courseId}/batches`), enabled: !!courseId });
   const list = useQuery({
@@ -61,14 +65,46 @@ export default function StudentsPage() {
     queryFn: () => api.get('/teacher/students', { course: courseId || undefined, batch: batchId || undefined, q: q || undefined }),
   });
   const columns = [
-    { key: 'name', header: t('common.name') },
-    { key: 'mobile', header: t('common.mobile') },
-    { key: 'course', header: t('nav.courses'), render: (s) => s.course.title },
-    { key: 'batch', header: t('nav.batches'), render: (s) => (s.batch ? s.batch.name : '—') },
-    { key: 'enrolledAt', header: t('students.enrolled'), render: (s) => formatDate(s.enrolledAt, i18n.language) },
-    { key: 'endDate', header: t('subscriptions.endDate'), render: (s) => formatDate(s.endDate, i18n.language) },
+    { key: 'student', header: t('nav.students'), render: (s) => (
+      <div className="person">
+        <span className="person__avatar" aria-hidden="true">{initials(s.name)}</span>
+        <div className="person__text">
+          <span className="person__name">{s.name}</span>
+          <span className="person__sub">{s.mobile}</span>
+        </div>
+      </div>
+    ) },
+    { key: 'course', header: t('nav.courses'), render: (s) => (
+      <div className="person__text">
+        <span className="person__name">{s.course.title}</span>
+        <span className="person__sub">{s.batch ? s.batch.name : '—'}</span>
+      </div>
+    ) },
+    { key: 'attendance', header: t('students.attendance'), render: (s) => {
+      const a = s.attendance;
+      if (!a || a.held === 0) return <span className="person__sub">—</span>;
+      const tone = a.pct >= 75 ? 'good' : a.pct >= 50 ? 'mid' : 'low';
+      return (
+        <div className="attbar" title={t('students.attendanceValue', { pct: a.pct, attended: a.attended, held: a.held })}>
+          <div className="attbar__top">
+            <strong>{a.pct}%</strong>
+            <span className="person__sub">{a.attended}/{a.held}</span>
+          </div>
+          <div className="attbar__track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={a.pct} aria-label={t('students.attendance')}>
+            <div className={`attbar__fill attbar__fill--${tone}`} style={{ width: `${a.pct}%` }} />
+          </div>
+        </div>
+      );
+    } },
+    { key: 'enrolledAt', header: t('students.enrolled'), render: (s) => <span className="nowrap">{formatDate(s.enrolledAt, i18n.language)}</span> },
+    { key: 'endDate', header: t('subscriptions.endDate'), render: (s) => <span className="nowrap">{formatDate(s.endDate, i18n.language)}</span> },
     { key: 'subscriptionStatus', header: t('students.access'), render: (s) => <StatusBadge status={s.subscriptionStatus} /> },
-    { key: 'a', header: t('common.actions'), render: (s) => <Button variant="compact" size="sm" onClick={() => setEditing(s)}>{t('students.manage')}</Button> },
+    { key: 'a', header: t('common.actions'), render: (s) => (
+      <div className="row-actions">
+        <Button variant="secondary" size="sm" onClick={() => setCalendarFor(s)}>{t('students.calendar')}</Button>
+        <Button variant="ghost" size="sm" onClick={() => setEditing(s)}>{t('students.manage')}</Button>
+      </div>
+    ) },
   ];
   return (
     <>
@@ -81,6 +117,7 @@ export default function StudentsPage() {
           options={[{ value: '', label: t('common.all') }, ...(batches.data?.data || []).map((b) => ({ value: String(b.id), label: b.name }))]} />
       </div>
       <Table columns={columns} rows={list.data?.data} loading={list.isLoading} error={list.error?.message} onRetry={list.refetch} rowKey={(s) => s.enrollmentId} empty={t('students.empty')} />
+      {calendarFor && <StudentAttendanceCalendar student={calendarFor} onClose={() => setCalendarFor(null)} />}
       {editing && <AccessDialog student={editing} onClose={() => setEditing(null)} onDone={() => { setEditing(null); qc.invalidateQueries({ queryKey: ['teacher'] }); }} />}
     </>
   );

@@ -4,8 +4,9 @@ const logger = require('../../utils/logger');
 // Google Meet links. MEET_PROVIDER:
 //   console - dev: a well-formed fake meet.google.com link
 //   manual  - the teacher pastes the link (fallback while Google Workspace is pending)
-//   google  - Calendar API with a service account (GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_CALENDAR_ID,
-//             GOOGLE_IMPERSONATE_USER for domain-wide delegation); see docs/BACKEND_NEEDS.md.
+//   google  - Calendar API on GOOGLE_CALENDAR_ID, signed in one of two ways (see docs/BACKEND_NEEDS.md):
+//             a) OAuth refresh token of one account: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN
+//             b) service account: GOOGLE_SERVICE_ACCOUNT_JSON (+ GOOGLE_IMPERSONATE_USER for domain-wide delegation)
 // createLink() returns null whenever a link can't be made, so the teacher is asked to paste one.
 const MEET_RE = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -16,17 +17,35 @@ const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
 
 let cached = null; // { token, expiresAt }
 
-async function accessToken(sa) {
-  if (cached && cached.expiresAt > Date.now() + 60000) return cached.token;
+// OAuth refresh token for one Google account (works with a free Gmail or an Internal Workspace app).
+const hasRefreshToken = () => Boolean(process.env.GOOGLE_REFRESH_TOKEN && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+
+function refreshTokenGrant() {
+  return {
+    grant_type: 'refresh_token',
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+  };
+}
+
+function serviceAccountGrant() {
+  const sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
   const now = Math.floor(Date.now() / 1000);
   const claims = { iss: sa.client_email, scope: SCOPE, aud: TOKEN_URL, iat: now, exp: now + 3600 };
   if (process.env.GOOGLE_IMPERSONATE_USER) claims.sub = process.env.GOOGLE_IMPERSONATE_USER;
   const unsigned = `${b64url({ alg: 'RS256', typ: 'JWT' })}.${b64url(claims)}`;
   const signature = crypto.sign('RSA-SHA256', Buffer.from(unsigned), sa.private_key).toString('base64url');
+  return { grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${unsigned}.${signature}` };
+}
+
+async function accessToken() {
+  if (cached && cached.expiresAt > Date.now() + 60000) return cached.token;
+  const grant = hasRefreshToken() ? refreshTokenGrant() : serviceAccountGrant();
   const res = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${unsigned}.${signature}` }).toString(),
+    body: new URLSearchParams(grant).toString(),
   });
   if (!res.ok) throw new Error(`Google token endpoint responded ${res.status}`);
   const body = await res.json();
@@ -36,10 +55,10 @@ async function accessToken(sa) {
 
 const google = {
   async createLink({ title, start, durationMin }) {
-    if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !process.env.GOOGLE_CALENDAR_ID) return null;
+    if (!process.env.GOOGLE_CALENDAR_ID) return null;
+    if (!hasRefreshToken() && !process.env.GOOGLE_SERVICE_ACCOUNT_JSON) return null;
     try {
-      const sa = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-      const token = await accessToken(sa);
+      const token = await accessToken();
       const begin = new Date(start);
       const end = new Date(begin.getTime() + (durationMin || 60) * 60000);
       const calendar = encodeURIComponent(process.env.GOOGLE_CALENDAR_ID);

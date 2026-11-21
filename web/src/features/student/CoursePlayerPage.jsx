@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
-import { Banner, Button, Card, EmptyState, PageHeader, ProgressBar, Spinner, VideoFrame, LiveStageBadge } from '../../components';
+import { BackLink, Banner, Button, Card, EmptyState, PageHeader, ProgressBar, Spinner, VideoFrame, LiveStageBadge } from '../../components';
 import { LiveLessonPanel } from './LiveLessonPanel';
 
 function Lesson({ contentId, onCompleted }) {
@@ -74,6 +74,7 @@ export default function CoursePlayerPage() {
   };
   return (
     <div className="stack">
+      <div><BackLink to="/student/courses">{t('player.back')}</BackLink></div>
       <PageHeader title={course.title} />
       <ProgressBar value={course.progressPct} label={t('player.progress')} />
       {course.readOnly && <Banner kind="warning" message={t('player.readOnly')} />}

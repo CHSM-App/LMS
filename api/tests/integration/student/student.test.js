@@ -155,6 +155,28 @@ describe('doubts, live classes, progress, profile, privacy', () => {
     expect(p.body.data.courses[0]).toMatchObject({ title: 'Class 10 Maths', attendancePct: 100, classesHeld: 1, completedLessons: 0, totalLessons: 3 });
   });
 
+  test('attendance history is course-wise, newest first, only for my batch and held classes', async () => {
+    clock.set(new Date('2026-06-15T03:00:00Z'));
+    const w = await world();
+    const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: 'Evening', startDate: '2026-01-01' })).body.data;
+    const mk = async (topic, startsAt, batchId) =>
+      (await w.t.post('/api/v1/teacher/live-classes', { courseId: w.courseId, ...(batchId ? { batchId } : { batchId: w.batch.id }), topic, startsAt })).body.data;
+    const c1 = await mk('Algebra', '2026-06-16T03:00:00Z');
+    const c2 = await mk('Geometry', '2026-06-17T03:00:00Z');
+    await mk('Not held yet', '2026-06-18T03:00:00Z');
+    const other = await mk('Other batch', '2026-06-19T03:00:00Z', evening.id);
+    await w.t.put(`/api/v1/teacher/live-classes/${c1.id}/attendance`, { records: [{ studentPublicId: w.s.user.public_id, present: true }] });
+    await w.t.put(`/api/v1/teacher/live-classes/${c2.id}/attendance`, { records: [{ studentPublicId: w.s.user.public_id, present: false }] });
+    await w.t.put(`/api/v1/teacher/live-classes/${other.id}/attendance`, { records: [] });
+
+    const r = await w.s.get('/api/v1/student/attendance');
+    expect(r.status).toBe(200);
+    const course = r.body.data.courses[0];
+    expect(course).toMatchObject({ courseId: w.courseId, title: 'Class 10 Maths', classesHeld: 2, classesAttended: 1, attendancePct: 50 });
+    expect(course.classes.map((c) => [c.topic, c.present])).toEqual([['Geometry', false], ['Algebra', true]]);
+    expect(course.classes[0]).toHaveProperty('startsAt');
+  });
+
   test('joining a live class marks the student present automatically', async () => {
     clock.set(new Date('2026-06-15T03:00:00Z'));
     const w = await world();

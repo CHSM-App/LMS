@@ -25,7 +25,11 @@ export class ApiError extends Error {
 function buildUrl(path, query) {
   const url = `${BASE}${path}`;
   if (!query) return url;
-  const qs = new URLSearchParams(Object.entries(query).filter(([, v]) => v !== undefined && v !== null && v !== '')).toString();
+  // %20 for spaces (URLSearchParams would write "+", which the API's validator rejects as a reserved character).
+  const qs = Object.entries(query)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
   return qs ? `${url}?${qs}` : url;
 }
 

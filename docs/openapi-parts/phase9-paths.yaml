@@ -29,7 +29,7 @@
       tags: [student]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: 'myCourses (progress, end date, batch, readOnly), upcomingLiveClasses, requests' }
+        '200': { description: 'myCourses (progress, end date, batch, readOnly), upcomingLiveClasses, requests, latestExam (newest published unlocked exam with my status, startsAt/endsAt, notOpen, overdue, or null)' }
   /student/enrollments:
     get:
       tags: [student]
@@ -101,6 +101,13 @@
       security: [{ bearerAuth: [] }]
       responses:
         '200': { description: Per course lessons, attendance percent and exam performance }
+  /student/attendance:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: 'Attendance history per enrolled course: classesHeld, classesAttended, attendancePct and classes[{ id, topic, startsAt, present }] newest first'
+      responses:
+        '200': { description: 'Only classes where the teacher took attendance, for my batch or all batches; no record means absent' }
   /student/courses/{courseId}/exams:
     parameters: [{ $ref: '#/components/parameters/CourseId' }]
     get:

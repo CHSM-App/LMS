@@ -7,6 +7,7 @@ import { Icon } from '../../components/Icon';
 import { fileUrl } from '../../api/client';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { NotificationBell } from './NotificationBell';
+import { CourseSearch } from './CourseSearch';
 import '../../design/shell.css';
 
 function Avatar({ user, size = 'md' }) {
@@ -88,7 +89,8 @@ export function AppShell({ nav, banner }) {
           <button type="button" className="icon-btn shell__menu" aria-label={t('common.menu')} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
             <Icon name="menu" size={22} />
           </button>
-          <h2 className="shell__page-title">{current ? t(current.label) : t('app.name')}</h2>
+          <h2 className="shell__page-title">{current ? t(current.label) : location.pathname.startsWith('/notifications') ? t('nav.notifications') : t('app.name')}</h2>
+          {user && user.role === 'student' && location.pathname === '/student/browse' && <CourseSearch />}
           <div className="shell__tools">
             <LanguageSwitcher />
             <NotificationBell />

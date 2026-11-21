@@ -37,12 +37,156 @@ test('home lists course cards and searches after typing stops', async () => {
   wrap(<HomePage />);
   expect(await screen.findByRole('link', { name: /class 10 maths/i })).toHaveAttribute('href', '/courses/maths-10');
   expect(screen.getByText('Suresh')).toBeInTheDocument();
-  await userEvent.type(screen.getByRole('searchbox'), 'zzz');
+  expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+});
+
+test('public home searches from the header query (?q=)', async () => {
+  const get = vi.spyOn(client.api, 'get').mockImplementation(async (path, q) => {
+    if (path === '/public/filters') return { data: { languages: ['mr'], subjects: ['Maths'] } };
+    return { data: q && q.q === 'zzz' ? [] : [card], pagination: { page: 1, limit: 12, total: 1 } };
+  });
+  wrap(<HomePage />, '/courses?q=zzz', '/courses');
   await waitFor(() => expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ q: 'zzz' })), { timeout: 2000 });
   expect(await screen.findByText(/no courses match/i)).toBeInTheDocument();
 });
 
-test('home: hero with subject chips that filter the list', async () => {
+test('hero shows a "Popular:" row of 5 subjects; choosing one shows a removable chip and filters', async () => {
+  const subjects = ['Art', 'Biology', 'Chemistry', 'Dance', 'English', 'French', 'Geography', 'History'];
+  const get = vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/public/filters') return { data: { languages: ['mr'], subjects } };
+    return { data: [card], pagination: { page: 1, limit: 12, total: 1 } };
+  });
+  wrap(<HomePage />);
+  const group = await screen.findByRole('group', { name: /popular subjects/i });
+  await waitFor(() => expect(within(group).getAllByRole('button')).toHaveLength(5));
+  expect(within(group).queryByRole('button', { name: 'French' })).not.toBeInTheDocument();
+  await userEvent.click(within(group).getByRole('button', { name: 'Dance' }));
+  await waitFor(() => expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ subject: 'Dance' })));
+  await userEvent.click(screen.getByRole('button', { name: /remove dance filter/i }));
+  expect(await screen.findByRole('group', { name: /popular subjects/i })).toBeInTheDocument();
+});
+
+test('student browse opens with the search typed in the top bar (?q=)', async () => {
+  const get = vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/public/filters') return { data: { languages: ['mr'], subjects: ['Maths'] } };
+    return { data: [card], pagination: { page: 1, limit: 12, total: 1 } };
+  });
+  wrap(<HomePage />, '/student/browse?q=algebra', '/student/browse');
+  await waitFor(() => expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ q: 'algebra' })));
+  expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+});
+
+test('student browse filters: language and subject chips, result count, clear filters', async () => {
+  const get = vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/public/filters') return { data: { languages: ['mr', 'en'], subjects: ['Maths', 'Web Development'] } };
+    return { data: [card], pagination: { page: 1, limit: 12, total: 1 } };
+  });
+  wrap(<HomePage />, '/student/browse', '/student/browse');
+  // The two filters sit in the page header, beside the title.
+  const head = document.querySelector('.page-header');
+  const langs = await within(head).findByRole('button', { name: /Teaching language/ });
+  const subjects = within(head).getByRole('button', { name: /Subject/ });
+  expect(langs).toHaveTextContent('All');
+  expect(await screen.findByText('1 course')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument();
+  // Opens a styled list; the chosen option is marked and the menu closes.
+  await userEvent.click(langs);
+  expect(screen.getByRole('option', { name: 'All', selected: true })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('option', { name: 'Marathi' }));
+  expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  expect(langs).toHaveTextContent('Marathi');
+  await userEvent.click(subjects);
+  await userEvent.click(screen.getByRole('option', { name: 'Maths' }));
+  await waitFor(() => expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ language: 'mr', subject: 'Maths' })));
+  await userEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+  expect(langs).toHaveTextContent('All');
+  expect(subjects).toHaveTextContent('All');
+  // Escape closes an open menu.
+  await userEvent.click(langs);
+  await userEvent.keyboard('{Escape}');
+  expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+});
+
+// A student who opens a course they already joined (or asked to join) must not be sent to "Enroll now" again.
+function studentCourse(dashboard) {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/student/dashboard') return { data: { myCourses: [], upcomingLiveClasses: [], requests: [], ...dashboard } };
+    return { data: details };
+  });
+  return wrap(<CourseDetailsPage />, '/student/browse/maths-10', '/student/browse/:slug');
+}
+
+test('enrolled student: course page offers "Go to course" instead of Enroll now', async () => {
+  studentCourse({ myCourses: [{ courseId: 7, slug: 'maths-10', title: 'Class 10 Maths', progressPct: 40 }] });
+  expect(await screen.findByRole('link', { name: 'Go to course' })).toHaveAttribute('href', '/student/courses/7');
+  expect(screen.getByText("You're enrolled in this course.")).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Enroll now' })).not.toBeInTheDocument();
+});
+
+test('course page has a breadcrumb that leads back to Browse courses (student area and public site)', async () => {
+  const { unmount } = studentCourse({});
+  const crumbs = await screen.findByRole('navigation', { name: 'Breadcrumb' });
+  expect(within(crumbs).getByRole('link', { name: 'Browse courses' })).toHaveAttribute('href', '/student/browse');
+  expect(within(crumbs).getByText('Maths')).toBeInTheDocument();
+  expect(within(crumbs).getByText('Class 10 Maths')).toHaveAttribute('aria-current', 'page');
+  unmount();
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: details });
+  wrap(<CourseDetailsPage />, '/courses/maths-10', '/courses/:slug');
+  expect(within(await screen.findByRole('navigation', { name: 'Breadcrumb' })).getByRole('link', { name: 'Browse courses' })).toHaveAttribute('href', '/courses');
+});
+
+test('an enrolled student is not offered the free live demo; Go to course is the main button', async () => {
+  studentCourse({ myCourses: [{ courseId: 7, slug: 'maths-10', title: 'Class 10 Maths' }] });
+  const go = await screen.findByRole('link', { name: 'Go to course' });
+  expect(go).toHaveClass('btn--primary');
+  expect(screen.queryByRole('button', { name: 'Book a free live demo' })).not.toBeInTheDocument();
+});
+
+test('student with a pending request sees "Request sent" and no Enroll button', async () => {
+  studentCourse({ requests: [{ id: 1, course: { slug: 'maths-10', title: 'Class 10 Maths' }, teacher: 'Suresh', status: 'pending' }] });
+  expect(await screen.findByText('Request sent')).toBeInTheDocument();
+  expect(screen.getByText(/waiting for Suresh/i)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Enroll now' })).not.toBeInTheDocument();
+});
+
+test('rejected request shows the reason and lets the student send a new one; blocked does not', async () => {
+  const { unmount } = studentCourse({ requests: [{ id: 1, course: { slug: 'maths-10' }, teacher: 'Suresh', status: 'rejected', rejectReason: 'Batch is full' }] });
+  expect(await screen.findByText(/Batch is full/)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Send a new request' })).toHaveAttribute('href', '/student/enroll/maths-10');
+  unmount();
+  studentCourse({ requests: [{ id: 1, course: { slug: 'maths-10' }, teacher: 'Suresh', status: 'blocked' }] });
+  expect(await screen.findByText(/not allowed/i)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /enroll|new request/i })).not.toBeInTheDocument();
+});
+
+test('browse cards mark courses the student already joined or requested', async () => {
+  const other = { ...card, slug: 'sci-9', title: 'Class 9 Science' };
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/public/filters') return { data: { languages: ['mr'], subjects: ['Maths'] } };
+    if (path === '/student/dashboard') return { data: { myCourses: [{ courseId: 7, slug: 'maths-10' }], requests: [{ course: { slug: 'sci-9' }, status: 'pending' }], upcomingLiveClasses: [] } };
+    return { data: [card, other], pagination: { page: 1, limit: 8, total: 2 } };
+  });
+  wrap(<HomePage />, '/student/browse', '/student/browse');
+  expect(await screen.findByText('Enrolled')).toBeInTheDocument();
+  expect(screen.getByText('Requested')).toBeInTheDocument();
+});
+
+test('courses load 8 at a time: "Show N more" adds the next page under the cards', async () => {
+  const mk = (from, n) => Array.from({ length: n }, (_, i) => ({ ...card, slug: `c-${from + i}`, title: `Course ${from + i}` }));
+  const get = vi.spyOn(client.api, 'get').mockImplementation(async (path, q) => {
+    if (path === '/public/filters') return { data: { languages: ['mr'], subjects: ['Maths'] } };
+    return q.page === 2 ? { data: mk(9, 2), pagination: { page: 2, limit: 8, total: 10 } } : { data: mk(1, 8), pagination: { page: 1, limit: 8, total: 10 } };
+  });
+  wrap(<HomePage />, '/student/browse', '/student/browse');
+  expect(await screen.findByRole('link', { name: /Course 1\b/ })).toBeInTheDocument();
+  expect(screen.getAllByRole('article')).toHaveLength(8);
+  expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ page: 1, limit: 8 }));
+  await userEvent.click(screen.getByRole('button', { name: 'Show 2 more' }));
+  await waitFor(() => expect(screen.getAllByRole('article')).toHaveLength(10));
+  expect(screen.queryByRole('button', { name: /show .* more/i })).not.toBeInTheDocument();
+});
+
+test('home: hero with popular subject links that filter the list', async () => {
   const get = vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
     if (path === '/public/filters') return { data: { languages: ['mr'], subjects: ['Maths', 'Web Development'] } };
     return { data: [card], pagination: { page: 1, limit: 12, total: 1 } };
@@ -50,9 +194,8 @@ test('home: hero with subject chips that filter the list', async () => {
   wrap(<HomePage />);
   expect(screen.getByRole('heading', { level: 1, name: 'Find the right teacher. Watch a free demo first.' })).toBeInTheDocument();
   const chips = await screen.findByRole('group', { name: 'Popular subjects' });
-  expect(within(chips).getByRole('button', { name: 'All', pressed: true })).toBeInTheDocument();
   await userEvent.click(await within(chips).findByRole('button', { name: 'Web Development' }));
-  expect(within(chips).getByRole('button', { name: 'Web Development', pressed: true })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /remove web development filter/i })).toBeInTheDocument();
   await waitFor(() => expect(get).toHaveBeenCalledWith('/public/courses', expect.objectContaining({ subject: 'Web Development' })));
 });
 

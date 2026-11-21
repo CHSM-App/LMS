@@ -32,3 +32,13 @@ test('network failure becomes a friendly error', async () => {
   vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.reject(new TypeError('Failed to fetch')));
   await expect(api.get('/x')).rejects.toMatchObject({ status: 0, code: 'NETWORK' });
 });
+
+test('query values with spaces or symbols are percent-encoded (%20, never +) so the API validator accepts them', async () => {
+  const f = vi.spyOn(globalThis, 'fetch').mockImplementation(() => json(200, { success: true, data: [] }));
+  await api.get('/public/courses', { subject: 'Web Development', q: 'c++ & माहिती', page: 1, skip: '' });
+  const url = f.mock.calls[0][0];
+  expect(url).toContain('subject=Web%20Development');
+  expect(url).toContain(`q=${encodeURIComponent('c++ & माहिती')}`);
+  expect(url).not.toContain('+');
+  expect(url).not.toContain('skip');
+});

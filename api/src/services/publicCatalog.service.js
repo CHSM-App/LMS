@@ -45,8 +45,13 @@ async function list({ q, language, subject, teacher, offset, limit }) {
 
 async function filters() {
   const langs = await query(`SELECT DISTINCT c.language FROM dbo.courses c JOIN dbo.users u ON u.user_id = c.teacher_id WHERE ${VISIBLE}`);
-  const subjects = await query(`SELECT DISTINCT c.subject FROM dbo.courses c JOIN dbo.users u ON u.user_id = c.teacher_id WHERE ${VISIBLE} ORDER BY c.subject`);
-  return { languages: langs.map((r) => r.language), subjects: subjects.map((r) => r.subject) };
+  // Most courses first, so the web can show the popular subjects up front.
+  const subjects = await query(`SELECT c.subject, COUNT(*) AS n FROM dbo.courses c JOIN dbo.users u ON u.user_id = c.teacher_id WHERE ${VISIBLE} GROUP BY c.subject ORDER BY COUNT(*) DESC, c.subject`);
+  return {
+    languages: langs.map((r) => r.language),
+    subjects: subjects.map((r) => r.subject),
+    subjectCounts: subjects.map((r) => ({ subject: r.subject, count: r.n })),
+  };
 }
 
 async function findPublished(slug) {

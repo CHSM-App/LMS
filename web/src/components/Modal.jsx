@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function Modal({ open, title, onClose, children, footer, size = 'md' }) {
+export function Modal({ open, title, onClose, children, footer, size = 'md', flush = false }) {
   const { t } = useTranslation();
   const titleId = useId();
   const panelRef = useRef(null);
@@ -55,7 +55,7 @@ export function Modal({ open, title, onClose, children, footer, size = 'md' }) {
             <span aria-hidden="true">✕</span>
           </button>
         </header>
-        <div className="modal__body">{children}</div>
+        <div className={`modal__body${flush ? ' modal__body--flush' : ''}`}>{children}</div>
         {footer && <footer className="modal__footer">{footer}</footer>}
       </div>
     </div>,

@@ -37,4 +37,5 @@
         attemptLimit: { type: integer, nullable: true }
         startsAt: { type: string, nullable: true }
         endsAt: { type: string, nullable: true }
+        allowLate: { type: boolean, default: true, description: 'When false, a new attempt is refused after endsAt (EXAM_CLOSED). When true the attempt is allowed and marked late.' }
         batchIds: { type: array, items: { type: integer } }

@@ -9,7 +9,7 @@ import { ExamRunner } from './ExamTakePage';
 import CoursePlayerPage from './CoursePlayerPage';
 import StudentExamsPage from './StudentExamsPage';
 import EnrollPage from './EnrollPage';
-import { ResultPage, StudentDashboard, StudentLiveClassesPage, StudentMyCoursesPage } from './StudentPages';
+import { ResultPage, StudentDashboard, StudentLiveClassesPage, StudentMyCoursesPage, StudentAttendancePage } from './StudentPages';
 
 function wrap(ui, { path = '/', route = '/', user = { role: 'student', name: 'Meera' } } = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -141,6 +141,28 @@ test('exams: a locked Final explains how to unlock it', async () => {
   expect(screen.getAllByRole('link', { name: 'Start' })).toHaveLength(1);
 });
 
+test('exams: grouped by type, with a status badge, score and summary per exam', async () => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path === '/student/dashboard') return { data: { myCourses: [{ courseId: 3, title: 'Maths', readOnly: false }], upcomingLiveClasses: [], requests: [] } };
+    return { data: [
+      { id: 1, title: 'Unit Test 1', category: 'unit_test_1', mode: 'mock', timeLimitMin: 15, locked: false, attemptsLeft: 0, best: { pct: 80 }, lastAttemptId: 'a-1', openAttemptId: null },
+      { id: 2, title: 'Final', category: 'final', mode: 'mock', locked: false, attemptsLeft: 1, best: null, openAttemptId: 'a-9' },
+      { id: 3, title: 'Circles', category: 'practice', mode: 'practice', locked: false, attemptsLeft: null, best: null, openAttemptId: null },
+    ] };
+  });
+  wrap(<StudentExamsPage />);
+  expect(await screen.findByRole('heading', { name: 'Unit tests' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Final exam' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Practice' })).toBeInTheDocument();
+  expect(screen.getByText('Completed')).toBeInTheDocument();
+  expect(screen.getByText('In progress')).toBeInTheDocument();
+  expect(screen.getByText('Not started')).toBeInTheDocument();
+  expect(screen.getByRole('img', { name: 'Best score 80%' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'View result' })).toHaveAttribute('href', '/student/attempts/a-1/result');
+  expect(screen.getByRole('link', { name: 'Resume' })).toBeInTheDocument();
+  expect(screen.getByText('Exams done')).toBeInTheDocument();
+});
+
 test('enroll: a logged-in student sends the request; a visitor sees registration', async () => {
   vi.spyOn(client.api, 'get').mockResolvedValue({ data: { slug: 'maths-10', title: 'Class 10 Maths', teacher: { name: 'Suresh' }, demoVideos: [], curriculum: [], batches: [] } });
   const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { status: 'pending' } });
@@ -190,4 +212,47 @@ test('result review shows the solution image under the explanation', async () =>
   wrap(<ResultPage />, { path: '/r/a-1', route: '/r/:attemptId' });
   const img = await screen.findByRole('img', { name: /solution image/i });
   expect(img.getAttribute('src')).toContain('/files/solution/abc.png');
+});
+
+test('Attendance page shows each course with its classes marked Present or Absent', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: { courses: [
+    { courseId: 3, title: 'Maths', classesHeld: 2, classesAttended: 1, attendancePct: 50, classes: [
+      { id: 2, topic: 'Geometry', startsAt: '2026-06-17T03:00:00Z', present: false },
+      { id: 1, topic: 'Algebra', startsAt: '2026-06-16T03:00:00Z', present: true },
+    ] },
+    { courseId: 4, title: 'Science', classesHeld: 0, classesAttended: 0, attendancePct: 0, classes: [] },
+  ] } });
+  wrap(<StudentAttendancePage />);
+  expect(await screen.findByRole('heading', { level: 1, name: 'Attendance' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 2, name: 'Maths' })).toBeInTheDocument();
+  expect(screen.getByText('Geometry')).toBeInTheDocument();
+  expect(screen.getByText('Present')).toBeInTheDocument();
+  expect(screen.getByText('Absent')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 2, name: 'Science' })).toBeInTheDocument();
+  expect(screen.getByText('No classes with attendance yet.')).toBeInTheDocument();
+});
+
+test('dashboard shows the latest exam with a Start link; hidden when there is none', async () => {
+  const exam = { id: 9, title: 'Unit Test 1', course: 'Maths', courseId: 3, status: 'notStarted', timeLimitMin: 30, attemptsLeft: 1, best: null, lastAttemptId: null };
+  const data = { myCourses: [], upcomingLiveClasses: [], requests: [], latestExam: exam };
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => (path === '/student/dashboard' ? { data } : { data: [] }));
+  const { unmount } = wrap(<StudentDashboard />);
+  expect(await screen.findByText('Unit Test 1')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Start' })).toHaveAttribute('href', '/student/exams/9/take');
+  unmount();
+  data.latestExam = null;
+  wrap(<StudentDashboard />);
+  await screen.findByText('Your summary', { selector: '*' }).catch(() => {});
+  expect(screen.queryByText('Unit Test 1')).not.toBeInTheDocument();
+});
+
+test('dashboard latest exam: closed or not-yet-open exams show a status and no Start link', async () => {
+  const base = { id: 9, title: 'Unit Test 1', course: 'Maths', courseId: 3, status: 'notStarted', timeLimitMin: 30, attemptsLeft: 1, best: null, lastAttemptId: null, startsAt: '2026-06-01T00:00:00Z', endsAt: '2026-06-10T00:00:00Z' };
+  for (const [flags, label] of [[{ closed: true }, 'Closed'], [{ notOpen: true }, 'Not open yet']]) {
+    vi.spyOn(client.api, 'get').mockImplementation(async (path) => (path === '/student/dashboard' ? { data: { myCourses: [], upcomingLiveClasses: [], requests: [], latestExam: { ...base, ...flags } } } : { data: [] }));
+    const { unmount } = wrap(<StudentDashboard />);
+    expect(await screen.findByText(label)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Start' })).not.toBeInTheDocument();
+    unmount();
+  }
 });

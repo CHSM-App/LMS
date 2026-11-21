@@ -24,6 +24,7 @@ router.post('/teacher/enrollments/:id/approve', requireActiveTeacherSubscription
 router.post('/teacher/enrollments/:id/reject', h((req) => enrollments.reject(req.params.id, req.user.id, req.body)));
 router.put('/teacher/enrollments/:id/batch', h((req) => enrollments.moveBatch(req.params.id, req.user.id, req.body)));
 router.get('/teacher/students', h((req) => enrollments.students(req.user.id, { courseId: req.query.course, batchId: req.query.batch, q: req.query.q })));
+router.get('/teacher/students/:studentPublicId/attendance', h((req) => enrollments.studentAttendance(req.user.id, req.params.studentPublicId, req.query.month)));
 router.put('/teacher/students/:studentPublicId/access/:courseId', h((req) => enrollments.setAccess(req.user.id, req.params.studentPublicId, req.params.courseId, req.body)));
 
 // Live classes + attendance

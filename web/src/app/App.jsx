@@ -1,3 +1,4 @@
+import { ScrollToTop } from './ScrollToTop';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -47,6 +48,7 @@ const FinalResultPage = sp('FinalResultPage');
 const StudentDoubtsPage = sp('StudentDoubtsPage');
 const StudentLiveClassesPage = sp('StudentLiveClassesPage');
 const StudentProgressPage = sp('StudentProgressPage');
+const StudentAttendancePage = sp('StudentAttendancePage');
 const StudentMyCoursesPage = sp('StudentMyCoursesPage');
 const StudentProfilePage = sp('StudentProfilePage');
 const StyleGuide = lazy(() => import('./StyleGuide'));
@@ -65,6 +67,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AuthProvider>
             <Suspense fallback={<Loading />}>
               <Routes>
@@ -124,6 +127,7 @@ export default function App() {
                   <Route path="live-classes" element={<StudentLiveClassesPage />} />
                   <Route path="doubts" element={<StudentDoubtsPage />} />
                   <Route path="progress" element={<StudentProgressPage />} />
+                  <Route path="attendance" element={<StudentAttendancePage />} />
                   <Route path="profile" element={<StudentProfilePage />} />
                 </Route>
 

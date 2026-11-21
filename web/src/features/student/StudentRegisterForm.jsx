@@ -60,13 +60,13 @@ export function StudentRegisterForm({ onDone, heading = null, intro = null, foot
 
   const form = !otp.sentTo ? (
     <form onSubmit={onContinue} noValidate>
-      <div className="grid grid--2">
+      <div className="grid reg-cols reg-cols--3">
         <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
         <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
-        <Input label={t('requests.education')} value={f.education} onChange={set('education')} error={errors.education} hint={t('demoForm.educationHint')} required />
-        <Input label={optional(t('demoForm.classStandard'))} value={f.classStandard} onChange={set('classStandard')} />
-        <Input label={optional(t('common.city'))} value={f.city} onChange={set('city')} />
-        <Input label={optional(t('common.email'))} type="email" value={f.email} onChange={set('email')} error={errors.email} />
+        <Input label={t('requests.education')} value={f.education} onChange={set('education')} error={errors.education} placeholder={t('demoForm.educationPlaceholder')} required />
+        <Input label={t('demoForm.classStandard')} placeholder={t('common.optional')} value={f.classStandard} onChange={set('classStandard')} />
+        <Input label={t('common.city')} placeholder={t('common.optional')} value={f.city} onChange={set('city')} />
+        <Input label={t('common.email')} placeholder={t('common.optional')} type="email" value={f.email} onChange={set('email')} error={errors.email} />
       </div>
       <ConsentFields accept={accept} onAccept={setAccept} whatsapp={whatsapp} onWhatsapp={setWhatsapp} error={errors.accept} />
       {otp.error && <Banner kind="error" message={otp.error} />}

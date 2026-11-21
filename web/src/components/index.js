@@ -7,3 +7,4 @@ export { StatusBadge, ProgressBar, Banner, EmptyState, Spinner, PageHeader, Card
 export { FileUpload, UploadProgress } from './FileUpload';
 export { VideoFrame, embedUrl } from './VideoFrame';
 export { LiveStageBadge } from './LiveStageBadge';
+export { BackLink } from './BackLink';

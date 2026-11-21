@@ -5,6 +5,20 @@ import { api } from '../../../api/client';
 import { Button, Input, Modal, PageHeader, Select, StatusBadge, Table, Textarea, useToast } from '../../../components';
 import { formatDateTime, todayISO } from '../../../utils/format';
 
+const initialsOf = (name = '') => name.trim().split(/s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?';
+
+function Person({ name, mobile, education }) {
+  return (
+    <div className="person">
+      <span className="avatar avatar--md avatar--initials" aria-hidden="true">{initialsOf(name)}</span>
+      <div className="person__text">
+        <span className="person__name">{name}</span>
+        <span className="person__meta">{[mobile, education].filter(Boolean).join(' · ')}</span>
+      </div>
+    </div>
+  );
+}
+
 const toLocalInput = (iso) => (iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
 
 function ScheduleDialog({ request, onClose, onDone }) {
@@ -125,18 +139,16 @@ export default function RequestsPage() {
   });
 
   const demoColumns = [
-    { key: 'name', header: t('common.name') },
-    { key: 'mobile', header: t('common.mobile') },
-    { key: 'education', header: t('requests.education') },
-    { key: 'course', header: t('nav.courses'), render: (r) => r.course.title },
-    { key: 'message', header: t('requests.message'), render: (r) => r.message || '—' },
-    { key: 'scheduledAt', header: t('requests.when'), render: (r) => (r.scheduledAt ? formatDateTime(r.scheduledAt, i18n.language) : '—') },
+    { key: 'name', header: t('requests.student'), render: (r) => <Person name={r.name} mobile={r.mobile} education={r.education} /> },
+    { key: 'course', header: t('nav.courses'), render: (r) => <span className="cell-course">{r.course.title}</span> },
+    { key: 'message', header: t('requests.message'), render: (r) => (r.message ? <p className="clamp-2" title={r.message}>{r.message}</p> : '—') },
+    { key: 'scheduledAt', header: t('requests.when'), render: (r) => (r.scheduledAt ? <span className="nowrap">{formatDateTime(r.scheduledAt, i18n.language)}</span> : '—') },
     { key: 'status', header: t('common.status'), render: (r) => <StatusBadge status={r.status} /> },
     { key: 'wa', header: 'WhatsApp', render: (r) => <WhatsAppCell request={r} onSent={() => qc.invalidateQueries({ queryKey: ['teacher', 'demos'] })} /> },
     {
       key: 'actions', header: t('common.actions'),
       render: (r) => (['pending', 'scheduled'].includes(r.status) ? (
-        <div className="row">
+        <div className="row-actions">
           <Button variant="compact" size="sm" onClick={() => setDialog({ kind: 'schedule', item: r })}>{r.status === 'pending' ? t('requests.schedule') : t('requests.reschedule')}</Button>
           {r.status === 'scheduled' && <Button variant="ghost" size="sm" onClick={() => act.mutate({ path: `/teacher/demo-requests/${r.id}/complete` })}>{t('requests.markDone')}</Button>}
           <Button variant="ghost" size="sm" onClick={() => setDialog({ kind: 'rejectDemo', item: r })}>{t('teacherRequests.reject')}</Button>
@@ -145,17 +157,15 @@ export default function RequestsPage() {
     },
   ];
   const enrollColumns = [
-    { key: 'name', header: t('common.name'), render: (r) => r.student.name },
-    { key: 'mobile', header: t('common.mobile'), render: (r) => r.student.mobile },
-    { key: 'education', header: t('requests.education'), render: (r) => r.student.education || '—' },
-    { key: 'course', header: t('nav.courses'), render: (r) => r.course.title },
-    { key: 'message', header: t('requests.message'), render: (r) => r.message || '—' },
-    { key: 'requestedAt', header: t('common.date'), render: (r) => formatDateTime(r.requestedAt, i18n.language) },
+    { key: 'name', header: t('requests.student'), render: (r) => <Person name={r.student.name} mobile={r.student.mobile} education={r.student.education} /> },
+    { key: 'course', header: t('nav.courses'), render: (r) => <span className="cell-course">{r.course.title}</span> },
+    { key: 'message', header: t('requests.message'), render: (r) => (r.message ? <p className="clamp-2" title={r.message}>{r.message}</p> : '—') },
+    { key: 'requestedAt', header: t('common.date'), render: (r) => <span className="nowrap">{formatDateTime(r.requestedAt, i18n.language)}</span> },
     { key: 'status', header: t('common.status'), render: (r) => <StatusBadge status={r.status} /> },
     {
       key: 'actions', header: t('common.actions'),
       render: (r) => (r.status === 'pending' ? (
-        <div className="row">
+        <div className="row-actions">
           <Button variant="compact" size="sm" onClick={() => setDialog({ kind: 'approve', item: r })}>{t('requests.approve')}</Button>
           <Button variant="ghost" size="sm" onClick={() => setDialog({ kind: 'rejectEnroll', item: r })}>{t('teacherRequests.reject')}</Button>
         </div>
@@ -167,12 +177,14 @@ export default function RequestsPage() {
   return (
     <>
       <PageHeader title={t('nav.requests')} subtitle={t('requests.subtitle')} />
-      <div className="tabs" role="tablist">
+      <div className="tabs tabs--lg" role="tablist">
         <button type="button" role="tab" className="tabs__tab" aria-selected={tab === 'demo'} onClick={() => { setTab('demo'); setStatus(''); }}>{t('requests.demoTab')}</button>
         <button type="button" role="tab" className="tabs__tab" aria-selected={tab === 'enroll'} onClick={() => { setTab('enroll'); setStatus(''); }}>{t('requests.enrollTab')}</button>
       </div>
-      <div className="filters">
-        <Select label={t('common.status')} value={status} onChange={(e) => setStatus(e.target.value)} options={statusOptions.map((s) => ({ value: s, label: s ? t(`status.${s}`) : t('common.all') }))} />
+      <div className="req-filter" role="group" aria-label={t('common.status')}>
+        {statusOptions.map((s) => (
+          <button key={s || 'all'} type="button" className="filter-pill" aria-pressed={status === s} onClick={() => setStatus(s)}>{s ? t(`status.${s}`) : t('common.all')}</button>
+        ))}
       </div>
       {tab === 'demo' ? (
         <Table columns={demoColumns} rows={demos.data?.data} loading={demos.isLoading} error={demos.error?.message} onRetry={demos.refetch} empty={t('requests.noDemos')} />

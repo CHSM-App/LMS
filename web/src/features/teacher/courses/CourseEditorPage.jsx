@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../../api/client';
-import { Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, Select, Spinner, StatusBadge, Textarea, useToast } from '../../../components';
+import { BackLink, Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, Select, Spinner, StatusBadge, Textarea, useToast } from '../../../components';
 import { uploadSmall } from '../../../utils/upload';
 import { VideoSourceField } from './VideoSourceField';
 import { CurriculumTab } from './CurriculumTab';
@@ -112,7 +112,7 @@ export default function CourseEditorPage() {
 
   return (
     <>
-      <p><Link to="/teacher/courses">{t('courses.back')}</Link></p>
+      <p><BackLink to="/teacher/courses">{t('courses.back')}</BackLink></p>
       <PageHeader
         title={course.title}
         subtitle={<StatusBadge status={course.status} />}

@@ -119,3 +119,43 @@ describe('Google Meet via Calendar API', () => {
     await expect(meet.createLink({ title: 'Algebra', start: new Date(), durationMin: 30 })).resolves.toBeNull();
   });
 });
+
+describe('Google Meet via Calendar API with an OAuth refresh token (no service account)', () => {
+  beforeEach(() => {
+    process.env.MEET_PROVIDER = 'google';
+    process.env.GOOGLE_CALENDAR_ID = 'primary';
+    process.env.GOOGLE_CLIENT_ID = 'client-1.apps.googleusercontent.com';
+    process.env.GOOGLE_CLIENT_SECRET = 'secret-1';
+    process.env.GOOGLE_REFRESH_TOKEN = '1//refresh-1';
+    delete process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+    delete process.env.GOOGLE_IMPERSONATE_USER;
+  });
+
+  test('swaps the refresh token for an access token and creates the Meet link on that calendar', async () => {
+    http.reply('https://oauth2.googleapis.com/token', 200, { access_token: 'u-token', expires_in: 3600 });
+    http.reply('https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1', 200, { hangoutLink: 'https://meet.google.com/xyz-abcd-efg' });
+
+    const meet = require('../../src/providers/meet');
+    const link = await meet.createLink({ title: 'Algebra', start: new Date('2026-06-15T03:30:00Z'), durationMin: 60 });
+    expect(link).toBe('https://meet.google.com/xyz-abcd-efg');
+
+    const [token, event] = http.calls;
+    expect(token.body).toMatchObject({
+      grant_type: 'refresh_token', refresh_token: '1//refresh-1', client_id: 'client-1.apps.googleusercontent.com', client_secret: 'secret-1',
+    });
+    expect(event.headers.authorization).toBe('Bearer u-token');
+  });
+
+  test('a revoked refresh token returns null so the teacher can paste a link instead', async () => {
+    http.reply('https://oauth2.googleapis.com/token', 400, { error: 'invalid_grant' });
+    const meet = require('../../src/providers/meet');
+    await expect(meet.createLink({ title: 'Algebra', start: new Date(), durationMin: 30 })).resolves.toBeNull();
+  });
+
+  test('without a refresh token or a service account no link is made', async () => {
+    delete process.env.GOOGLE_REFRESH_TOKEN;
+    const meet = require('../../src/providers/meet');
+    await expect(meet.createLink({ title: 'Algebra', start: new Date(), durationMin: 30 })).resolves.toBeNull();
+    expect(http.calls).toHaveLength(0);
+  });
+});
