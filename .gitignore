@@ -6,12 +6,11 @@ dist/
 build/
 coverage/
 uploads/
-storage/
+/api/storage/
 .dart_tool/
 .flutter-plugins*
 .superpowers/
 *.log
-storage/
 storage-test/
 e2e-report/
 test-results/
