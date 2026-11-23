@@ -73,3 +73,16 @@ test('a server error is shown and the dialog stays open', async () => {
   expect(await within(dialog).findByRole('alert')).toHaveTextContent('already has a session');
   expect(screen.getByRole('dialog')).toBeInTheDocument();
 });
+
+test('a lesson for all batches shows that session and still takes a date for this batch', async () => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path.endsWith('/live-schedule')) return { data: [{ slotId: 's9', contentId: 90, title: 'Old class', module: { id: 1, name: 'M' }, session: null, allBatches: { contentId: 90, startsAt: '2026-06-15T12:30:00.000Z', durationMin: 60, stage: 'recorded', batch: null } }] };
+    return { data: [{ id: 4, name: '2027 - Batch A', startDate: '2027-06-01', studentCount: 0, status: 'active' }] };
+  });
+  wrap(<BatchesTab courseId={7} />);
+  await userEvent.click(await screen.findByRole('button', { name: 'Live schedule' }));
+  const dialog = await screen.findByRole('dialog');
+  expect(await within(dialog).findByText(/All batches/)).toBeInTheDocument();
+  expect(within(dialog).getByText('Recorded')).toBeInTheDocument();
+  expect(within(dialog).getByLabelText(/date and time/i)).toBeInTheDocument();
+});

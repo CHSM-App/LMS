@@ -237,12 +237,13 @@ async function liveSchedule(courseId, batchIdParam) {
     for (const x of rows.filter((r) => r.module_id === m.module_id)) {
       const key = String(x.live_slot_id || x.content_id);
       if (!seen.has(key)) {
-        const o = { slotId: x.live_slot_id || null, contentId: x.content_id, title: x.title, module: { id: m.module_id, name: m.name }, session: null };
+        const o = { slotId: x.live_slot_id || null, contentId: x.content_id, title: x.title, module: { id: m.module_id, name: m.name }, session: null, allBatches: null };
         seen.set(key, o);
         out.push(o);
       }
-      // A session for this batch, or one for all batches, counts as scheduled.
-      if (x.live_class_id && (x.live_batch_id === batchId || x.live_batch_id === null)) seen.get(key).session = sessionOut(x);
+      if (x.live_class_id && x.live_batch_id === batchId) seen.get(key).session = sessionOut(x);
+      // Followed by the batch until it gets its own session.
+      if (x.live_class_id && x.live_batch_id === null) seen.get(key).allBatches = sessionOut(x);
     }
   }
   return out;

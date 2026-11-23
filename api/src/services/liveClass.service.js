@@ -4,6 +4,7 @@ const meet = require('../providers/meet');
 const { config } = require('../config/env');
 const { notify, notifyMany } = require('./notification.service');
 const { owned } = require('./ownership');
+const { forBatchSql } = require('./liveSlots');
 const { clock } = require('../utils/clock');
 const { text } = require('../utils/validate');
 const { badRequest, notFound } = require('../utils/APIError');
@@ -44,13 +45,15 @@ async function get(id, teacherId) {
 }
 
 // Students the class is for: approved enrollments of the course, in the batch (or every batch when batch is null).
-async function targetStudents(courseId, batchId, tx) {
+// liveClassId: leaves out batches that have their own session of the same lesson.
+async function targetStudents(courseId, batchId, tx, liveClassId = null) {
   return query(
     `SELECT u.user_id, u.public_id, u.name, u.mobile, u.whatsapp_opt_in, u.preferred_lang
      FROM dbo.enrollments e JOIN dbo.users u ON u.user_id = e.student_id
      WHERE e.course_id = @c AND e.status = 'approved' AND u.deleted_at IS NULL AND (@b IS NULL OR e.batch_id = @b)
+       AND (@lc IS NULL OR EXISTS (SELECT 1 FROM dbo.live_classes l WHERE l.live_class_id = @lc AND (l.batch_id IS NOT NULL OR e.batch_id IS NULL OR ${forBatchSql('l', 'e.batch_id')})))
      ORDER BY u.name`,
-    { c: T.int(courseId), b: T.int(batchId ?? null) },
+    { c: T.int(courseId), b: T.int(batchId ?? null), lc: T.int(liveClassId) },
     tx,
   );
 }
@@ -155,7 +158,7 @@ async function list(teacherId, { courseId, from }) {
 
 async function attendanceSheet(id, teacherId) {
   const lc = await get(id, teacherId);
-  const students = await targetStudents(lc.course_id, lc.batch_id);
+  const students = await targetStudents(lc.course_id, lc.batch_id, undefined, lc.live_class_id);
   const marks = await query('SELECT student_id, present FROM dbo.attendance WHERE live_class_id = @id', { id: T.int(lc.live_class_id) });
   return students.map((s) => {
     const m = marks.find((x) => x.student_id === s.user_id);
@@ -167,7 +170,7 @@ async function attendanceSheet(id, teacherId) {
 async function saveAttendance(id, teacherId, records) {
   const lc = await get(id, teacherId);
   if (!Array.isArray(records) || !records.length) throw badRequest('records: mark at least one student');
-  const allowed = await targetStudents(lc.course_id, lc.batch_id);
+  const allowed = await targetStudents(lc.course_id, lc.batch_id, undefined, lc.live_class_id);
   const byPublic = new Map(allowed.map((s) => [String(s.public_id).toLowerCase(), s.user_id]));
   const resolved = records.map((r) => ({ studentId: byPublic.get(String(r.studentPublicId).toLowerCase()), present: !!r.present }));
   if (resolved.some((r) => !r.studentId)) throw badRequest('Some students are not in this class', 'NOT_IN_CLASS');
@@ -218,7 +221,7 @@ async function runLiveClassReminders() {
     if (!claimed.length) continue;
     sent += 1;
     const { date, time } = istParts(lc.starts_at);
-    const students = await targetStudents(lc.course_id, lc.batch_id);
+    const students = await targetStudents(lc.course_id, lc.batch_id, undefined, lc.live_class_id);
     const link = lc.content_id ? lessonLink(lc.course_id, lc.content_id) : '/student/live-classes';
     await notifyMany(students.map((s) => s.user_id), {
       key: 'liveClass.reminder',

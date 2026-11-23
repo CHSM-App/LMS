@@ -7,6 +7,7 @@ const attempts = require('./attempt.service');
 const storage = require('../providers/storage');
 const { accessStatus } = require('./enrollment.service');
 const { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql, countedSql, placeholderFlagSql } = require('./studentAccess');
+const { forBatchSql, heldForSql } = require('./liveSlots');
 const { liveStage } = require('../domain/liveLesson');
 const { sanitize } = require('../utils/sanitize');
 const { clock } = require('../utils/clock');
@@ -137,7 +138,7 @@ async function liveClasses(studentId, { upcomingOnly = true } = {}) {
      JOIN dbo.courses c ON c.course_id = l.course_id
      JOIN dbo.users t ON t.user_id = c.teacher_id AND t.status = 'approved'
      LEFT JOIN dbo.batches b ON b.batch_id = l.batch_id
-     WHERE (l.batch_id IS NULL OR l.batch_id = e.batch_id) AND l.status <> 'cancelled'
+     WHERE ${forBatchSql('l', 'e.batch_id')} AND l.status <> 'cancelled'
        AND (@up = 0 OR DATEADD(MINUTE, l.duration_min, l.starts_at) >= @now)
      ORDER BY l.starts_at`,
     { s: T.int(studentId), now: T.datetime(now), up: T.bit(upcomingOnly) },
@@ -375,7 +376,7 @@ async function progress(studentId) {
     const att = await one(
       `SELECT
          (SELECT COUNT(*) FROM dbo.live_classes l
-           WHERE l.course_id = @c AND (l.batch_id IS NULL OR l.batch_id = @b) AND l.status <> 'cancelled'
+           WHERE l.course_id = @c AND ${heldForSql('l', '@b', '@s')} AND l.status <> 'cancelled'
              AND EXISTS (SELECT 1 FROM dbo.attendance a WHERE a.live_class_id = l.live_class_id)) AS held,
          (SELECT COUNT(*) FROM dbo.attendance a JOIN dbo.live_classes l ON l.live_class_id = a.live_class_id
            WHERE l.course_id = @c AND a.student_id = @s AND a.present = 1) AS present`,
@@ -412,7 +413,7 @@ async function attendanceHistory(studentId) {
       `SELECT l.live_class_id, l.topic, l.starts_at, CAST(ISNULL(a.present, 0) AS BIT) AS present
        FROM dbo.live_classes l
        LEFT JOIN dbo.attendance a ON a.live_class_id = l.live_class_id AND a.student_id = @s
-       WHERE l.course_id = @c AND (l.batch_id IS NULL OR l.batch_id = @b) AND l.status <> 'cancelled'
+       WHERE l.course_id = @c AND ${heldForSql('l', '@b', '@s')} AND l.status <> 'cancelled'
          AND EXISTS (SELECT 1 FROM dbo.attendance x WHERE x.live_class_id = l.live_class_id)
        ORDER BY l.starts_at DESC, l.live_class_id DESC`,
       { s: T.int(studentId), c: T.int(r.course_id), b: T.int(r.batch_id) },

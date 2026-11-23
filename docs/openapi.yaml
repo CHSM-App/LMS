@@ -1644,7 +1644,7 @@ paths:
         '201': { description: The new session, content: { application/json: { schema: { $ref: '#/components/schemas/LiveSession' } } } }
         '400': { description: 'Invalid time, batch or Meet link' }
         '404': { description: Not your content }
-        '409': { description: SESSION_EXISTS or SLOT_ALL_BATCHES or BATCH_CLOSED or NOT_LIVE_LESSON }
+        '409': { description: SESSION_EXISTS or BATCH_CLOSED or NOT_LIVE_LESSON }
   /teacher/courses/{courseId}/batches/{batchId}/live-schedule:
     parameters:
       - { name: courseId, in: path, required: true, schema: { type: integer } }
@@ -1654,7 +1654,7 @@ paths:
       summary: Every live lesson of the course with this batch's session, or null when not scheduled yet
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: The live lessons and this batch's session for each }
+        '200': { description: The live lessons with this batch's session and any all-batches session (allBatches) it replaces }
         '404': { description: Not your course or batch }
     post:
       tags: [teacher-content]
@@ -1669,7 +1669,7 @@ paths:
         '201': { description: The created sessions }
         '400': { description: Invalid item }
         '404': { description: Not your course or batch }
-        '409': { description: SESSION_EXISTS or SLOT_ALL_BATCHES or BATCH_CLOSED }
+        '409': { description: SESSION_EXISTS or BATCH_CLOSED }
   /teacher/courses/{courseId}/duplicate:
     parameters: [{ name: courseId, in: path, required: true, schema: { type: integer } }]
     post:

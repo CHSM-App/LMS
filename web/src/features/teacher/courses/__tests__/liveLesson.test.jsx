@@ -179,3 +179,9 @@ test('a recorded live lesson offers to remove the recording', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Remove recording' }));
   await waitFor(() => expect(del).toHaveBeenCalledWith('/teacher/contents/50/recording', undefined));
 });
+
+test('a lesson for all batches also offers Add batch', async () => {
+  mockApi([{ ...liveLesson, live: { ...liveLesson.live, batch: null } }]);
+  wrap(<CurriculumTab courseId={7} />);
+  expect(await screen.findByRole('button', { name: 'Add batch' })).toBeInTheDocument();
+});

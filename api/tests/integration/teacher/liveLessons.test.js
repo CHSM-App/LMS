@@ -259,12 +259,13 @@ describe('one live lesson, a session per batch', () => {
     expect(await counts()).toEqual({ c: 1, l: 1 });
   });
 
-  test('a lesson for all batches cannot get a single-batch session', async () => {
+  test('a lesson for all batches can get its own session for one batch, once', async () => {
     const { t, moduleId, b } = await lessonForA();
     const all = (await addLive(t, moduleId)).body.data;
-    const r = await session(t, all.id, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' });
-    expect(r.status).toBe(409);
-    expect(r.body.code).toBe('SLOT_ALL_BATCHES');
+    const body = { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' };
+    expect((await session(t, all.id, body)).status).toBe(201);
+    const again = await session(t, all.id, body);
+    expect(again.body.code).toBe('SESSION_EXISTS');
   });
 
   test('a closed batch cannot be scheduled', async () => {
@@ -521,11 +522,14 @@ describe('final review fixes', () => {
     expect(await counts()).toEqual({ c: 1, l: 1 });
   });
 
-  test('the live schedule shows a lesson for all batches as already scheduled', async () => {
+  test('the live schedule offers a lesson for all batches, with the all-batches session beside it', async () => {
     const { t, courseId, moduleId, batch } = await setup();
     const all = (await addLive(t, moduleId)).body.data;
-    const list = (await t.get(`/api/v1/teacher/courses/${courseId}/batches/${batch.id}/live-schedule`)).body.data;
-    expect(list.find((x) => x.slotId === all.live.slotId).session).toMatchObject({ batch: null, stage: 'upcoming' });
+    const url = `/api/v1/teacher/courses/${courseId}/batches/${batch.id}/live-schedule`;
+    const row = async () => (await t.get(url)).body.data.find((x) => x.slotId === all.live.slotId);
+    expect(await row()).toMatchObject({ session: null, allBatches: { contentId: all.id, batch: null, stage: 'upcoming' } });
+    expect((await t.post(url, { items: [{ slotId: all.live.slotId, startsAt: '2099-07-01T12:30:00Z' }] })).status).toBe(201);
+    expect((await row()).session.batch.id).toBe(batch.id);
   });
 
   test('a closed batch cannot get a new live lesson', async () => {

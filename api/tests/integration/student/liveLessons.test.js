@@ -319,3 +319,66 @@ test("a 'Schedule coming soon' lesson does not count against progress", async ()
   expect((await w.s.get(`/api/v1/student/courses/${w.courseId}`)).body.data.progressPct).toBe(100);
   expect((await w.s.get('/api/v1/student/dashboard')).body.data.myCourses[0].progressPct).toBe(100);
 });
+
+describe("a batch's own session replaces the all-batches session for that batch only", () => {
+  async function mixed() {
+    const w = await world();
+    const next = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: '2027 - Batch A', startDate: '2026-01-01' })).body.data;
+    const n = await student({ name: 'Next year kid' });
+    await activeEnrollment(w.courseId, w.t.user.user_id, n.user_id, next.id);
+    const all = (await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, liveLessonBody({ startsAt: START }))).body.data;
+    const key = await uploadVideo(w.t);
+    await w.t.put(`/api/v1/teacher/contents/${all.id}/recording`, { videoSource: 'upload', fileKey: key });
+    return { ...w, next, n, ns: await asStudent(n), all };
+  }
+  const schedule = async (w) => (await w.t.post(`/api/v1/teacher/contents/${w.all.id}/sessions`, { batchId: w.next.id, startsAt: '2026-06-20T12:30:00Z' })).body.data.contentId;
+  const lives = async (s, w) => (await s.get(`/api/v1/student/courses/${w.courseId}`)).body.data.subjects.flatMap((x) => x.modules).flatMap((m) => m.contents).filter((x) => x.type === 'live').map((x) => [x.id, x.live.stage]);
+
+  test('course view: the new batch gets only its own upcoming class, the old batch keeps the recording', async () => {
+    const w = await mixed();
+    expect(await lives(w.ns, w)).toEqual([[w.all.id, 'recorded']]);
+    const own = await schedule(w);
+    expect(await lives(w.ns, w)).toEqual([[own, 'upcoming']]);
+    expect(await lives(w.s, w)).toEqual([[w.all.id, 'recorded']]);
+  });
+
+  test('the old recording is closed to the new batch: content, progress, download and an earlier download', async () => {
+    const w = await mixed();
+    await w.ns.post('/api/v1/student/devices', { deviceId: 'device-dddd-4444', deviceName: 'Redmi', platform: 'android' });
+    const dl = () => request(app).post(`/api/v1/student/contents/${w.all.id}/download`).set('Authorization', `Bearer ${w.ns.token}`).set('X-Device-Id', 'device-dddd-4444').send({});
+    expect((await dl()).status).toBe(200);
+    await schedule(w);
+    expect((await w.ns.get(`/api/v1/student/contents/${w.all.id}`)).status).toBe(404);
+    expect((await w.ns.post(`/api/v1/student/contents/${w.all.id}/progress`, { completed: true })).status).toBe(404);
+    expect((await dl()).status).toBe(404);
+    const renew = await w.ns.post('/api/v1/student/downloads/renew', { deviceId: 'device-dddd-4444', contentIds: [w.all.id] });
+    expect(renew.body.data[0]).toMatchObject({ revoked: true, reason: 'content_removed' });
+    expect((await w.s.get(`/api/v1/student/contents/${w.all.id}`)).status).toBe(200);
+  });
+
+  test('live classes list and the attendance sheet follow the same rule', async () => {
+    const w = await mixed();
+    await schedule(w);
+    const list = (await w.ns.get('/api/v1/student/live-classes')).body.data;
+    expect(list.map((x) => x.id)).not.toContain(w.all.live.liveClassId);
+    const sheet = (await w.t.get(`/api/v1/teacher/live-classes/${w.all.live.liveClassId}/attendance`)).body.data;
+    expect(sheet.map((x) => x.name)).toEqual(['Meera']);
+  });
+
+  test('a class attended before the own session existed still counts in attendance; a missed one is not an absence', async () => {
+    const w = await mixed();
+    await query('INSERT INTO dbo.attendance (live_class_id, student_id, present, marked_at) SELECT @l, student_id, 1, SYSUTCDATETIME() FROM dbo.enrollments WHERE batch_id = @b', { l: T.int(w.all.live.liveClassId), b: T.int(w.batch.id) });
+    const held = async (x) => {
+      const p = (await x.get('/api/v1/student/progress')).body.data.courses.find((c) => c.courseId === w.courseId);
+      const h = (await x.get('/api/v1/student/attendance')).body.data.courses.find((c) => c.courseId === w.courseId);
+      return [p.classesHeld, p.classesAttended, h.classesHeld];
+    };
+    const teacherPct = async (name) => (await w.t.get('/api/v1/teacher/students')).body.data.find((x) => x.name === name);
+    await schedule(w);
+    expect(await held(w.ns)).toEqual([0, 0, 0]);
+    expect(await held(w.s)).toEqual([1, 1, 1]);
+    await query('INSERT INTO dbo.attendance (live_class_id, student_id, present, marked_at) VALUES (@l, @s, 1, SYSUTCDATETIME())', { l: T.int(w.all.live.liveClassId), s: T.int(w.n.user_id) });
+    expect(await held(w.ns)).toEqual([1, 1, 1]);
+    expect(JSON.stringify(await teacherPct('Next year kid'))).toContain('"held":1');
+  });
+});

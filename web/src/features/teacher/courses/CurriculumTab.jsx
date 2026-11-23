@@ -193,7 +193,7 @@ export function CurriculumTab({ courseId }) {
                         )}
                       </span>
                       <span className="row">
-                        {c.live && sessionsOf(c).every((s) => s.batch) && (
+                        {c.live && (
                           <Button variant="compact" size="sm" onClick={() => setDialog({ kind: 'session', item: c })}>{t('content.live.addBatch')}</Button>
                         )}
                         <MoveButtons name={c.title} index={ci} count={m.contents.length} onMove={(i, j) => run.mutate({ method: 'put', path: `/teacher/modules/${m.id}/contents/order`, body: { contentIds: swap(m.contents, i, j) } })} />

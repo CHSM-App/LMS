@@ -117,7 +117,8 @@ async function lockSlot(slot, tx) {
   await query("EXEC sp_getapplock @Resource = @r, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000", { r: T.nvarchar(`live_slot:${slot}`, 255) }, tx);
 }
 
-// One session per batch per lesson, and a lesson for all batches (batchId null) has no other session.
+// One session per batch per lesson. A batch may have its own session beside an all-batches one (it replaces that one for
+// the batch), but a session cannot be turned into "all batches" (batchId null) while the lesson has others.
 // exceptLiveClassId: the session being edited.
 async function checkSlot(content, batchId, tx, exceptLiveClassId = null) {
   if (!content.live_slot_id) return;
@@ -128,7 +129,6 @@ async function checkSlot(content, batchId, tx, exceptLiveClassId = null) {
     tx,
   );
   if (batchId === null && rows.length) throw conflict('This lesson has a session for each batch, so it cannot be for all batches', 'SLOT_ALL_BATCHES');
-  if (rows.some((r) => r.batch_id === null)) throw conflict('This lesson is for all batches. Change it to one batch first.', 'SLOT_ALL_BATCHES');
   if (rows.some((r) => r.batch_id === batchId)) throw conflict(`This batch already has a session of "${content.title}"`, 'SESSION_EXISTS');
 }
 

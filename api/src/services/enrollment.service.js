@@ -1,4 +1,5 @@
 const { query, one, T } = require('../db/query');
+const { heldForSql } = require('./liveSlots');
 const { withTransaction } = require('../db/tx');
 const { notify } = require('./notification.service');
 const { clock, todayIST } = require('../utils/clock');
@@ -146,7 +147,7 @@ async function students(teacherId, { courseId, batchId, q }) {
     const stats = await query(
       `SELECT e.enrollment_id,
               (SELECT COUNT(*) FROM dbo.live_classes l
-                WHERE l.course_id = e.course_id AND (l.batch_id IS NULL OR l.batch_id = e.batch_id) AND l.status <> 'cancelled'
+                WHERE l.course_id = e.course_id AND ${heldForSql('l', 'e.batch_id', 'e.student_id')} AND l.status <> 'cancelled'
                   AND EXISTS (SELECT 1 FROM dbo.attendance a WHERE a.live_class_id = l.live_class_id)) AS held,
               (SELECT COUNT(*) FROM dbo.attendance a JOIN dbo.live_classes l ON l.live_class_id = a.live_class_id
                 WHERE l.course_id = e.course_id AND a.student_id = e.student_id AND a.present = 1) AS attended

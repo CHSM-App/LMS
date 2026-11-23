@@ -46,6 +46,9 @@ export function LiveScheduleDialog({ courseId, batch, onClose }) {
         {rows.map((r) => (
           <li key={r.slotId}>
             <strong>{r.title}</strong> <span className="muted">· {r.module.name}</span>
+            {!r.session && r.allBatches && (
+              <p className="row"><LiveStageBadge stage={r.allBatches.stage} /> <span className="muted">{t('content.live.allBatches')} · {formatDateTime(r.allBatches.startsAt, i18n.language)}</span></p>
+            )}
             {r.session
               ? <p className="row"><LiveStageBadge stage={r.session.stage} /> <span className="muted">{formatDateTime(r.session.startsAt, i18n.language)}</span></p>
               : (

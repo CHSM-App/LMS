@@ -1,6 +1,7 @@
 // Course access for students. Normal: approved enrollment + access on + today (IST) within the dates.
 // Teacher blocked (spec §6): read-only, and only lessons the student already completed.
 const { one, T } = require('../db/query');
+const { forBatchSql } = require('./liveSlots');
 const { APIError } = require('../utils/APIError');
 const { accessError, loadEnrollment } = require('../middlewares/enrollment');
 
@@ -23,12 +24,14 @@ async function requireWritable(studentId, courseId) {
 
 // Contents with their live class (live lessons). A live lesson for one batch is invisible to other batches.
 const CONTENT_SQL = `SELECT x.*, l.batch_id AS live_batch_id, l.starts_at AS live_starts_at, l.duration_min AS live_duration_min,
-    l.meet_link AS live_meet_link, l.status AS live_status
+    l.meet_link AS live_meet_link, l.status AS live_status,
+    (SELECT STRING_AGG(CAST(ly.batch_id AS VARCHAR(12)), ',') FROM dbo.contents y JOIN dbo.live_classes ly ON ly.live_class_id = y.live_class_id
+      WHERE y.live_slot_id = x.live_slot_id AND ly.batch_id IS NOT NULL) AS slot_batch_ids
   FROM dbo.contents x LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id`;
 
 // Live lesson rules; need aliases x (contents) and l (live_classes) and the student's batch expression.
-// Own session: a live class for the student's batch or for all batches.
-const ownSql = (batchExpr) => `(x.live_class_id IS NOT NULL AND (l.batch_id IS NULL OR l.batch_id = ${batchExpr}))`;
+// Own session: a live class for the student's batch, or for all batches when the batch has none of its own.
+const ownSql = (batchExpr) => `(x.live_class_id IS NOT NULL AND ${forBatchSql('l', batchExpr)})`;
 // Placeholder: the student's batch has no session of the lesson yet, so its first row stands in as "Schedule coming soon"
 // (shown without date, Meet link or recording).
 const placeholderSql = (batchExpr) => `(x.type = 'live' AND x.live_slot_id IS NOT NULL
@@ -41,7 +44,13 @@ const countedSql = (batchExpr) => `(x.type <> 'live' OR ${ownSql(batchExpr)})`;
 // 1 when the row is shown as a placeholder (not the student's own session).
 const placeholderFlagSql = (batchExpr) => `CASE WHEN ${ownSql(batchExpr)} THEN 0 ELSE 1 END`;
 
-const isVisible = (c, enrollment) => !c.live_class_id || !c.live_batch_id || c.live_batch_id === (enrollment && enrollment.batch_id);
+// c: row from CONTENT_SQL. Same rule as ownSql.
+const isVisible = (c, enrollment) => {
+  if (!c.live_class_id) return true;
+  const mine = enrollment && enrollment.batch_id;
+  if (c.live_batch_id) return c.live_batch_id === mine;
+  return !String(c.slot_batch_ids || '').split(',').includes(String(mine));
+};
 
 const loadContent = (contentId) => {
   const id = Number(contentId);
