@@ -149,14 +149,49 @@ components:
         startsAt: { type: string, format: date-time }
         durationMin: { type: integer }
         batch: { type: object, nullable: true, properties: { id: { type: integer }, name: { type: string } } }
-        stage: { type: string, enum: [upcoming, live, ended, recorded, cancelled] }
+        stage: { type: string, enum: [unscheduled, upcoming, live, ended, recorded, cancelled] }
         meetLink: { type: string, nullable: true, description: Teacher always; student only while upcoming or live }
+        slotId: { type: string, description: Same value on every batch's session of one live lesson }
+        sessions: { type: array, description: Teacher curriculum only; one entry per batch, items: { $ref: '#/components/schemas/LiveSession' } }
     RecordingInfo:
       type: object
       nullable: true
       properties:
         videoSource: { type: string, enum: [upload, youtube, vimeo, bunny] }
         url: { type: string, nullable: true }
+    LiveSessionInput:
+      type: object
+      required: [batchId, startsAt]
+      properties:
+        batchId: { type: integer }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer, minimum: 5, maximum: 600, default: 60 }
+        meetLink: { type: string, nullable: true, description: Optional; created automatically when a Meet provider is configured }
+    LiveSession:
+      type: object
+      properties:
+        contentId: { type: integer }
+        liveClassId: { type: integer }
+        batch: { type: object, nullable: true, properties: { id: { type: integer }, name: { type: string } } }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer }
+        stage: { type: string, enum: [unscheduled, upcoming, live, ended, recorded, cancelled] }
+        meetLink: { type: string, nullable: true }
+        recording: { $ref: '#/components/schemas/RecordingInfo' }
+    LiveScheduleInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [slotId, startsAt]
+            properties:
+              slotId: { type: string, description: The live lesson's slotId }
+              startsAt: { type: string, format: date-time }
+              durationMin: { type: integer }
+              meetLink: { type: string, nullable: true }
     Pagination:
       type: object
       properties:
@@ -1594,3 +1629,44 @@ paths:
         '200': { description: The live lesson without a recording }
         '404': { description: Not your content }
         '409': { description: NOT_LIVE_LESSON }
+  /teacher/contents/{contentId}/sessions:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      summary: Schedule one more batch on an existing live lesson (a new session of the same lesson)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveSessionInput' }
+      responses:
+        '201': { description: The new session, content: { application/json: { schema: { $ref: '#/components/schemas/LiveSession' } } } }
+        '400': { description: 'Invalid time, batch or Meet link' }
+        '404': { description: Not your content }
+        '409': { description: SESSION_EXISTS or SLOT_ALL_BATCHES or BATCH_CLOSED or NOT_LIVE_LESSON }
+  /teacher/courses/{courseId}/batches/{batchId}/live-schedule:
+    parameters:
+      - { name: courseId, in: path, required: true, schema: { type: integer } }
+      - { name: batchId, in: path, required: true, schema: { type: integer } }
+    get:
+      tags: [teacher-content]
+      summary: Every live lesson of the course with this batch's session, or null when not scheduled yet
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The live lessons and this batch's session for each }
+        '404': { description: Not your course or batch }
+    post:
+      tags: [teacher-content]
+      summary: Schedule many live lessons for one batch in one go (all or nothing)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveScheduleInput' }
+      responses:
+        '201': { description: The created sessions }
+        '400': { description: Invalid item }
+        '404': { description: Not your course or batch }
+        '409': { description: SESSION_EXISTS or SLOT_ALL_BATCHES or BATCH_CLOSED }

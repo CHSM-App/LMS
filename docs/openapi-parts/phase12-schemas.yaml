@@ -1,0 +1,33 @@
+    LiveSessionInput:
+      type: object
+      required: [batchId, startsAt]
+      properties:
+        batchId: { type: integer }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer, minimum: 5, maximum: 600, default: 60 }
+        meetLink: { type: string, nullable: true, description: Optional; created automatically when a Meet provider is configured }
+    LiveSession:
+      type: object
+      properties:
+        contentId: { type: integer }
+        liveClassId: { type: integer }
+        batch: { type: object, nullable: true, properties: { id: { type: integer }, name: { type: string } } }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer }
+        stage: { type: string, enum: [unscheduled, upcoming, live, ended, recorded, cancelled] }
+        meetLink: { type: string, nullable: true }
+        recording: { $ref: '#/components/schemas/RecordingInfo' }
+    LiveScheduleInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [slotId, startsAt]
+            properties:
+              slotId: { type: string, description: The live lesson's slotId }
+              startsAt: { type: string, format: date-time }
+              durationMin: { type: integer }
+              meetLink: { type: string, nullable: true }

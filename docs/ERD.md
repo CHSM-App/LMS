@@ -58,10 +58,12 @@ erDiagram
 | 004_operations | demo_requests, enrollments, student_subscriptions, live_classes, attendance, doubts, class_programs |
 | 005_student | content_progress, student_devices, offline_downloads |
 | 006_live_lessons | `contents.live_class_id` (FK `FK_contents_live_class`, unique when set), `contents.type` adds `live`, `live_classes.reminder2_sent_at` |
+| 010_live_slots | `contents.live_slot_id` (GUID, same value on every batch session of one live lesson), index `IX_contents_live_slot` |
+| 011_live_lesson_template | A live lesson may have no live class yet (template row, `live_class_id IS NULL`); stage `unscheduled` |
 
 Key rules:
 - `users.mobile` is unique only among non-deleted users (`deleted_at IS NULL`).
 - Teacher-owned data is always queried with `teacher_id = @me`.
 - Questions used in an exam are archived (`is_archived`, `replaced_by`), never deleted.
 - `admin_audit_log` is append-only.
-- A live lesson is a `contents` row with `type = 'live'` and `live_class_id` set. Its recording uses the same `video_source` / `file_key` / `url` columns as a video. Its stage is computed, never stored.
+- A live lesson is a `contents` row with `type = 'live'` and `live_class_id` set. Its recording uses the same `video_source` / `file_key` / `url` columns as a video. Its stage is computed, never stored. One live lesson has one row per batch session; rows of one lesson share `live_slot_id`. A row with no live class is the template ("Schedule coming soon").

@@ -124,6 +124,19 @@ so a course can be fully recorded, fully live, or mixed (hybrid).
 2. Section backgrounds (e.g. a doubt reply box) use a very light navy tint (Navy 4%) instead of Ice.
 3. Ice stays in the palette for status badges (Draft / Paused / Expired) and thumbnails.
 
+## Live lessons per batch (confirmed 2026-11-21)
+One course keeps one set of modules and lessons for every year. Only the **batch** is new each year, and each batch has its own live schedule.
+
+1. **Slot:** a live lesson is one place in a module. Every batch gets its own **session** of that lesson: its own date, time, Meet link, attendance and recording. All sessions of one lesson share one `live_slot_id`.
+2. **Date optional:** a teacher can add a live lesson with only a title. It stays `unscheduled` until a batch gets a session. A student whose batch has no session yet sees **"Schedule coming soon"** (no Join button, cannot be marked complete).
+3. **Batch isolation:** a student sees only their own batch's session. A batch **never** sees another batch's recording, before or after its own class.
+4. **Live schedule:** for a batch the teacher sees every live lesson of the course and sets date, time and Meet link for each in one save (all or nothing). A single lesson can also get one more batch ("Add batch").
+5. **Rules:** one session per batch per lesson; a lesson with an "all batches" session cannot also get single-batch sessions (and the reverse); a closed batch cannot be scheduled; the time must be in the future.
+6. **Edits apply to the whole lesson:** rename, reorder and delete act on every session of the slot. Deleting is refused when any session has attendance.
+7. **Naming:** batch names are free text. Put the year in the name ("2027 - Batch A"). A new year means a new batch of the same course; the old batches are set to Closed and keep their data.
+8. **Student stages:** Unscheduled ("Schedule coming soon") → Upcoming → Live now (Join, from 10 minutes before) → Ended → Recorded. Same on web and mobile.
+9. **Not built (owner declined):** copying a recording from one batch to another, and copying a whole course. A "copy schedule from last batch" helper may come later.
+
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**
 - Student audience (school / college / competitive exams / skills) **(assumed: school + competitive exam coaching in Maharashtra)**
