@@ -359,3 +359,63 @@ describe('one lesson with sessions in the teacher curriculum', () => {
     expect(await counts()).toEqual({ c: 2, l: 2 });
   });
 });
+
+describe('live schedule of a batch', () => {
+  const mkBatch = async (t, courseId, name) => (await t.post(`/api/v1/teacher/courses/${courseId}/batches`, { name, startDate: '2026-01-01' })).body.data;
+  const url = (courseId, batchId) => `/api/v1/teacher/courses/${courseId}/batches/${batchId}/live-schedule`;
+
+  async function twoLessons() {
+    const { t, courseId, moduleId, batch } = await setup();
+    const l1 = (await addLive(t, moduleId, { title: 'Algebra', batchId: batch.id })).body.data;
+    const l2 = (await addLive(t, moduleId, { title: 'Geometry', batchId: batch.id })).body.data;
+    const next = await mkBatch(t, courseId, '2027 - Batch A');
+    return { t, courseId, batch, next, l1, l2 };
+  }
+
+  test('lists every live lesson with no session yet for a new batch', async () => {
+    const { t, courseId, next, l1, l2 } = await twoLessons();
+    const r = await t.get(url(courseId, next.id));
+    expect(r.status).toBe(200);
+    expect(r.body.data.map((x) => [x.slotId, x.title, x.session])).toEqual([[l1.live.slotId, 'Algebra', null], [l2.live.slotId, 'Geometry', null]]);
+  });
+
+  test('schedules every lesson for the batch in one call', async () => {
+    const { t, courseId, next, l1, l2 } = await twoLessons();
+    const r = await t.post(url(courseId, next.id), { items: [
+      { slotId: l1.live.slotId, startsAt: '2099-07-01T12:30:00Z' },
+      { slotId: l2.live.slotId, startsAt: '2099-07-02T12:30:00Z', durationMin: 90 },
+    ] });
+    expect(r.status).toBe(201);
+    expect(r.body.data.created).toBe(2);
+    const list = (await t.get(url(courseId, next.id))).body.data;
+    expect(list.map((x) => x.session && x.session.batch.id)).toEqual([next.id, next.id]);
+    expect(list[1].session.durationMin).toBe(90);
+  });
+
+  test('one bad item creates nothing', async () => {
+    const { t, courseId, next, l1, l2 } = await twoLessons();
+    const before = await counts();
+    const r = await t.post(url(courseId, next.id), { items: [
+      { slotId: l1.live.slotId, startsAt: '2099-07-01T12:30:00Z' },
+      { slotId: l2.live.slotId, startsAt: '2020-01-01T10:00:00Z' },
+    ] });
+    expect(r.status).toBe(400);
+    expect(await counts()).toEqual(before);
+  });
+
+  test('a lesson already scheduled for the batch fails the whole call', async () => {
+    const { t, courseId, batch, l1 } = await twoLessons();
+    const r = await t.post(url(courseId, batch.id), { items: [{ slotId: l1.live.slotId, startsAt: '2099-07-01T12:30:00Z' }] });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('SESSION_EXISTS');
+  });
+
+  test('an empty list, an unknown lesson or a batch of another course is refused', async () => {
+    const { t, courseId, next } = await twoLessons();
+    expect((await t.post(url(courseId, next.id), { items: [] })).status).toBe(400);
+    expect((await t.post(url(courseId, next.id), { items: [{ slotId: '00000000-0000-0000-0000-000000000000', startsAt: '2099-07-01T12:30:00Z' }] })).status).toBe(400);
+    const other = await readyCourse(t);
+    const otherBatch = await mkBatch(t, other.courseId, 'X');
+    expect((await t.get(url(courseId, otherBatch.id))).status).toBe(404);
+  });
+});

@@ -4,7 +4,7 @@ const uploads = require('./upload.service');
 const storage = require('../providers/storage');
 const { validateVideoLink, validateHttpUrl } = require('../utils/videoLinks');
 const { text, bool } = require('../utils/validate');
-const { badRequest, conflict } = require('../utils/APIError');
+const { badRequest, conflict, notFound } = require('../utils/APIError');
 const { liveStage } = require('../domain/liveLesson');
 const { clock } = require('../utils/clock');
 const live = require('./liveLesson.service');
@@ -217,6 +217,44 @@ async function scheduleSession(teacherId, id, b) {
   return sessionOut(await loadContent(newId));
 }
 
+async function batchOf(courseId, batchId) {
+  const batch = await one('SELECT batch_id FROM dbo.batches WHERE batch_id = @b AND course_id = @c', { b: T.int(Number(batchId) || 0), c: T.int(courseId) });
+  if (!batch) throw notFound('Batch not found');
+  return batch.batch_id;
+}
+
+// Every live lesson of the course (one per slot, in course order) with this batch's session or null.
+async function liveSchedule(courseId, batchIdParam) {
+  const batchId = await batchOf(courseId, batchIdParam);
+  const modules = await query(
+    'SELECT m.module_id, m.name FROM dbo.modules m JOIN dbo.subjects s ON s.subject_id = m.subject_id WHERE m.course_id = @c ORDER BY s.sort_order, m.sort_order',
+    { c: T.int(courseId) },
+  );
+  const rows = await query(`${CONTENT_SELECT} WHERE x.course_id = @c AND x.type = 'live' ORDER BY x.sort_order`, { c: T.int(courseId) });
+  const out = [];
+  for (const m of modules) {
+    const seen = new Map();
+    for (const x of rows.filter((r) => r.module_id === m.module_id)) {
+      const key = String(x.live_slot_id || x.content_id);
+      if (!seen.has(key)) {
+        const o = { slotId: x.live_slot_id || null, contentId: x.content_id, title: x.title, module: { id: m.module_id, name: m.name }, session: null };
+        seen.set(key, o);
+        out.push(o);
+      }
+      if (x.live_batch_id === batchId) seen.get(key).session = sessionOut(x);
+    }
+  }
+  return out;
+}
+
+async function scheduleBatch(teacherId, courseId, batchIdParam, b) {
+  const batchId = await batchOf(courseId, batchIdParam);
+  const ids = await live.scheduleBatch(teacherId, courseId, batchId, b && b.items);
+  const sessions = [];
+  for (const id of ids) sessions.push(sessionOut(await loadContent(id)));
+  return { created: ids.length, sessions };
+}
+
 async function setRecording(teacherId, id, b) {
   await live.setRecording(teacherId, await loadContent(id), b);
   return contentOut(await loadContent(id));
@@ -272,5 +310,5 @@ async function curriculum(courseId) {
 
 module.exports = {
   createSubject, updateSubject, deleteSubject, createModule, updateModule, deleteModule,
-  createContent, updateContent, deleteContent, scheduleSession, setRecording, clearRecording, curriculum, reorder, reorderContents,
+  createContent, updateContent, deleteContent, scheduleSession, liveSchedule, scheduleBatch, setRecording, clearRecording, curriculum, reorder, reorderContents,
 };

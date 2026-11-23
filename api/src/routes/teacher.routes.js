@@ -51,6 +51,10 @@ router.delete('/teacher/contents/:contentId/recording', owns('content', 'content
 router.put('/teacher/modules/:moduleId/contents/order', owns('module', 'moduleId'), h((req) =>
   cur.reorderContents(req.owned.module.id, req.body.contentIds)));
 
+// Live schedule of one batch (every live lesson of the course)
+router.get('/teacher/courses/:courseId/batches/:batchId/live-schedule', owns('course', 'courseId'), h((req) => cur.liveSchedule(req.owned.course.id, req.params.batchId)));
+router.post('/teacher/courses/:courseId/batches/:batchId/live-schedule', owns('course', 'courseId'), h((req) => cur.scheduleBatch(req.user.id, req.owned.course.id, req.params.batchId, req.body), 201));
+
 // Batches
 router.get('/teacher/courses/:courseId/batches', owns('course', 'courseId'), h((req) => batches.list(req.owned.course.id)));
 router.post('/teacher/courses/:courseId/batches', owns('course', 'courseId'), h((req) => batches.create(req.owned.course.id, req.body), 201));

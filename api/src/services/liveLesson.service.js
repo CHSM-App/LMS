@@ -62,48 +62,80 @@ async function updateLiveLesson(teacherId, existing, b) {
   });
 }
 
-// One more batch on an existing live lesson: a new contents row of the same slot (same module, title and position)
+// A batch session of a live lesson is a contents row of the lesson's slot (same module, title and position)
 // with its own live class, so the batch gets its own date, Meet link, attendance and recording.
-async function scheduleBatchSession(teacherId, content, b) {
+
+// Validates one session request and parses it (may create a Meet link). Writes nothing.
+async function prepareSession(teacherId, content, b) {
   assertLive(content);
   const batchId = b && b.batchId ? Number(b.batchId) : null;
   if (!batchId) throw badRequest('batchId: choose a batch');
   const batch = await one('SELECT status FROM dbo.batches WHERE batch_id = @b AND course_id = @c', { b: T.int(batchId), c: T.int(content.course_id) });
   if (!batch) throw badRequest('Choose a batch of this course');
   if (batch.status === 'closed') throw conflict('This batch is closed', 'BATCH_CLOSED');
-  const check = async (tx) => {
-    const rows = await query(
-      `SELECT l.batch_id FROM dbo.contents x LEFT JOIN dbo.live_classes l WITH (UPDLOCK, HOLDLOCK) ON l.live_class_id = x.live_class_id
-       WHERE x.live_slot_id = @slot AND x.live_class_id IS NOT NULL`,
-      { slot: T.uuid(content.live_slot_id) },
-      tx,
-    );
-    if (rows.some((r) => r.batch_id === null)) throw conflict('This lesson is for all batches. Change it to one batch first.', 'SLOT_ALL_BATCHES');
-    if (rows.some((r) => r.batch_id === batchId)) throw conflict('This batch already has a session of this lesson', 'SESSION_EXISTS');
-  };
-  await check();
+  await checkSlot(content, batchId);
   const f = await parseLive(teacherId, content.course_id, { ...b, title: content.title, batchId });
   if (f.startsAt <= clock.now()) throw badRequest('Choose a time in the future');
+  return { content, batchId, f };
+}
+
+// One session per batch per lesson, and a lesson for all batches takes no single-batch session.
+async function checkSlot(content, batchId, tx) {
+  const rows = await query(
+    `SELECT l.batch_id FROM dbo.contents x LEFT JOIN dbo.live_classes l WITH (UPDLOCK, HOLDLOCK) ON l.live_class_id = x.live_class_id
+     WHERE x.live_slot_id = @slot AND x.live_class_id IS NOT NULL`,
+    { slot: T.uuid(content.live_slot_id) },
+    tx,
+  );
+  if (rows.some((r) => r.batch_id === null)) throw conflict('This lesson is for all batches. Change it to one batch first.', 'SLOT_ALL_BATCHES');
+  if (rows.some((r) => r.batch_id === batchId)) throw conflict(`This batch already has a session of "${content.title}"`, 'SESSION_EXISTS');
+}
+
+async function scheduleBatchSession(teacherId, content, b) {
+  const prepared = await prepareSession(teacherId, content, b);
+  return withTransaction((tx) => insertSession(prepared, tx));
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Many lessons for one batch in one go: every item is validated first, then all are written in one transaction.
+async function scheduleBatch(teacherId, courseId, batchId, items) {
+  if (!Array.isArray(items) || !items.length) throw badRequest('items: add at least one lesson');
+  const prepared = [];
+  for (const it of items) {
+    const slot = String((it && it.slotId) || '');
+    if (!UUID.test(slot)) throw badRequest('slotId: unknown lesson');
+    const content = await one('SELECT TOP 1 * FROM dbo.contents WHERE course_id = @c AND live_slot_id = @slot ORDER BY sort_order', { c: T.int(courseId), slot: T.uuid(slot) });
+    if (!content) throw badRequest('slotId: unknown lesson');
+    prepared.push(await prepareSession(teacherId, content, { ...it, batchId }));
+  }
   return withTransaction(async (tx) => {
-    await check(tx);
-    const lcId = await liveClass.insertLiveClass(f, tx);
-    // The new session goes right after its lesson; later lessons move down by one (two steps because sort_order is unique per module).
-    const last = await one('SELECT MAX(sort_order) AS p FROM dbo.contents WHERE live_slot_id = @slot', { slot: T.uuid(content.live_slot_id) }, tx);
-    const mp = { m: T.int(content.module_id), p: T.int(last.p) };
-    await query('UPDATE dbo.contents SET sort_order = sort_order + 100001 WHERE module_id = @m AND sort_order > @p', mp, tx);
-    await query('UPDATE dbo.contents SET sort_order = sort_order - 100000 WHERE module_id = @m AND sort_order > 100000', mp, tx);
-    const row = await one(
-      `INSERT INTO dbo.contents (module_id, course_id, title, type, live_class_id, live_slot_id, sort_order, is_free_preview)
-       OUTPUT INSERTED.content_id VALUES (@m, @c, @title, 'live', @lc, @slot, @o, 0)`,
-      {
-        m: T.int(content.module_id), c: T.int(content.course_id), title: T.nvarchar(content.title, 200), lc: T.int(lcId),
-        slot: T.uuid(content.live_slot_id), o: T.int(last.p + 1),
-      },
-      tx,
-    );
-    await liveClass.notifyNewClass(f, liveClass.lessonLink(content.course_id, row.content_id), tx);
-    return row.content_id;
+    const ids = [];
+    for (const p of prepared) ids.push(await insertSession(p, tx));
+    return ids;
   });
+}
+
+// Writes a prepared session inside tx and returns its content id.
+async function insertSession({ content, batchId, f }, tx) {
+  await checkSlot(content, batchId, tx);
+  const lcId = await liveClass.insertLiveClass(f, tx);
+  // The new session goes right after its lesson; later lessons move down by one (two steps because sort_order is unique per module).
+  const last = await one('SELECT MAX(sort_order) AS p FROM dbo.contents WHERE live_slot_id = @slot', { slot: T.uuid(content.live_slot_id) }, tx);
+  const mp = { m: T.int(content.module_id), p: T.int(last.p) };
+  await query('UPDATE dbo.contents SET sort_order = sort_order + 100001 WHERE module_id = @m AND sort_order > @p', mp, tx);
+  await query('UPDATE dbo.contents SET sort_order = sort_order - 100000 WHERE module_id = @m AND sort_order > 100000', mp, tx);
+  const row = await one(
+    `INSERT INTO dbo.contents (module_id, course_id, title, type, live_class_id, live_slot_id, sort_order, is_free_preview)
+     OUTPUT INSERTED.content_id VALUES (@m, @c, @title, 'live', @lc, @slot, @o, 0)`,
+    {
+      m: T.int(content.module_id), c: T.int(content.course_id), title: T.nvarchar(content.title, 200), lc: T.int(lcId),
+      slot: T.uuid(content.live_slot_id), o: T.int(last.p + 1),
+    },
+    tx,
+  );
+  await liveClass.notifyNewClass(f, liveClass.lessonLink(content.course_id, row.content_id), tx);
+  return row.content_id;
 }
 
 // Every session of a lesson carries the lesson's title (content title and live class topic).
@@ -163,4 +195,4 @@ async function deleteLiveLesson(existing) {
   return { deleted: true };
 }
 
-module.exports = { renameSlot, scheduleBatchSession, createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };
+module.exports = { renameSlot, scheduleBatchSession, scheduleBatch, createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };
