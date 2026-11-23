@@ -419,3 +419,61 @@ describe('live schedule of a batch', () => {
     expect((await t.get(url(courseId, otherBatch.id))).status).toBe(404);
   });
 });
+
+describe('a live lesson without a date (template)', () => {
+  const mkBatch = async (t, courseId, name) => (await t.post(`/api/v1/teacher/courses/${courseId}/batches`, { name, startDate: '2026-01-01' })).body.data;
+  const titleOnly = (t, moduleId) => t.post(`/api/v1/teacher/modules/${moduleId}/contents`, { type: 'live', title: 'Algebra' });
+
+  test('can be created with only a title and is unscheduled', async () => {
+    const { t, moduleId } = await setup();
+    const r = await titleOnly(t, moduleId);
+    expect(r.status).toBe(201);
+    expect(r.body.data.live).toMatchObject({ stage: 'unscheduled', liveClassId: null, batch: null });
+    expect(r.body.data.live.slotId).toBeTruthy();
+    expect(await counts()).toEqual({ c: 1, l: 0 });
+  });
+
+  test('a batch without a date is refused', async () => {
+    const { t, moduleId, batch } = await setup();
+    expect((await t.post(`/api/v1/teacher/modules/${moduleId}/contents`, { type: 'live', title: 'Algebra', batchId: batch.id })).status).toBe(400);
+  });
+
+  test('the curriculum shows it with no sessions', async () => {
+    const { t, courseId, moduleId } = await setup();
+    await titleOnly(t, moduleId);
+    const tree = (await t.get(`/api/v1/teacher/courses/${courseId}/curriculum`)).body.data;
+    const live = tree.subjects.flatMap((s) => s.modules).flatMap((m) => m.contents).find((x) => x.type === 'live');
+    expect(live.live.sessions).toEqual([]);
+  });
+
+  test('it takes no recording until it is scheduled', async () => {
+    const { t, moduleId } = await setup();
+    const r = await titleOnly(t, moduleId);
+    const rec = await t.put(`/api/v1/teacher/contents/${r.body.data.id}/recording`, { videoSource: 'youtube', url: 'https://youtu.be/abcdefgh123' });
+    expect(rec.status).toBe(409);
+    expect(rec.body.code).toBe('LIVE_NOT_SCHEDULED');
+  });
+
+  test('scheduling the first batch turns it into that batch session; the next batch adds a session', async () => {
+    const { t, courseId, moduleId, batch } = await setup();
+    const r = await titleOnly(t, moduleId);
+    const s1 = await t.post(`/api/v1/teacher/contents/${r.body.data.id}/sessions`, { batchId: batch.id, startsAt: '2099-06-16T12:30:00Z' });
+    expect(s1.status).toBe(201);
+    expect(s1.body.data.contentId).toBe(r.body.data.id);
+    expect(await counts()).toEqual({ c: 1, l: 1 });
+    const next = await mkBatch(t, courseId, '2027 - Batch A');
+    const s2 = await t.post(`/api/v1/teacher/courses/${courseId}/batches/${next.id}/live-schedule`, { items: [{ slotId: r.body.data.live.slotId, startsAt: '2099-07-16T12:30:00Z' }] });
+    expect(s2.status).toBe(201);
+    expect(await counts()).toEqual({ c: 2, l: 2 });
+  });
+
+  test('renaming and deleting work without a date', async () => {
+    const { t, moduleId } = await setup();
+    const r = await titleOnly(t, moduleId);
+    const u = await t.put(`/api/v1/teacher/contents/${r.body.data.id}`, { type: 'live', title: 'Geometry' });
+    expect(u.status).toBe(200);
+    expect(u.body.data.title).toBe('Geometry');
+    expect((await t.del(`/api/v1/teacher/contents/${r.body.data.id}`)).status).toBe(200);
+    expect(await counts()).toEqual({ c: 0, l: 0 });
+  });
+});

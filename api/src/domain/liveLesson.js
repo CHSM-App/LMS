@@ -4,6 +4,8 @@ const MIN = 60 * 1000;
 
 function liveStage({ status, startsAt, durationMin, hasRecording }, now = new Date()) {
   if (status === 'cancelled') return 'cancelled';
+  // A live lesson with no session yet (template row, or another batch's session shown as a placeholder).
+  if (!startsAt) return 'unscheduled';
   if (hasRecording) return 'recorded';
   const start = new Date(startsAt).getTime();
   const end = start + durationMin * MIN;

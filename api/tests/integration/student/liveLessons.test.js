@@ -50,13 +50,16 @@ test('content view has the Meet link only during the join window', async () => {
   expect(JSON.stringify(after.body)).not.toContain(MEET);
 });
 
-test('a student of another batch does not see the lesson', async () => {
+test("a student of another batch sees the lesson only as 'Schedule coming soon', with nothing of the other batch", async () => {
   const w = await world();
   const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: 'Evening', startDate: '2026-01-01' })).body.data;
   const r = await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, liveLessonBody({ startsAt: START, batchId: evening.id }));
   const view = await w.s.get(`/api/v1/student/courses/${w.courseId}`);
-  expect(lessonIn(view, r.body.data.id)).toBeUndefined();
-  expect((await w.s.get(`/api/v1/student/contents/${r.body.data.id}`)).status).toBe(404);
+  expect(lessonIn(view, r.body.data.id)).toMatchObject({ type: 'live', videoSource: null, downloadable: false, live: { stage: 'unscheduled', startsAt: null } });
+  const cv = await w.s.get(`/api/v1/student/contents/${r.body.data.id}`);
+  expect(cv.status).toBe(200);
+  expect(cv.body.data).toMatchObject({ url: null, videoSource: null, downloadable: false, canComplete: false, live: { stage: 'unscheduled', startsAt: null, liveClassId: null } });
+  expect(JSON.stringify(cv.body)).not.toContain(MEET);
   expect((await w.s.post(`/api/v1/student/contents/${r.body.data.id}/progress`, { completed: true })).status).toBe(404);
   const dash = await w.s.get('/api/v1/student/dashboard');
   expect(dash.body.data.myCourses[0].progressPct).toBe(0);
@@ -270,5 +273,38 @@ describe('one lesson, a session per batch: batches never see each other', () => 
     const e = (await w.es.get('/api/v1/student/dashboard')).body.data.myCourses[0];
     expect(m.progressPct).toBe(0);
     expect(e.progressPct).toBe(0);
+  });
+});
+
+describe('a live lesson without a date', () => {
+  test('students see Schedule coming soon and cannot complete it', async () => {
+    const w = await world();
+    const r = await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, { type: 'live', title: 'Algebra' });
+    const x = lessonIn(await w.s.get(`/api/v1/student/courses/${w.courseId}`), r.body.data.id);
+    expect(x).toMatchObject({ type: 'live', live: { stage: 'unscheduled' } });
+    const cv = await w.s.get(`/api/v1/student/contents/${r.body.data.id}`);
+    expect(cv.body.data).toMatchObject({ canComplete: false, url: null, live: { stage: 'unscheduled' } });
+  });
+
+  test("after the morning batch is scheduled and recorded, the evening batch still sees only 'coming soon'", async () => {
+    const w = await world();
+    const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: 'Evening', startDate: '2026-01-01' })).body.data;
+    const e = await student({ name: 'Evening kid' });
+    await activeEnrollment(w.courseId, w.t.user.user_id, e.user_id, evening.id);
+    const es = await asStudent(e);
+    const r = await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, { type: 'live', title: 'Algebra' });
+    await w.t.post(`/api/v1/teacher/contents/${r.body.data.id}/sessions`, { batchId: w.batch.id, startsAt: START, meetLink: MEET });
+    const key = await uploadVideo(w.t);
+    await w.t.put(`/api/v1/teacher/contents/${r.body.data.id}/recording`, { videoSource: 'upload', fileKey: key });
+    expect(lessonIn(await w.s.get(`/api/v1/student/courses/${w.courseId}`), r.body.data.id).live.stage).toBe('recorded');
+    const ev = await es.get(`/api/v1/student/contents/${r.body.data.id}`);
+    expect(ev.status).toBe(200);
+    expect(ev.body.data).toMatchObject({ url: null, videoSource: null, downloadable: false, live: { stage: 'unscheduled', startsAt: null } });
+    expect(JSON.stringify(ev.body)).not.toContain(MEET);
+    await es.post('/api/v1/student/devices', { deviceId: 'device-cccc-3333', deviceName: 'Redmi', platform: 'android' });
+    const dl = await request(app).post(`/api/v1/student/contents/${r.body.data.id}/download`)
+      .set('Authorization', `Bearer ${es.token}`).set('X-Device-Id', 'device-cccc-3333').send({});
+    expect(dl.status).toBe(404);
+    expect((await es.post(`/api/v1/student/contents/${r.body.data.id}/progress`, { completed: true })).status).toBe(404);
   });
 });

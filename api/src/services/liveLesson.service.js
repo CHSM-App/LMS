@@ -22,8 +22,9 @@ async function parseLive(teacherId, courseId, b, currentStatus = 'scheduled') {
   return { ...f, title };
 }
 
-// Returns the new content id.
+// Returns the new content id. With only a title it is a template (no date yet): batches get sessions later.
 async function createLiveLesson(teacherId, mod, b) {
+  if (b && !b.startsAt && !b.batchId) return createTemplate(mod, b);
   const f = await parseLive(teacherId, mod.course_id, b);
   if (f.startsAt <= clock.now()) throw badRequest('Choose a time in the future');
   return withTransaction(async (tx) => {
@@ -40,8 +41,27 @@ async function createLiveLesson(teacherId, mod, b) {
   });
 }
 
+async function createTemplate(mod, b) {
+  const title = text(b.title, 'title', { max: 200 });
+  return withTransaction(async (tx) => {
+    const next = await one('SELECT ISNULL(MAX(sort_order), 0) + 1 AS n FROM dbo.contents WITH (UPDLOCK, HOLDLOCK) WHERE module_id = @m', { m: T.int(mod.id) }, tx);
+    const row = await one(
+      `INSERT INTO dbo.contents (module_id, course_id, title, type, live_slot_id, sort_order, is_free_preview)
+       OUTPUT INSERTED.content_id VALUES (@m, @c, @title, 'live', NEWID(), @o, 0)`,
+      { m: T.int(mod.id), c: T.int(mod.course_id), title: T.nvarchar(title, 200), o: T.int(next.n) },
+      tx,
+    );
+    return row.content_id;
+  });
+}
+
 // existing: the content row joined with its live class (curriculum.loadContent).
+// A template (no live class yet) can only be renamed here; its batches are scheduled through sessions.
 async function updateLiveLesson(teacherId, existing, b) {
+  if (!existing.live_class_id) {
+    await withTransaction((tx) => renameSlot(existing, text(b && b.title, 'title', { max: 200 }), tx));
+    return;
+  }
   const f = await parseLive(teacherId, existing.course_id, b, existing.live_status);
   const moved = f.startsAt.getTime() !== new Date(existing.live_starts_at).getTime();
   if (moved && f.startsAt <= clock.now()) throw badRequest('Choose a time in the future');
@@ -120,6 +140,13 @@ async function scheduleBatch(teacherId, courseId, batchId, items) {
 async function insertSession({ content, batchId, f }, tx) {
   await checkSlot(content, batchId, tx);
   const lcId = await liveClass.insertLiveClass(f, tx);
+  // The lesson still has its template row (added without a date): it becomes this first session.
+  const template = await one('SELECT TOP 1 content_id FROM dbo.contents WITH (UPDLOCK) WHERE live_slot_id = @slot AND live_class_id IS NULL', { slot: T.uuid(content.live_slot_id) }, tx);
+  if (template) {
+    await query('UPDATE dbo.contents SET live_class_id = @lc WHERE content_id = @id', { lc: T.int(lcId), id: T.int(template.content_id) }, tx);
+    await liveClass.notifyNewClass(f, liveClass.lessonLink(content.course_id, template.content_id), tx);
+    return template.content_id;
+  }
   // The new session goes right after its lesson; later lessons move down by one (two steps because sort_order is unique per module).
   const last = await one('SELECT MAX(sort_order) AS p FROM dbo.contents WHERE live_slot_id = @slot', { slot: T.uuid(content.live_slot_id) }, tx);
   const mp = { m: T.int(content.module_id), p: T.int(last.p) };
@@ -155,6 +182,7 @@ function assertLive(existing) {
 
 async function setRecording(teacherId, existing, b) {
   assertLive(existing);
+  if (!existing.live_class_id) throw conflict('Schedule this lesson for a batch first', 'LIVE_NOT_SCHEDULED');
   const source = b && b.videoSource;
   if (!SOURCES.includes(source)) throw badRequest('videoSource: choose upload, youtube, vimeo or bunny');
   let fileKey = null;
@@ -182,7 +210,7 @@ async function deleteLiveLesson(existing) {
     { id: T.int(existing.content_id), slot: T.uuid(existing.live_slot_id ?? null) },
   );
   const ids = sessions.map((r) => Number(r.content_id)).join(',');
-  const lcs = sessions.map((r) => Number(r.live_class_id)).join(',');
+  const lcs = sessions.filter((r) => r.live_class_id).map((r) => Number(r.live_class_id)).join(',') || '0';
   const att = await one(`SELECT TOP 1 1 AS y FROM dbo.attendance WHERE live_class_id IN (${lcs})`);
   if (att) throw conflict('Students attended this lesson, so it cannot be deleted. Cancel it instead.', 'LIVE_HAS_ATTENDANCE');
   await withTransaction(async (tx) => {

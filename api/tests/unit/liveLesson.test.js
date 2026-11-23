@@ -11,3 +11,5 @@ test('recorded once a recording exists, even before the end', () =>
   expect(liveStage({ ...base, hasRecording: true }, at('2026-12-01T13:00:00Z'))).toBe('recorded'));
 test('cancelled wins', () => expect(liveStage({ ...base, status: 'cancelled', hasRecording: true }, at('2026-12-01T12:25:00Z'))).toBe('cancelled'));
 test('teacher-marked completed counts as ended', () => expect(liveStage({ ...base, status: 'completed' }, at('2026-12-01T12:40:00Z'))).toBe('ended'));
+test('a live lesson with no date yet is unscheduled', () =>
+  expect(liveStage({ status: undefined, startsAt: null, durationMin: null, hasRecording: false }, at('2026-12-01T12:40:00Z'))).toBe('unscheduled'));

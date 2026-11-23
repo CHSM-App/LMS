@@ -61,3 +61,9 @@ test('010 adds contents.live_slot_id with its index and a live-only check', asyn
   const ck = await pool.request().query("SELECT name FROM sys.check_constraints WHERE name = 'CK_contents_live_slot'");
   expect(ck.recordset).toHaveLength(1);
 });
+
+test('011 lets a live lesson exist without a live class (template) but not with a recording', async () => {
+  const pool = await getPool();
+  const r = await pool.request().query("SELECT definition d FROM sys.check_constraints WHERE name = 'CK_contents_source'");
+  expect(r.recordset[0].d).toMatch(/\[live_class_id\] IS NULL AND \[video_source\] IS NULL/);
+});

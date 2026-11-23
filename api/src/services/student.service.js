@@ -6,7 +6,7 @@ const catalog = require('./publicCatalog.service');
 const attempts = require('./attempt.service');
 const storage = require('../providers/storage');
 const { accessStatus } = require('./enrollment.service');
-const { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql } = require('./studentAccess');
+const { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql, placeholderFlagSql } = require('./studentAccess');
 const { liveStage } = require('../domain/liveLesson');
 const { sanitize } = require('../utils/sanitize');
 const { clock } = require('../utils/clock');
@@ -232,7 +232,8 @@ async function courseView(studentId, courseId) {
   const modules = await query('SELECT * FROM dbo.modules WHERE course_id = @c ORDER BY sort_order', p);
   const contents = await query(
     `SELECT x.content_id, x.module_id, x.title, x.type, x.video_source, x.file_key, x.live_class_id, p.completed_at, p.last_position_sec,
-            l.starts_at AS live_starts_at, l.duration_min AS live_duration_min, l.status AS live_status
+            l.starts_at AS live_starts_at, l.duration_min AS live_duration_min, l.status AS live_status,
+            CASE WHEN x.type = 'live' THEN ${placeholderFlagSql('@b')} ELSE 0 END AS is_placeholder
      FROM dbo.contents x LEFT JOIN dbo.content_progress p ON p.content_id = x.content_id AND p.student_id = @s
      LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
      WHERE x.course_id = @c AND ${visibleSql('@b')} ORDER BY x.sort_order`,
@@ -254,6 +255,7 @@ async function courseView(studentId, courseId) {
           name: m.name,
           contents: contents
             .filter((x) => x.module_id === m.module_id)
+            .map(hidePlaceholder)
             .map((x) => {
               const o = {
                 id: x.content_id,
@@ -272,6 +274,11 @@ async function courseView(studentId, courseId) {
   };
 }
 
+// A placeholder ("Schedule coming soon") is another batch's row: show none of its date, link or recording.
+const hidePlaceholder = (x) => (x.is_placeholder
+  ? { ...x, live_class_id: null, live_starts_at: null, live_duration_min: null, live_status: null, live_meet_link: null, video_source: null, file_key: null, url: null }
+  : x);
+
 // Uploaded videos and uploaded live-lesson recordings can be saved offline.
 const isDownloadable = (x) => (x.type === 'video' || x.type === 'live') && x.video_source === 'upload';
 
@@ -286,7 +293,8 @@ function liveSummary(x) {
 const canComplete = (x) => x.type !== 'live' || ['ended', 'recorded'].includes(liveSummary(x).stage);
 
 async function contentView(studentId, contentId) {
-  const { content: x, progress } = await contentWithAccess(studentId, contentId);
+  const { content, progress } = await contentWithAccess(studentId, contentId);
+  const x = hidePlaceholder(content);
   const out = {
     id: x.content_id,
     courseId: x.course_id,

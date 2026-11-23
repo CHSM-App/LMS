@@ -281,11 +281,11 @@ function groupLiveSessions(rows) {
   for (const x of rows) {
     const key = x.type === 'live' && x.live_slot_id ? String(x.live_slot_id) : null;
     if (key && bySlot.has(key)) {
-      bySlot.get(key).live.sessions.push(sessionOut(x));
+      if (x.live_class_id) bySlot.get(key).live.sessions.push(sessionOut(x));
       continue;
     }
     const o = contentOut(x);
-    if (x.type === 'live') o.live.sessions = [sessionOut(x)];
+    if (x.type === 'live') o.live.sessions = x.live_class_id ? [sessionOut(x)] : [];
     if (key) bySlot.set(key, o);
     out.push(o);
   }
