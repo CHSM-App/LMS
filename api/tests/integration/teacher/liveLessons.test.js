@@ -213,3 +213,84 @@ test("the live classes page cannot move a lesson to another course, and a topic 
     expect((await one("SELECT title FROM dbo.contents WHERE content_id = @id", { id: T.int(r.body.data.id) })).title).toBe("Moved");
   });
 });
+
+describe('one live lesson, a session per batch', () => {
+  const mkBatch = async (t, courseId, name) => (await t.post(`/api/v1/teacher/courses/${courseId}/batches`, { name, startDate: '2026-01-01' })).body.data;
+  const session = (t, contentId, body) => t.post(`/api/v1/teacher/contents/${contentId}/sessions`, body);
+  const slot = (id) => one('SELECT live_slot_id s FROM dbo.contents WHERE content_id = @id', { id: T.int(id) });
+
+  async function lessonForA() {
+    const { t, courseId, moduleId, batch } = await setup();
+    const b = await mkBatch(t, courseId, 'Evening');
+    const r = await addLive(t, moduleId, { batchId: batch.id });
+    return { t, courseId, moduleId, a: batch, b, lesson: r.body.data };
+  }
+
+  test('a new live lesson gets its own slot', async () => {
+    const { lesson } = await lessonForA();
+    expect((await slot(lesson.id)).s).not.toBeNull();
+  });
+
+  test('scheduling another batch adds a session of the same lesson without a recording', async () => {
+    const { t, b, lesson } = await lessonForA();
+    const r = await session(t, lesson.id, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' });
+    expect(r.status).toBe(201);
+    expect(r.body.data).toMatchObject({ batch: { id: b.id, name: 'Evening' }, stage: 'upcoming' });
+    const rows = await query('SELECT content_id, module_id, title, sort_order, video_source, live_slot_id FROM dbo.contents WHERE type = \'live\' ORDER BY content_id');
+    expect(rows).toHaveLength(2);
+    expect(String(rows[1].live_slot_id)).toBe(String(rows[0].live_slot_id));
+    expect(rows[1]).toMatchObject({ module_id: rows[0].module_id, title: rows[0].title, sort_order: rows[0].sort_order + 1, video_source: null });
+    expect(r.body.data.contentId).toBe(rows[1].content_id);
+  });
+
+  test('the new session sits right after its lesson and later lessons move down by one', async () => {
+    const { t, b, moduleId, lesson } = await lessonForA();
+    await t.post(`/api/v1/teacher/modules/${moduleId}/contents`, { type: 'link', title: 'After', url: 'https://example.com' });
+    await session(t, lesson.id, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' });
+    const order = (await query('SELECT title, sort_order FROM dbo.contents ORDER BY sort_order')).map((r) => r.title);
+    expect(order).toEqual(['Intro', 'Live: factorisation', 'Live: factorisation', 'After']);
+  });
+
+  test('the same batch twice is refused and creates nothing', async () => {
+    const { t, a, lesson } = await lessonForA();
+    const r = await session(t, lesson.id, { batchId: a.id, startsAt: '2099-06-16T12:30:00Z' });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('SESSION_EXISTS');
+    expect(await counts()).toEqual({ c: 1, l: 1 });
+  });
+
+  test('a lesson for all batches cannot get a single-batch session', async () => {
+    const { t, moduleId, b } = await lessonForA();
+    const all = (await addLive(t, moduleId)).body.data;
+    const r = await session(t, all.id, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('SLOT_ALL_BATCHES');
+  });
+
+  test('a closed batch cannot be scheduled', async () => {
+    const { t, b, lesson } = await lessonForA();
+    await query("UPDATE dbo.batches SET status = 'closed' WHERE batch_id = @b", { b: T.int(b.id) });
+    const r = await session(t, lesson.id, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('BATCH_CLOSED');
+  });
+
+  test('a time in the past is refused', async () => {
+    const { t, b, lesson } = await lessonForA();
+    expect((await session(t, lesson.id, { batchId: b.id, startsAt: '2020-01-01T10:00:00Z' })).status).toBe(400);
+  });
+
+  test('another teacher cannot schedule on my lesson', async () => {
+    const { b, lesson } = await lessonForA();
+    const other = await teacher({ name: 'Other' });
+    expect((await session(other, lesson.id, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' })).status).toBe(404);
+  });
+
+  test('only live lessons can get sessions', async () => {
+    const { t, b, moduleId } = await lessonForA();
+    const link = (await t.post(`/api/v1/teacher/modules/${moduleId}/contents`, { type: 'link', title: 'L', url: 'https://example.com' })).body.data;
+    const r = await session(t, link.id, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('NOT_LIVE_LESSON');
+  });
+});

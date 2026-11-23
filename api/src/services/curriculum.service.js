@@ -125,6 +125,20 @@ const loadContent = (id) => one(`${CONTENT_SELECT} WHERE x.content_id = @id`, { 
 
 const hasRecording = (x) => !!x.video_source;
 
+const liveInfo = (x) => ({
+  liveClassId: x.live_class_id,
+  startsAt: x.live_starts_at,
+  durationMin: x.live_duration_min,
+  batch: x.live_batch_id ? { id: x.live_batch_id, name: x.live_batch_name } : null,
+  stage: liveStage({ status: x.live_status, startsAt: x.live_starts_at, durationMin: x.live_duration_min, hasRecording: hasRecording(x) }, clock.now()),
+  meetLink: x.live_meet_link,
+});
+
+const recordingInfo = (x) => (hasRecording(x) ? { videoSource: x.video_source, url: x.url || (x.file_key ? storage.signedUrl(x.file_key) : null) } : null);
+
+// One batch session of a live lesson (a content row of the lesson's slot).
+const sessionOut = (x) => ({ contentId: x.content_id, ...liveInfo(x), recording: recordingInfo(x) });
+
 // Teacher view: their own files get short-lived signed URLs. Live lessons add `live` and `recording`.
 function contentOut(x) {
   const fileUrl = x.file_key ? storage.signedUrl(x.file_key) : null;
@@ -139,15 +153,8 @@ function contentOut(x) {
     sortOrder: x.sort_order,
   };
   if (x.type === 'live') {
-    o.live = {
-      liveClassId: x.live_class_id,
-      startsAt: x.live_starts_at,
-      durationMin: x.live_duration_min,
-      batch: x.live_batch_id ? { id: x.live_batch_id, name: x.live_batch_name } : null,
-      stage: liveStage({ status: x.live_status, startsAt: x.live_starts_at, durationMin: x.live_duration_min, hasRecording: hasRecording(x) }, clock.now()),
-      meetLink: x.live_meet_link,
-    };
-    o.recording = hasRecording(x) ? { videoSource: x.video_source, url: x.url || fileUrl } : null;
+    o.live = liveInfo(x);
+    o.recording = recordingInfo(x);
   }
   return o;
 }
@@ -183,6 +190,11 @@ async function updateContent(teacherId, id, b) {
     { ...contentParams(c), id: T.int(id) },
   );
   return contentOut(await loadContent(id));
+}
+
+async function scheduleSession(teacherId, id, b) {
+  const newId = await live.scheduleBatchSession(teacherId, await loadContent(id), b);
+  return sessionOut(await loadContent(newId));
 }
 
 async function setRecording(teacherId, id, b) {
@@ -222,5 +234,5 @@ async function curriculum(courseId) {
 
 module.exports = {
   createSubject, updateSubject, deleteSubject, createModule, updateModule, deleteModule,
-  createContent, updateContent, deleteContent, setRecording, clearRecording, curriculum, reorder,
+  createContent, updateContent, deleteContent, scheduleSession, setRecording, clearRecording, curriculum, reorder,
 };

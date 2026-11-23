@@ -30,8 +30,8 @@ async function createLiveLesson(teacherId, mod, b) {
     const lcId = await liveClass.insertLiveClass(f, tx);
     const next = await one('SELECT ISNULL(MAX(sort_order), 0) + 1 AS n FROM dbo.contents WITH (UPDLOCK, HOLDLOCK) WHERE module_id = @m', { m: T.int(mod.id) }, tx);
     const row = await one(
-      `INSERT INTO dbo.contents (module_id, course_id, title, type, live_class_id, sort_order, is_free_preview)
-       OUTPUT INSERTED.content_id VALUES (@m, @c, @title, 'live', @lc, @o, 0)`,
+      `INSERT INTO dbo.contents (module_id, course_id, title, type, live_class_id, live_slot_id, sort_order, is_free_preview)
+       OUTPUT INSERTED.content_id VALUES (@m, @c, @title, 'live', @lc, NEWID(), @o, 0)`,
       { m: T.int(mod.id), c: T.int(mod.course_id), title: T.nvarchar(f.title, 200), lc: T.int(lcId), o: T.int(next.n) },
       tx,
     );
@@ -59,6 +59,50 @@ async function updateLiveLesson(teacherId, existing, b) {
       tx,
     );
     await query('UPDATE dbo.contents SET title = @title WHERE content_id = @id', { title: T.nvarchar(f.title, 200), id: T.int(existing.content_id) }, tx);
+  });
+}
+
+// One more batch on an existing live lesson: a new contents row of the same slot (same module, title and position)
+// with its own live class, so the batch gets its own date, Meet link, attendance and recording.
+async function scheduleBatchSession(teacherId, content, b) {
+  assertLive(content);
+  const batchId = b && b.batchId ? Number(b.batchId) : null;
+  if (!batchId) throw badRequest('batchId: choose a batch');
+  const batch = await one('SELECT status FROM dbo.batches WHERE batch_id = @b AND course_id = @c', { b: T.int(batchId), c: T.int(content.course_id) });
+  if (!batch) throw badRequest('Choose a batch of this course');
+  if (batch.status === 'closed') throw conflict('This batch is closed', 'BATCH_CLOSED');
+  const check = async (tx) => {
+    const rows = await query(
+      `SELECT l.batch_id FROM dbo.contents x LEFT JOIN dbo.live_classes l WITH (UPDLOCK, HOLDLOCK) ON l.live_class_id = x.live_class_id
+       WHERE x.live_slot_id = @slot AND x.live_class_id IS NOT NULL`,
+      { slot: T.uuid(content.live_slot_id) },
+      tx,
+    );
+    if (rows.some((r) => r.batch_id === null)) throw conflict('This lesson is for all batches. Change it to one batch first.', 'SLOT_ALL_BATCHES');
+    if (rows.some((r) => r.batch_id === batchId)) throw conflict('This batch already has a session of this lesson', 'SESSION_EXISTS');
+  };
+  await check();
+  const f = await parseLive(teacherId, content.course_id, { ...b, title: content.title, batchId });
+  if (f.startsAt <= clock.now()) throw badRequest('Choose a time in the future');
+  return withTransaction(async (tx) => {
+    await check(tx);
+    const lcId = await liveClass.insertLiveClass(f, tx);
+    // The new session goes right after its lesson; later lessons move down by one (two steps because sort_order is unique per module).
+    const last = await one('SELECT MAX(sort_order) AS p FROM dbo.contents WHERE live_slot_id = @slot', { slot: T.uuid(content.live_slot_id) }, tx);
+    const mp = { m: T.int(content.module_id), p: T.int(last.p) };
+    await query('UPDATE dbo.contents SET sort_order = sort_order + 100001 WHERE module_id = @m AND sort_order > @p', mp, tx);
+    await query('UPDATE dbo.contents SET sort_order = sort_order - 100000 WHERE module_id = @m AND sort_order > 100000', mp, tx);
+    const row = await one(
+      `INSERT INTO dbo.contents (module_id, course_id, title, type, live_class_id, live_slot_id, sort_order, is_free_preview)
+       OUTPUT INSERTED.content_id VALUES (@m, @c, @title, 'live', @lc, @slot, @o, 0)`,
+      {
+        m: T.int(content.module_id), c: T.int(content.course_id), title: T.nvarchar(content.title, 200), lc: T.int(lcId),
+        slot: T.uuid(content.live_slot_id), o: T.int(last.p + 1),
+      },
+      tx,
+    );
+    await liveClass.notifyNewClass(f, liveClass.lessonLink(content.course_id, row.content_id), tx);
+    return row.content_id;
   });
 }
 
@@ -103,4 +147,4 @@ async function deleteLiveLesson(existing) {
   return { deleted: true };
 }
 
-module.exports = { createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };
+module.exports = { scheduleBatchSession, createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };
