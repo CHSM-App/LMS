@@ -75,6 +75,10 @@ describe('Google Meet via Calendar API', () => {
     process.env.MEET_PROVIDER = 'google';
     process.env.GOOGLE_CALENDAR_ID = 'classes@school.example';
     process.env.GOOGLE_IMPERSONATE_USER = 'teacher-bot@school.example';
+    // A refresh token wins over the service account; a developer's .env may hold one, so clear it here.
+    delete process.env.GOOGLE_REFRESH_TOKEN;
+    delete process.env.GOOGLE_CLIENT_ID;
+    delete process.env.GOOGLE_CLIENT_SECRET;
     process.env.GOOGLE_SERVICE_ACCOUNT_JSON = JSON.stringify({
       client_email: 'lms@project.iam.gserviceaccount.com',
       private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }),
