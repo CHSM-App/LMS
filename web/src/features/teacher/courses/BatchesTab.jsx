@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../api/client';
 import { Button, Input, Modal, Select, StatusBadge, Table, useToast } from '../../../components';
 import { formatDate, todayISO } from '../../../utils/format';
+import { LiveScheduleDialog } from './LiveScheduleDialog';
 
 function BatchDialog({ courseId, batch, onClose, onDone }) {
   const { t } = useTranslation();
@@ -58,6 +59,7 @@ export function BatchesTab({ courseId }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const [dialog, setDialog] = useState(null);
+  const [schedule, setSchedule] = useState(null);
   const q = useQuery({ queryKey: ['teacher', 'batches', courseId], queryFn: () => api.get(`/teacher/courses/${courseId}/batches`) });
   const columns = [
     { key: 'name', header: t('batches.name') },
@@ -65,7 +67,16 @@ export function BatchesTab({ courseId }) {
     { key: 'timingText', header: t('batches.timing'), render: (b) => b.timingText || '—' },
     { key: 'students', header: t('teachers.students'), align: 'right', render: (b) => (b.maxStudents ? `${b.studentCount} / ${b.maxStudents}` : b.studentCount) },
     { key: 'status', header: t('common.status'), render: (b) => <StatusBadge status={b.status} /> },
-    { key: 'a', header: t('common.actions'), render: (b) => <Button variant="compact" size="sm" onClick={() => setDialog({ batch: b })}>{t('common.edit')}</Button> },
+    {
+      key: 'a',
+      header: t('common.actions'),
+      render: (b) => (
+        <span className="row">
+          <Button variant="compact" size="sm" onClick={() => setDialog({ batch: b })}>{t('common.edit')}</Button>
+          {b.status !== 'closed' && <Button variant="compact" size="sm" onClick={() => setSchedule(b)}>{t('batches.liveSchedule')}</Button>}
+        </span>
+      ),
+    },
   ];
   return (
     <div className="stack">
@@ -75,6 +86,7 @@ export function BatchesTab({ courseId }) {
       {dialog && (
         <BatchDialog courseId={courseId} batch={dialog.batch} onClose={() => setDialog(null)} onDone={() => { setDialog(null); qc.invalidateQueries({ queryKey: ['teacher', 'batches', courseId] }); }} />
       )}
+      {schedule && <LiveScheduleDialog courseId={courseId} batch={schedule} onClose={() => setSchedule(null)} />}
     </div>
   );
 }

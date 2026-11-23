@@ -422,7 +422,13 @@
     "timing": "समय",
     "timingHint": "उदाहरण: सोम–शुक्र सुबह 7–8",
     "max": "अधिकतम छात्र",
-    "empty": "अभी कोई बैच नहीं"
+    "empty": "अभी कोई बैच नहीं",
+    "liveSchedule": "लाइव शेड्यूल",
+    "liveScheduleTitle": "लाइव शेड्यूल: {{name}}",
+    "liveScheduleIntro": "इस बैच के लिए हर लाइव पाठ की तारीख तय करें। बाद में तय करनी हो तो पंक्ति खाली छोड़ें।",
+    "liveScheduleEmpty": "इस कोर्स में अभी कोई लाइव पाठ नहीं है",
+    "liveScheduleSave": "शेड्यूल सेव करें",
+    "liveScheduleNothing": "कम से कम एक पाठ की तारीख भरें"
   },
   "questions": {
     "subtitle": "हर मॉड्यूल का अपना प्रश्न बैंक होता है।",
@@ -999,9 +1005,15 @@
         "live": "अभी लाइव",
         "ended": "समाप्त",
         "recorded": "रिकॉर्ड की गई",
-        "cancelled": "रद्द"
+        "cancelled": "रद्द",
+        "unscheduled": "अभी समय तय नहीं"
       },
-      "waitingForLink": "शिक्षक जल्द ही लिंक देंगे"
+      "waitingForLink": "शिक्षक जल्द ही लिंक देंगे",
+      "scheduleSoon": "समय जल्द बताया जाएगा",
+      "dateOptionalHint": "हर बैच की तारीख बाद में तय करनी हो तो खाली छोड़ें",
+      "needDateForBatch": "इस बैच के लिए तारीख और समय चुनें",
+      "addBatch": "बैच जोड़ें",
+      "addBatchTitle": "{{title}} किसी बैच के लिए तय करें"
     }
   },
   "roles": {

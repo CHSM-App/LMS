@@ -7,7 +7,12 @@ import { uploadSmall } from '../../../utils/upload';
 import { VideoSourceField } from './VideoSourceField';
 import { LiveLessonFields, emptyLive, liveBody } from './LiveLessonFields';
 import { RecordingModal } from './RecordingModal';
+import { LiveSessionDialog } from './LiveSessionDialog';
 import { formatDateTime } from '../../../utils/format';
+
+// The batch sessions of a live lesson (older API answers carry only the lesson's own session).
+const sessionsOf = (c) => c.live.sessions
+  ?? (c.live.liveClassId ? [{ contentId: c.id, ...c.live, recording: c.recording }] : []);
 
 const swap = (list, i, j) => {
   const next = list.map((x) => x.id);
@@ -45,6 +50,7 @@ function NameDialog({ title, initial = '', withDescription, onSave, onClose, sav
 function ContentDialog({ courseId, initial, onSave, onClose, saving, error }) {
   const { t } = useTranslation();
   const [live, setLive] = useState(() => emptyLive(initial));
+  const isTemplate = initial?.type === 'live' && !initial.live?.liveClassId;
   const [f, setF] = useState(() => ({
     title: initial?.title || '',
     type: initial?.type || 'video',
@@ -58,8 +64,10 @@ function ContentDialog({ courseId, initial, onSave, onClose, saving, error }) {
   const submit = () => {
     if (!f.title.trim()) return setLocal(t('validation.required'));
     if (f.type === 'live') {
+      // A lesson added without a date is only renamed here; its batches are scheduled with "Add batch" or the batch's Live schedule.
+      if (isTemplate) return onSave({ title: f.title.trim(), type: 'live' });
       const lb = liveBody(live);
-      if (!lb) return setLocal(t('validation.required'));
+      if (lb.error) return setLocal(t('content.live.needDateForBatch'));
       return onSave({ title: f.title.trim(), type: 'live', ...lb });
     }
     const body = { title: f.title.trim(), type: f.type, isFreePreview: f.isFreePreview };
@@ -96,7 +104,7 @@ function ContentDialog({ courseId, initial, onSave, onClose, saving, error }) {
           { value: 'link', label: t('curriculum.types.link') },
           ...(!initial || initial.type === 'live' ? [{ value: 'live', label: t('curriculum.types.live') }] : []),
         ]} />
-      {f.type === 'live' && <LiveLessonFields courseId={courseId} value={live} onChange={setLive} />}
+      {f.type === 'live' && !isTemplate && <LiveLessonFields courseId={courseId} value={live} onChange={setLive} />}
       {f.type === 'video' && <VideoSourceField label={t('curriculum.types.video')} kind="video" value={f.video} onChange={(v) => setF((x) => ({ ...x, video: v }))} required />}
       {f.type === 'pdf' && (
         <FileUpload label={t('curriculum.pdfFile')} accept="application/pdf" maxMb={20} onFile={onPdf} error={pdfError} hint={f.fileKey ? t('curriculum.pdfReady') : t('curriculum.pdfHint')} required />
@@ -167,17 +175,27 @@ export function CurriculumTab({ courseId }) {
                       <span>
                         <span className="badge badge--neutral">{t(`curriculum.types.${c.type}`)}</span> {c.title}
                         {c.isFreePreview && <span className="muted"> · {t('curriculum.free')}</span>}
+                        {c.live && sessionsOf(c).length === 0 && <>{' '}<LiveStageBadge stage="unscheduled" /></>}
                         {c.live && (
-                          <>
-                            {' '}<LiveStageBadge stage={c.live.stage} />
-                            <span className="muted"> · {formatDateTime(c.live.startsAt, i18n.language)} · {c.live.batch ? c.live.batch.name : t('content.live.allBatches')}</span>
-                          </>
+                          <ul className="curriculum__contents">
+                            {sessionsOf(c).map((s) => (
+                              <li key={s.contentId} className="row row--between">
+                                <span>
+                                  <LiveStageBadge stage={s.stage} />
+                                  <span className="muted"> {s.batch ? s.batch.name : t('content.live.allBatches')} · {formatDateTime(s.startsAt, i18n.language)}</span>
+                                </span>
+                                {s.recording
+                                  ? <Button variant="ghost" size="sm" onClick={() => run.mutate({ method: 'del', path: `/teacher/contents/${s.contentId}/recording` })}>{t('content.live.removeRecording')}</Button>
+                                  : <Button variant="compact" size="sm" onClick={() => setDialog({ kind: 'recording', item: { ...c, id: s.contentId } })}>{t('content.live.addRecording')}</Button>}
+                              </li>
+                            ))}
+                          </ul>
                         )}
                       </span>
                       <span className="row">
-                        {c.type === 'live' && (c.recording
-                          ? <Button variant="ghost" size="sm" onClick={() => run.mutate({ method: 'del', path: `/teacher/contents/${c.id}/recording` })}>{t('content.live.removeRecording')}</Button>
-                          : <Button variant="compact" size="sm" onClick={() => setDialog({ kind: 'recording', item: c })}>{t('content.live.addRecording')}</Button>)}
+                        {c.live && sessionsOf(c).every((s) => s.batch) && (
+                          <Button variant="compact" size="sm" onClick={() => setDialog({ kind: 'session', item: c })}>{t('content.live.addBatch')}</Button>
+                        )}
                         <MoveButtons name={c.title} index={ci} count={m.contents.length} onMove={(i, j) => run.mutate({ method: 'put', path: `/teacher/modules/${m.id}/contents/order`, body: { contentIds: swap(m.contents, i, j) } })} />
                         <Button variant="ghost" size="sm" onClick={() => setDialog({ kind: 'content', item: c, moduleId: m.id })}>{t('common.edit')}</Button>
                         <Button variant="ghost" size="sm" onClick={() => run.mutate({ method: 'del', path: `/teacher/contents/${c.id}` })}>{t('common.delete')}</Button>
@@ -220,6 +238,9 @@ export function CurriculumTab({ courseId }) {
           onClose={() => setDialog(null)}
           onSave={dialog.item ? save('put', `/teacher/contents/${dialog.item.id}`) : save('post', `/teacher/modules/${dialog.moduleId}/contents`)}
         />
+      )}
+      {dialog?.kind === 'session' && (
+        <LiveSessionDialog courseId={courseId} lesson={dialog.item} saving={run.isPending} onClose={() => setDialog(null)} onSave={save('post', `/teacher/contents/${dialog.item.id}/sessions`)} />
       )}
       {dialog?.kind === 'recording' && (
         <RecordingModal lesson={dialog.item} saving={run.isPending} onClose={() => setDialog(null)} onSave={save('put', `/teacher/contents/${dialog.item.id}/recording`)} />

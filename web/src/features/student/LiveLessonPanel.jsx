@@ -13,6 +13,15 @@ import { formatDateTime } from '../../utils/format';
 export function LiveLessonPanel({ content: c, onTimeUpdate, onEnded }) {
   const { t, i18n } = useTranslation();
   const { stage, startsAt, meetLink } = c.live;
+  // My batch has no date for this lesson yet.
+  if (stage === 'unscheduled') {
+    return (
+      <div className="stack">
+        <p className="row"><LiveStageBadge stage={stage} /></p>
+        <p>{t('content.live.scheduleSoon')}</p>
+      </div>
+    );
+  }
   return (
     <div className="stack">
       <p className="row">

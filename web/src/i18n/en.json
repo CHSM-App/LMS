@@ -422,7 +422,13 @@
     "timing": "Timing",
     "timingHint": "For example: Mon–Fri 7–8 am",
     "max": "Maximum students",
-    "empty": "No batches yet"
+    "empty": "No batches yet",
+    "liveSchedule": "Live schedule",
+    "liveScheduleTitle": "Live schedule: {{name}}",
+    "liveScheduleIntro": "Set the date of each live lesson for this batch. Leave a row empty to set it later.",
+    "liveScheduleEmpty": "This course has no live lessons yet",
+    "liveScheduleSave": "Save schedule",
+    "liveScheduleNothing": "Fill a date for at least one lesson"
   },
   "questions": {
     "subtitle": "Each module has its own question bank.",
@@ -999,9 +1005,15 @@
         "live": "Live now",
         "ended": "Ended",
         "recorded": "Recorded",
-        "cancelled": "Cancelled"
+        "cancelled": "Cancelled",
+        "unscheduled": "Not scheduled yet"
       },
-      "waitingForLink": "The teacher will share the link soon"
+      "waitingForLink": "The teacher will share the link soon",
+      "scheduleSoon": "Schedule coming soon",
+      "dateOptionalHint": "Leave empty to set the date for each batch later",
+      "needDateForBatch": "Choose a date and time for this batch",
+      "addBatch": "Add batch",
+      "addBatchTitle": "Schedule {{title}} for a batch"
     }
   },
   "roles": {

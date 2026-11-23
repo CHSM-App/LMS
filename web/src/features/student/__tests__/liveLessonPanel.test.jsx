@@ -9,6 +9,13 @@ const base = {
 };
 const withStage = (stage, extra = {}) => ({ ...base, ...extra, live: { ...base.live, stage, ...(extra.live || {}) } });
 
+test('a lesson with no date for my batch shows Schedule coming soon and no Join', () => {
+  render(<LiveLessonPanel content={{ ...base, live: { stage: 'unscheduled', startsAt: null, durationMin: null } }} />);
+  expect(screen.getByText('Schedule coming soon')).toBeInTheDocument();
+  expect(screen.queryByText(/Starts/)).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Join class' })).not.toBeInTheDocument();
+});
+
 test('upcoming shows the start time and no Join button', () => {
   render(<LiveLessonPanel content={base} />);
   expect(screen.getByText(/Starts/)).toBeInTheDocument();
