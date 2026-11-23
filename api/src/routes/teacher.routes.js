@@ -25,6 +25,7 @@ router.post(
   (req, res, next) => (req.body && req.body.status === 'published' ? requireActiveTeacherSubscription(req, res, next) : next()),
   h((req) => courses.setStatus(req.owned.course.id, req.body.status)),
 );
+router.post('/teacher/courses/:courseId/duplicate', owns('course', 'courseId'), h((req) => courses.duplicate(req.user.id, req.owned.course.id), 201));
 router.get('/teacher/courses/:courseId/curriculum', owns('course', 'courseId'), h((req) => cur.curriculum(req.owned.course.id)));
 
 // Subjects

@@ -1670,3 +1670,12 @@ paths:
         '400': { description: Invalid item }
         '404': { description: Not your course or batch }
         '409': { description: SESSION_EXISTS or SLOT_ALL_BATCHES or BATCH_CLOSED }
+  /teacher/courses/{courseId}/duplicate:
+    parameters: [{ name: courseId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      summary: Copy the course as a new draft (subjects, modules, lessons; live lessons without dates; no batches or students)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201': { description: The new draft course }
+        '404': { description: Not your course }

@@ -135,7 +135,8 @@ One course keeps one set of modules and lessons for every year. Only the **batch
 6. **Edits apply to the whole lesson:** rename, reorder and delete act on every session of the slot. Deleting is refused when any session has attendance.
 7. **Naming:** batch names are free text. Put the year in the name ("2027 - Batch A"). A new year means a new batch of the same course; the old batches are set to Closed and keep their data.
 8. **Student stages:** Unscheduled ("Schedule coming soon") → Upcoming → Live now (Join, from 10 minutes before) → Ended → Recorded. Same on web and mobile.
-9. **Not built (owner declined):** copying a recording from one batch to another, and copying a whole course. A "copy schedule from last batch" helper may come later.
+9. **Not built (owner declined):** copying a recording from one batch to another. A "copy schedule from last batch" helper may come later.
+10. **Duplicate course (added 2026-11-23):** the teacher can copy a course as a new **draft** named "<title> (copy)". Copied: course details, subjects, modules and lessons (files are shared, not copied). Live lessons come once each, with no date, Meet link or recording. Not copied: batches, students, attendance, exams. Web only (the teacher app has no course screens).
 
 ## Still open
 - Brand / product name, logo, colours **(placeholder: "LMS")**

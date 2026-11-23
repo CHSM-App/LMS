@@ -172,4 +172,62 @@ async function remove(courseId) {
   return { deleted: true };
 }
 
-module.exports = { create, update, list, getById, serialize, readiness, setStatus, remove, slugify, LANGUAGES };
+// Copy of a course as a new draft: course details, subjects, modules and lessons. Files are shared, never copied
+// (stored files are never deleted). Live lessons come once each, without a date, Meet link or recording.
+// Batches, students, attendance and exams are not copied.
+async function duplicate(teacherId, courseId) {
+  const c = await getById(courseId);
+  const id = await withTransaction(async (tx) => {
+    const title = `${c.title} (copy)`.slice(0, 200);
+    const row = await one(
+      `INSERT INTO dbo.courses (teacher_id, title, slug, description, subject, language, thumbnail_key, duration_text, fee_display,
+         demo1_source, demo1_ref, demo2_source, demo2_ref)
+       OUTPUT INSERTED.course_id
+       SELECT @t, @title, @slug, description, subject, language, thumbnail_key, duration_text, fee_display,
+         demo1_source, demo1_ref, demo2_source, demo2_ref FROM dbo.courses WHERE course_id = @c`,
+      { t: T.int(teacherId), title: T.nvarchar(title, 200), slug: T.varchar(slugify(title), 220), c: T.int(courseId) },
+      tx,
+    );
+    const newId = row.course_id;
+    const subjects = await query('SELECT * FROM dbo.subjects WHERE course_id = @c ORDER BY sort_order', { c: T.int(courseId) }, tx);
+    for (const sub of subjects) {
+      const ns = await one(
+        'INSERT INTO dbo.subjects (course_id, name, description, sort_order) OUTPUT INSERTED.subject_id VALUES (@c, @n, @d, @o)',
+        { c: T.int(newId), n: T.nvarchar(sub.name, 120), d: T.nvarchar(sub.description, 1000), o: T.int(sub.sort_order) },
+        tx,
+      );
+      const modules = await query('SELECT * FROM dbo.modules WHERE subject_id = @s ORDER BY sort_order', { s: T.int(sub.subject_id) }, tx);
+      for (const m of modules) {
+        const nm = await one(
+          'INSERT INTO dbo.modules (subject_id, course_id, name, sort_order) OUTPUT INSERTED.module_id VALUES (@s, @c, @n, @o)',
+          { s: T.int(ns.subject_id), c: T.int(newId), n: T.nvarchar(m.name, 160), o: T.int(m.sort_order) },
+          tx,
+        );
+        const contents = await query(
+          `SELECT x.* FROM dbo.contents x WHERE x.module_id = @m AND ${firstOfSlotSql('x')} ORDER BY x.sort_order`,
+          { m: T.int(m.module_id) },
+          tx,
+        );
+        let order = 0;
+        for (const x of contents) {
+          order += 1;
+          const live = x.type === 'live';
+          await query(
+            `INSERT INTO dbo.contents (module_id, course_id, title, type, video_source, file_key, url, sort_order, is_free_preview, live_slot_id)
+             VALUES (@m, @c, @title, @type, @vs, @key, @url, @o, @free, CASE WHEN @live = 1 THEN NEWID() ELSE NULL END)`,
+            {
+              m: T.int(nm.module_id), c: T.int(newId), title: T.nvarchar(x.title, 200), type: T.varchar(x.type, 5),
+              vs: T.varchar(live ? null : x.video_source, 8), key: T.varchar(live ? null : x.file_key, 200), url: T.varchar(live ? null : x.url, 500),
+              o: T.int(order), free: T.bit(!live && x.is_free_preview), live: T.bit(live),
+            },
+            tx,
+          );
+        }
+      }
+    }
+    return newId;
+  });
+  return serialize(await getById(id));
+}
+
+module.exports = { create, update, list, getById, serialize, readiness, setStatus, remove, duplicate, slugify, LANGUAGES };
