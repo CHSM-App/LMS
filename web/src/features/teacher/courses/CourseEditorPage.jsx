@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../../api/client';
-import { BackLink, Banner, Button, Card, EmptyState, FileUpload, Input, PageHeader, Select, Spinner, StatusBadge, Textarea, useToast } from '../../../components';
+import { BackLink, Banner, Button, Card, EmptyState, FileUpload, Input, Modal, PageHeader, Select, Spinner, StatusBadge, Textarea, useToast } from '../../../components';
 import { uploadSmall } from '../../../utils/upload';
 import { VideoSourceField } from './VideoSourceField';
 import { CurriculumTab } from './CurriculumTab';
@@ -77,11 +77,13 @@ const MISSING_KEYS = ['title', 'description', 'demo_video_1', 'content'];
 
 export default function CourseEditorPage() {
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const qc = useQueryClient();
   const toast = useToast();
   const [tab, setTab] = useState('details');
   const [missing, setMissing] = useState(null);
+  const [copying, setCopying] = useState(false);
   const q = useQuery({ queryKey: ['teacher', 'course', courseId], queryFn: () => api.get(`/teacher/courses/${courseId}`) });
   const refresh = () => qc.invalidateQueries({ queryKey: ['teacher'] });
 
@@ -98,6 +100,17 @@ export default function CourseEditorPage() {
       if (e.code === 'NOT_READY') setMissing(e.details.missing);
       else toast.show({ kind: 'error', message: e.message });
     },
+  });
+
+  const duplicate = useMutation({
+    mutationFn: () => api.post(`/teacher/courses/${courseId}/duplicate`, {}),
+    onSuccess: (r) => {
+      setCopying(false);
+      toast.show({ message: t('courses.duplicated') });
+      refresh();
+      navigate(`/teacher/courses/${r.data.id}`);
+    },
+    onError: (e) => toast.show({ kind: 'error', message: e.message }),
   });
 
   if (q.isLoading) return <Spinner label={t('common.loading')} />;
@@ -117,13 +130,22 @@ export default function CourseEditorPage() {
         title={course.title}
         subtitle={<StatusBadge status={course.status} />}
         actions={
-          published ? (
-            <Button variant="secondary" loading={status.isPending} onClick={() => status.mutate('draft')}>{t('courses.unpublish')}</Button>
-          ) : (
-            <Button loading={status.isPending} onClick={() => status.mutate('published')}>{t('courses.publish')}</Button>
-          )
+          <>
+            <Button variant="secondary" onClick={() => setCopying(true)}>{t('courses.duplicate')}</Button>
+            {published ? (
+              <Button variant="secondary" loading={status.isPending} onClick={() => status.mutate('draft')}>{t('courses.unpublish')}</Button>
+            ) : (
+              <Button loading={status.isPending} onClick={() => status.mutate('published')}>{t('courses.publish')}</Button>
+            )}
+          </>
         }
       />
+      {copying && (
+        <Modal open title={t('courses.duplicate')} onClose={() => setCopying(false)}
+          footer={<><Button variant="secondary" onClick={() => setCopying(false)}>{t('common.cancel')}</Button><Button loading={duplicate.isPending} onClick={() => duplicate.mutate()}>{t('courses.duplicate')}</Button></>}>
+          <p>{t('courses.duplicateBody')}</p>
+        </Modal>
+      )}
       {missing && (
         <div role="alert" className="banner banner--warning">
           <div>

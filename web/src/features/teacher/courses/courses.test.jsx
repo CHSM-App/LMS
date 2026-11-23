@@ -123,3 +123,20 @@ test('moving a module down sends the new order', async () => {
   await userEvent.click(await screen.findByRole('button', { name: 'Move A down' }));
   await waitFor(() => expect(put).toHaveBeenCalledWith('/teacher/subjects/1/modules/order', { moduleIds: [11, 10] }));
 });
+
+test('Duplicate course asks first, copies the course and opens the copy', async () => {
+  vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
+    if (path.endsWith('/curriculum')) return { data: { subjects: [] } };
+    if (path.endsWith('/batches')) return { data: [] };
+    if (path === '/teacher/courses/8') return { data: { ...course, id: 8, title: 'Class 10 Maths (copy)' } };
+    return { data: course };
+  });
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { ...course, id: 8, title: 'Class 10 Maths (copy)' } });
+  wrap(<CourseEditorPage />);
+  await userEvent.click(await screen.findByRole('button', { name: 'Duplicate course' }));
+  const dialog = await screen.findByRole('dialog');
+  expect(dialog).toHaveTextContent('Batches, students and exams are not copied');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Duplicate course' }));
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/teacher/courses/7/duplicate', {}));
+  expect(await screen.findByRole('heading', { name: 'Class 10 Maths (copy)' })).toBeInTheDocument();
+});

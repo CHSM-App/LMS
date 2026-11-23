@@ -369,7 +369,10 @@
       "details": "Details",
       "curriculum": "Curriculum",
       "batches": "Batches"
-    }
+    },
+    "duplicate": "Duplicate course",
+    "duplicateBody": "A new draft is made with the same modules and lessons. Live lessons are copied without dates or recordings. Batches, students and exams are not copied.",
+    "duplicated": "Course copied"
   },
   "video": {
     "source": "Video source",
