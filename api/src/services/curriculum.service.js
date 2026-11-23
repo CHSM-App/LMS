@@ -53,6 +53,25 @@ async function reorder({ table, idCol, parentCol, parentId, ids }) {
   });
 }
 
+// Contents of one module. A live lesson's sessions (rows of one slot) sit next to each other and move as one:
+// the list holds one id per lesson (the first session's id, as the curriculum shows it); the full list of rows also works.
+async function reorderContents(moduleId, ids) {
+  const bad = () => badRequest('Send the full list of ids in the new order');
+  if (!Array.isArray(ids) || !ids.every((x) => Number.isInteger(x))) throw bad();
+  const rows = await query('SELECT content_id, live_slot_id FROM dbo.contents WHERE module_id = @m ORDER BY sort_order', { m: T.int(moduleId) });
+  const groupOf = new Map();
+  for (const r of rows) {
+    const mates = r.live_slot_id ? rows.filter((x) => String(x.live_slot_id) === String(r.live_slot_id)) : [r];
+    groupOf.set(r.content_id, mates.map((x) => x.content_id));
+  }
+  const firsts = rows.filter((r) => groupOf.get(r.content_id)[0] === r.content_id).map((r) => r.content_id);
+  const same = (a, b) => a.length === b.length && [...a].sort((x, y) => x - y).every((v, i) => v === [...b].sort((x, y) => x - y)[i]);
+  const full = rows.map((r) => r.content_id);
+  if (same(ids, full)) return reorder({ table: 'contents', idCol: 'content_id', parentCol: 'module_id', parentId: moduleId, ids });
+  if (!same(ids, firsts)) throw bad();
+  return reorder({ table: 'contents', idCol: 'content_id', parentCol: 'module_id', parentId: moduleId, ids: ids.flatMap((id) => groupOf.get(id)) });
+}
+
 // ---------- Modules ----------
 const moduleOut = (m) => ({ id: m.module_id, name: m.name, sortOrder: m.sort_order, subjectId: m.subject_id });
 
@@ -126,6 +145,7 @@ const loadContent = (id) => one(`${CONTENT_SELECT} WHERE x.content_id = @id`, { 
 const hasRecording = (x) => !!x.video_source;
 
 const liveInfo = (x) => ({
+  slotId: x.live_slot_id || null,
   liveClassId: x.live_class_id,
   startsAt: x.live_starts_at,
   durationMin: x.live_duration_min,
@@ -216,6 +236,24 @@ async function deleteContent(id) {
   return { deleted: true };
 }
 
+// One entry per lesson: the sessions of a live lesson (rows sharing a slot) fold into its first row's `live.sessions`.
+function groupLiveSessions(rows) {
+  const out = [];
+  const bySlot = new Map();
+  for (const x of rows) {
+    const key = x.type === 'live' && x.live_slot_id ? String(x.live_slot_id) : null;
+    if (key && bySlot.has(key)) {
+      bySlot.get(key).live.sessions.push(sessionOut(x));
+      continue;
+    }
+    const o = contentOut(x);
+    if (x.type === 'live') o.live.sessions = [sessionOut(x)];
+    if (key) bySlot.set(key, o);
+    out.push(o);
+  }
+  return out;
+}
+
 // ---------- Full tree ----------
 async function curriculum(courseId) {
   const p = { c: T.int(courseId) };
@@ -227,12 +265,12 @@ async function curriculum(courseId) {
       ...subjectOut(s),
       modules: modules
         .filter((m) => m.subject_id === s.subject_id)
-        .map((m) => ({ ...moduleOut(m), contents: contents.filter((x) => x.module_id === m.module_id).map(contentOut) })),
+        .map((m) => ({ ...moduleOut(m), contents: groupLiveSessions(contents.filter((x) => x.module_id === m.module_id)) })),
     })),
   };
 }
 
 module.exports = {
   createSubject, updateSubject, deleteSubject, createModule, updateModule, deleteModule,
-  createContent, updateContent, deleteContent, scheduleSession, setRecording, clearRecording, curriculum, reorder,
+  createContent, updateContent, deleteContent, scheduleSession, setRecording, clearRecording, curriculum, reorder, reorderContents,
 };

@@ -49,7 +49,7 @@ router.post('/teacher/contents/:contentId/sessions', owns('content', 'contentId'
 router.put('/teacher/contents/:contentId/recording', owns('content', 'contentId'), h((req) => cur.setRecording(req.user.id, req.owned.content.id, req.body)));
 router.delete('/teacher/contents/:contentId/recording', owns('content', 'contentId'), h((req) => cur.clearRecording(req.owned.content.id)));
 router.put('/teacher/modules/:moduleId/contents/order', owns('module', 'moduleId'), h((req) =>
-  cur.reorder({ table: 'contents', idCol: 'content_id', parentCol: 'module_id', parentId: req.owned.module.id, ids: req.body.contentIds })));
+  cur.reorderContents(req.owned.module.id, req.body.contentIds)));
 
 // Batches
 router.get('/teacher/courses/:courseId/batches', owns('course', 'courseId'), h((req) => batches.list(req.owned.course.id)));

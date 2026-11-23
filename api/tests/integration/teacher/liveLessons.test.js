@@ -294,3 +294,68 @@ describe('one live lesson, a session per batch', () => {
     expect(r.body.code).toBe('NOT_LIVE_LESSON');
   });
 });
+
+describe('one lesson with sessions in the teacher curriculum', () => {
+  const mkBatch = async (t, courseId, name) => (await t.post(`/api/v1/teacher/courses/${courseId}/batches`, { name, startDate: '2026-01-01' })).body.data;
+  const tree = async (t, courseId) => (await t.get(`/api/v1/teacher/courses/${courseId}/curriculum`)).body.data;
+  const contentsOf = (data) => data.subjects.flatMap((s) => s.modules).flatMap((m) => m.contents);
+
+  async function slotWithTwoBatches() {
+    const { t, courseId, moduleId, batch } = await setup();
+    const evening = await mkBatch(t, courseId, 'Evening');
+    const a = (await addLive(t, moduleId, { batchId: batch.id })).body.data;
+    const b = (await t.post(`/api/v1/teacher/contents/${a.id}/sessions`, { batchId: evening.id, startsAt: '2099-06-16T12:30:00Z' })).body.data;
+    await t.post(`/api/v1/teacher/modules/${moduleId}/contents`, { type: 'link', title: 'After', url: 'https://example.com' });
+    return { t, courseId, moduleId, a, bId: b.contentId, morning: batch, evening };
+  }
+
+  test('the curriculum shows one lesson with a session per batch', async () => {
+    const { t, courseId, a, bId, morning, evening } = await slotWithTwoBatches();
+    const live = contentsOf(await tree(t, courseId)).filter((x) => x.type === 'live');
+    expect(live).toHaveLength(1);
+    expect(live[0].id).toBe(a.id);
+    expect(live[0].live.slotId).toBeTruthy();
+    expect(live[0].live.sessions.map((s) => [s.contentId, s.batch.id])).toEqual([[a.id, morning.id], [bId, evening.id]]);
+    expect(live[0].live.sessions[1]).toMatchObject({ stage: 'upcoming', recording: null });
+  });
+
+  test('renaming the lesson renames every session', async () => {
+    const { t, a } = await slotWithTwoBatches();
+    const u = await t.put(`/api/v1/teacher/contents/${a.id}`, liveLessonBody({ title: 'Renamed', batchId: a.live.batch.id }));
+    expect(u.status).toBe(200);
+    expect((await query("SELECT DISTINCT title FROM dbo.contents WHERE type = 'live'")).map((r) => r.title)).toEqual(['Renamed']);
+    expect((await query('SELECT DISTINCT topic FROM dbo.live_classes')).map((r) => r.topic)).toEqual(['Renamed']);
+  });
+
+  test('reordering moves all sessions of a lesson together', async () => {
+    const { t, moduleId, a } = await slotWithTwoBatches();
+    const all = await query('SELECT content_id, title FROM dbo.contents ORDER BY sort_order');
+    const intro = all.find((r) => r.title === 'Intro').content_id;
+    const after = all.find((r) => r.title === 'After').content_id;
+    const r = await t.put(`/api/v1/teacher/modules/${moduleId}/contents/order`, { contentIds: [after, a.id, intro] });
+    expect(r.status).toBe(200);
+    expect((await query('SELECT title FROM dbo.contents ORDER BY sort_order')).map((x) => x.title)).toEqual(['After', 'Live: factorisation', 'Live: factorisation', 'Intro']);
+  });
+
+  test('reordering still rejects a list that misses a lesson', async () => {
+    const { t, moduleId, a } = await slotWithTwoBatches();
+    expect((await t.put(`/api/v1/teacher/modules/${moduleId}/contents/order`, { contentIds: [a.id] })).status).toBe(400);
+  });
+
+  test('deleting the lesson removes every session', async () => {
+    const { t, a } = await slotWithTwoBatches();
+    expect((await t.del(`/api/v1/teacher/contents/${a.id}`)).status).toBe(200);
+    expect(await counts()).toEqual({ c: 0, l: 0 });
+  });
+
+  test('deleting is refused, and nothing is deleted, when any session has attendance', async () => {
+    const { t, a, bId } = await slotWithTwoBatches();
+    const s = await student({ name: 'Kid' });
+    const lc = await one('SELECT live_class_id id FROM dbo.contents WHERE content_id = @id', { id: T.int(bId) });
+    await query('INSERT INTO dbo.attendance (live_class_id, student_id, present, marked_at) VALUES (@l, @s, 1, SYSUTCDATETIME())', { l: T.int(lc.id), s: T.int(s.user_id) });
+    const d = await t.del(`/api/v1/teacher/contents/${a.id}`);
+    expect(d.status).toBe(409);
+    expect(d.body.code).toBe('LIVE_HAS_ATTENDANCE');
+    expect(await counts()).toEqual({ c: 2, l: 2 });
+  });
+});

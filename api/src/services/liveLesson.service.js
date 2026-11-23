@@ -58,7 +58,7 @@ async function updateLiveLesson(teacherId, existing, b) {
       },
       tx,
     );
-    await query('UPDATE dbo.contents SET title = @title WHERE content_id = @id', { title: T.nvarchar(f.title, 200), id: T.int(existing.content_id) }, tx);
+    await renameSlot(existing, f.title, tx);
   });
 }
 
@@ -106,6 +106,17 @@ async function scheduleBatchSession(teacherId, content, b) {
   });
 }
 
+// Every session of a lesson carries the lesson's title (content title and live class topic).
+async function renameSlot(existing, title, tx) {
+  const p = { title: T.nvarchar(title, 200), id: T.int(existing.content_id), slot: T.uuid(existing.live_slot_id ?? null) };
+  await query('UPDATE dbo.contents SET title = @title WHERE content_id = @id OR (@slot IS NOT NULL AND live_slot_id = @slot)', p, tx);
+  await query(
+    `UPDATE l SET topic = @title FROM dbo.live_classes l JOIN dbo.contents x ON x.live_class_id = l.live_class_id
+     WHERE x.content_id = @id OR (@slot IS NOT NULL AND x.live_slot_id = @slot)`,
+    p, tx,
+  );
+}
+
 function assertLive(existing) {
   if (existing.type !== 'live') throw conflict('Only live lessons have recordings', 'NOT_LIVE_LESSON');
 }
@@ -132,19 +143,24 @@ async function clearRecording(existing) {
   await query('UPDATE dbo.contents SET video_source = NULL, file_key = NULL, url = NULL WHERE content_id = @id', { id: T.int(existing.content_id) });
 }
 
-// Refused once attendance exists, so the attendance record is never lost.
+// Deletes the lesson with every session of its slot. Refused, and nothing deleted, once any session has attendance.
 async function deleteLiveLesson(existing) {
-  const p = { id: T.int(existing.content_id), lc: T.int(existing.live_class_id) };
-  const att = await one('SELECT TOP 1 1 AS y FROM dbo.attendance WHERE live_class_id = @lc', p);
+  const sessions = await query(
+    'SELECT content_id, live_class_id FROM dbo.contents WHERE content_id = @id OR (@slot IS NOT NULL AND live_slot_id = @slot)',
+    { id: T.int(existing.content_id), slot: T.uuid(existing.live_slot_id ?? null) },
+  );
+  const ids = sessions.map((r) => Number(r.content_id)).join(',');
+  const lcs = sessions.map((r) => Number(r.live_class_id)).join(',');
+  const att = await one(`SELECT TOP 1 1 AS y FROM dbo.attendance WHERE live_class_id IN (${lcs})`);
   if (att) throw conflict('Students attended this lesson, so it cannot be deleted. Cancel it instead.', 'LIVE_HAS_ATTENDANCE');
   await withTransaction(async (tx) => {
     const tables = await one("SELECT OBJECT_ID('dbo.content_progress') AS cp, OBJECT_ID('dbo.offline_downloads') AS od", {}, tx);
-    if (tables.cp) await query('DELETE FROM dbo.content_progress WHERE content_id = @id', p, tx);
-    if (tables.od) await query('DELETE FROM dbo.offline_downloads WHERE content_id = @id', p, tx);
-    await query('DELETE FROM dbo.contents WHERE content_id = @id', p, tx);
-    await query('DELETE FROM dbo.live_classes WHERE live_class_id = @lc', p, tx);
+    if (tables.cp) await query(`DELETE FROM dbo.content_progress WHERE content_id IN (${ids})`, {}, tx);
+    if (tables.od) await query(`DELETE FROM dbo.offline_downloads WHERE content_id IN (${ids})`, {}, tx);
+    await query(`DELETE FROM dbo.contents WHERE content_id IN (${ids})`, {}, tx);
+    await query(`DELETE FROM dbo.live_classes WHERE live_class_id IN (${lcs})`, {}, tx);
   });
   return { deleted: true };
 }
 
-module.exports = { scheduleBatchSession, createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };
+module.exports = { renameSlot, scheduleBatchSession, createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };
