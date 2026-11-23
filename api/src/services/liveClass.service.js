@@ -120,6 +120,15 @@ async function update(id, teacherId, body) {
   const lesson = await one('SELECT content_id, live_slot_id FROM dbo.contents WHERE live_class_id = @id', { id: T.int(current.live_class_id) });
   // A class that is a live lesson belongs to its module's course.
   if (lesson && f.courseId !== current.course_id) throw badRequest('This class is a lesson in a course. Move the lesson instead.', 'LIVE_LESSON_COURSE_FIXED');
+  // A live lesson keeps one session per batch: the same rules as scheduling apply when its batch changes.
+  if (lesson && (f.batchId ?? null) !== (current.batch_id ?? null)) {
+    const live = require('./liveLesson.service');
+    await live.assertBatchOpen(f.batchId);
+    await withTransaction(async (tx) => {
+      await live.lockSlot(lesson.live_slot_id, tx);
+      await live.checkSlot({ ...lesson, title: f.topic }, f.batchId ?? null, tx, current.live_class_id);
+    });
+  }
   if (lesson) await require('./liveLesson.service').renameSlot(lesson, f.topic);
   await query(
     `UPDATE dbo.live_classes SET course_id = @c, batch_id = @b, topic = @t, starts_at = @s, duration_min = @d, meet_link = @l, status = @st,

@@ -6,7 +6,7 @@ const catalog = require('./publicCatalog.service');
 const attempts = require('./attempt.service');
 const storage = require('../providers/storage');
 const { accessStatus } = require('./enrollment.service');
-const { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql, placeholderFlagSql } = require('./studentAccess');
+const { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql, countedSql, placeholderFlagSql } = require('./studentAccess');
 const { liveStage } = require('../domain/liveLesson');
 const { sanitize } = require('../utils/sanitize');
 const { clock } = require('../utils/clock');
@@ -70,11 +70,11 @@ async function enrolledCourses(studentId) {
     `SELECT e.enrollment_id, e.course_id, e.batch_id, c.title, c.slug, c.thumbnail_key, u.name AS teacher_name, u.status AS teacher_status,
             b.name AS batch_name, s.start_date, s.end_date, s.access_enabled,
             (SELECT COUNT(*) FROM dbo.contents x LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
-              WHERE x.course_id = e.course_id AND ${visibleSql('e.batch_id')}) AS total_lessons,
+              WHERE x.course_id = e.course_id AND ${countedSql('e.batch_id')}) AS total_lessons,
             (SELECT COUNT(*) FROM dbo.content_progress p JOIN dbo.contents x ON x.content_id = p.content_id
               LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
               WHERE p.student_id = e.student_id AND x.course_id = e.course_id AND p.completed_at IS NOT NULL
-                AND ${visibleSql('e.batch_id')}) AS done_lessons,
+                AND ${countedSql('e.batch_id')}) AS done_lessons,
             (SELECT MAX(p.updated_at) FROM dbo.content_progress p JOIN dbo.contents x ON x.content_id = p.content_id
               WHERE p.student_id = e.student_id AND x.course_id = e.course_id) AS last_studied_at,
             nx.content_id AS next_content_id, nx.title AS next_title
@@ -91,7 +91,7 @@ async function enrolledCourses(studentId) {
        JOIN dbo.subjects sb ON sb.subject_id = m.subject_id
        LEFT JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id
        LEFT JOIN dbo.content_progress p ON p.content_id = x.content_id AND p.student_id = e.student_id
-       WHERE x.course_id = e.course_id AND p.completed_at IS NULL AND ${visibleSql('e.batch_id')}
+       WHERE x.course_id = e.course_id AND p.completed_at IS NULL AND ${countedSql('e.batch_id')}
        ORDER BY sb.sort_order, m.sort_order, x.sort_order
      ) nx
      WHERE e.student_id = @s AND e.status = 'approved'
@@ -239,12 +239,13 @@ async function courseView(studentId, courseId) {
      WHERE x.course_id = @c AND ${visibleSql('@b')} ORDER BY x.sort_order`,
     p,
   );
-  const done = contents.filter((x) => x.completed_at).length;
+  const done = contents.filter((x) => x.completed_at && !x.is_placeholder).length;
   return {
     courseId: c.course_id,
     title: c.title,
     readOnly,
-    progressPct: pct(done, contents.length),
+    // Placeholders ("Schedule coming soon") are not counted: my batch cannot attend them yet.
+    progressPct: pct(done, contents.filter((x) => !x.is_placeholder).length),
     subjects: subjects.map((s) => ({
       id: s.subject_id,
       name: s.name,

@@ -27,6 +27,7 @@ async function createLiveLesson(teacherId, mod, b) {
   if (b && !b.startsAt && !b.batchId) return createTemplate(mod, b);
   const f = await parseLive(teacherId, mod.course_id, b);
   if (f.startsAt <= clock.now()) throw badRequest('Choose a time in the future');
+  await assertBatchOpen(f.batchId);
   return withTransaction(async (tx) => {
     const lcId = await liveClass.insertLiveClass(f, tx);
     const next = await one('SELECT ISNULL(MAX(sort_order), 0) + 1 AS n FROM dbo.contents WITH (UPDLOCK, HOLDLOCK) WHERE module_id = @m', { m: T.int(mod.id) }, tx);
@@ -65,7 +66,13 @@ async function updateLiveLesson(teacherId, existing, b) {
   const f = await parseLive(teacherId, existing.course_id, b, existing.live_status);
   const moved = f.startsAt.getTime() !== new Date(existing.live_starts_at).getTime();
   if (moved && f.startsAt <= clock.now()) throw badRequest('Choose a time in the future');
+  const batchChanged = (f.batchId ?? null) !== (existing.live_batch_id ?? null);
+  if (batchChanged) await assertBatchOpen(f.batchId);
   await withTransaction(async (tx) => {
+    if (batchChanged && existing.live_slot_id) {
+      await lockSlot(existing.live_slot_id, tx);
+      await checkSlot(existing, f.batchId ?? null, tx, existing.live_class_id);
+    }
     // Moving the time re-arms both reminders so students are reminded for the new time.
     await query(
       `UPDATE dbo.live_classes SET batch_id = @b, topic = @t, starts_at = @s, duration_min = @d, meet_link = @l, status = @st,
@@ -85,6 +92,12 @@ async function updateLiveLesson(teacherId, existing, b) {
 // A batch session of a live lesson is a contents row of the lesson's slot (same module, title and position)
 // with its own live class, so the batch gets its own date, Meet link, attendance and recording.
 
+async function assertBatchOpen(batchId) {
+  if (!batchId) return;
+  const b = await one('SELECT status FROM dbo.batches WHERE batch_id = @b', { b: T.int(batchId) });
+  if (b && b.status === 'closed') throw conflict('This batch is closed', 'BATCH_CLOSED');
+}
+
 // Validates one session request and parses it (may create a Meet link). Writes nothing.
 async function prepareSession(teacherId, content, b) {
   assertLive(content);
@@ -99,14 +112,22 @@ async function prepareSession(teacherId, content, b) {
   return { content, batchId, f };
 }
 
-// One session per batch per lesson, and a lesson for all batches takes no single-batch session.
-async function checkSlot(content, batchId, tx) {
+// Serialises every change to one lesson's sessions (held until the transaction ends).
+async function lockSlot(slot, tx) {
+  await query("EXEC sp_getapplock @Resource = @r, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000", { r: T.nvarchar(`live_slot:${slot}`, 255) }, tx);
+}
+
+// One session per batch per lesson, and a lesson for all batches (batchId null) has no other session.
+// exceptLiveClassId: the session being edited.
+async function checkSlot(content, batchId, tx, exceptLiveClassId = null) {
+  if (!content.live_slot_id) return;
   const rows = await query(
-    `SELECT l.batch_id FROM dbo.contents x LEFT JOIN dbo.live_classes l WITH (UPDLOCK, HOLDLOCK) ON l.live_class_id = x.live_class_id
-     WHERE x.live_slot_id = @slot AND x.live_class_id IS NOT NULL`,
-    { slot: T.uuid(content.live_slot_id) },
+    `SELECT l.batch_id FROM dbo.contents x JOIN dbo.live_classes l WITH (UPDLOCK, HOLDLOCK) ON l.live_class_id = x.live_class_id
+     WHERE x.live_slot_id = @slot AND (@except IS NULL OR l.live_class_id <> @except)`,
+    { slot: T.uuid(content.live_slot_id), except: T.int(exceptLiveClassId) },
     tx,
   );
+  if (batchId === null && rows.length) throw conflict('This lesson has a session for each batch, so it cannot be for all batches', 'SLOT_ALL_BATCHES');
   if (rows.some((r) => r.batch_id === null)) throw conflict('This lesson is for all batches. Change it to one batch first.', 'SLOT_ALL_BATCHES');
   if (rows.some((r) => r.batch_id === batchId)) throw conflict(`This batch already has a session of "${content.title}"`, 'SESSION_EXISTS');
 }
@@ -138,6 +159,7 @@ async function scheduleBatch(teacherId, courseId, batchId, items) {
 
 // Writes a prepared session inside tx and returns its content id.
 async function insertSession({ content, batchId, f }, tx) {
+  await lockSlot(content.live_slot_id, tx);
   await checkSlot(content, batchId, tx);
   const lcId = await liveClass.insertLiveClass(f, tx);
   // The lesson still has its template row (added without a date): it becomes this first session.
@@ -223,4 +245,4 @@ async function deleteLiveLesson(existing) {
   return { deleted: true };
 }
 
-module.exports = { renameSlot, scheduleBatchSession, scheduleBatch, createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };
+module.exports = { lockSlot, checkSlot, assertBatchOpen, renameSlot, scheduleBatchSession, scheduleBatch, createLiveLesson, updateLiveLesson, setRecording, clearRecording, deleteLiveLesson };

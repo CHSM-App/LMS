@@ -36,6 +36,8 @@ const placeholderSql = (batchExpr) => `(x.type = 'live' AND x.live_slot_id IS NO
   AND NOT EXISTS (SELECT 1 FROM dbo.contents y JOIN dbo.live_classes ly ON ly.live_class_id = y.live_class_id
                   WHERE y.live_slot_id = x.live_slot_id AND (ly.batch_id IS NULL OR ly.batch_id = ${batchExpr})))`;
 const visibleSql = (batchExpr) => `(x.type <> 'live' OR ${ownSql(batchExpr)} OR ${placeholderSql(batchExpr)})`;
+// Lessons that count for progress and "next lesson": placeholders ("Schedule coming soon") do not.
+const countedSql = (batchExpr) => `(x.type <> 'live' OR ${ownSql(batchExpr)})`;
 // 1 when the row is shown as a placeholder (not the student's own session).
 const placeholderFlagSql = (batchExpr) => `CASE WHEN ${ownSql(batchExpr)} THEN 0 ELSE 1 END`;
 
@@ -69,4 +71,4 @@ async function contentWithAccess(studentId, contentId) {
   return { content: c, ...access, progress };
 }
 
-module.exports = { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql, placeholderFlagSql, READ_ONLY_MSG };
+module.exports = { courseAccess, requireWritable, contentWithAccess, loadContent, isVisible, visibleSql, countedSql, placeholderFlagSql, READ_ONLY_MSG };

@@ -241,7 +241,8 @@ async function liveSchedule(courseId, batchIdParam) {
         seen.set(key, o);
         out.push(o);
       }
-      if (x.live_batch_id === batchId) seen.get(key).session = sessionOut(x);
+      // A session for this batch, or one for all batches, counts as scheduled.
+      if (x.live_class_id && (x.live_batch_id === batchId || x.live_batch_id === null)) seen.get(key).session = sessionOut(x);
     }
   }
   return out;

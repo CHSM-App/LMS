@@ -477,3 +477,69 @@ describe('a live lesson without a date (template)', () => {
     expect(await counts()).toEqual({ c: 0, l: 0 });
   });
 });
+
+describe('final review fixes', () => {
+  const mkBatch = async (t, courseId, name) => (await t.post(`/api/v1/teacher/courses/${courseId}/batches`, { name, startDate: '2026-01-01' })).body.data;
+
+  async function slotAB() {
+    const { t, courseId, moduleId, batch } = await setup();
+    const b = await mkBatch(t, courseId, 'Evening');
+    const a = (await addLive(t, moduleId, { batchId: batch.id })).body.data;
+    const s = (await t.post(`/api/v1/teacher/contents/${a.id}/sessions`, { batchId: b.id, startsAt: '2099-06-16T12:30:00Z' })).body.data;
+    return { t, courseId, moduleId, a, bId: s.contentId, morning: batch, evening: b };
+  }
+
+  test('editing a session to all batches is refused when the lesson has other sessions', async () => {
+    const { t, a } = await slotAB();
+    const r = await t.put(`/api/v1/teacher/contents/${a.id}`, liveLessonBody({ batchId: null }));
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('SLOT_ALL_BATCHES');
+  });
+
+  test("editing a session to another batch that already has one is refused", async () => {
+    const { t, a, evening } = await slotAB();
+    const r = await t.put(`/api/v1/teacher/contents/${a.id}`, liveLessonBody({ batchId: evening.id }));
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('SESSION_EXISTS');
+  });
+
+  test('the live classes page follows the same rule', async () => {
+    const { t, courseId, a } = await slotAB();
+    const r = await t.put(`/api/v1/teacher/live-classes/${a.live.liveClassId}`, {
+      courseId, topic: 'Live: factorisation', startsAt: '2099-06-15T12:30:00Z', durationMin: 60, meetLink: 'https://meet.google.com/abc-defg-hij', batchId: null,
+    });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('SLOT_ALL_BATCHES');
+  });
+
+  test('two requests for the same batch at once create one session', async () => {
+    const { t, moduleId, batch } = await setup();
+    const tpl = (await t.post(`/api/v1/teacher/modules/${moduleId}/contents`, { type: 'live', title: 'Algebra' })).body.data;
+    const body = { batchId: batch.id, startsAt: '2099-06-16T12:30:00Z' };
+    const rs = await Promise.all([1, 2, 3].map(() => t.post(`/api/v1/teacher/contents/${tpl.id}/sessions`, body)));
+    expect(rs.map((r) => r.status).sort()).toEqual([201, 409, 409]);
+    expect(await counts()).toEqual({ c: 1, l: 1 });
+  });
+
+  test('the live schedule shows a lesson for all batches as already scheduled', async () => {
+    const { t, courseId, moduleId, batch } = await setup();
+    const all = (await addLive(t, moduleId)).body.data;
+    const list = (await t.get(`/api/v1/teacher/courses/${courseId}/batches/${batch.id}/live-schedule`)).body.data;
+    expect(list.find((x) => x.slotId === all.live.slotId).session).toMatchObject({ batch: null, stage: 'upcoming' });
+  });
+
+  test('a closed batch cannot get a new live lesson', async () => {
+    const { t, moduleId, batch } = await setup();
+    await query("UPDATE dbo.batches SET status = 'closed' WHERE batch_id = @b", { b: T.int(batch.id) });
+    const r = await addLive(t, moduleId, { batchId: batch.id });
+    expect(r.status).toBe(409);
+    expect(r.body.code).toBe('BATCH_CLOSED');
+  });
+
+  test('a session can still be edited after its batch is closed', async () => {
+    const { t, moduleId, batch } = await setup();
+    const a = (await addLive(t, moduleId, { batchId: batch.id })).body.data;
+    await query("UPDATE dbo.batches SET status = 'closed' WHERE batch_id = @b", { b: T.int(batch.id) });
+    expect((await t.put(`/api/v1/teacher/contents/${a.id}`, liveLessonBody({ title: 'Renamed', batchId: batch.id }))).status).toBe(200);
+  });
+});

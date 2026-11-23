@@ -308,3 +308,14 @@ describe('a live lesson without a date', () => {
     expect((await es.post(`/api/v1/student/contents/${r.body.data.id}/progress`, { completed: true })).status).toBe(404);
   });
 });
+
+test("a 'Schedule coming soon' lesson does not count against progress", async () => {
+  const w = await world();
+  const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: 'Evening', startDate: '2026-01-01' })).body.data;
+  await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, liveLessonBody({ startsAt: START, batchId: evening.id }));
+  const view = (await w.s.get(`/api/v1/student/courses/${w.courseId}`)).body.data;
+  const own = view.subjects.flatMap((s) => s.modules).flatMap((m) => m.contents).filter((x) => !(x.live && x.live.stage === 'unscheduled'));
+  for (const x of own) await w.s.post(`/api/v1/student/contents/${x.id}/progress`, { completed: true });
+  expect((await w.s.get(`/api/v1/student/courses/${w.courseId}`)).body.data.progressPct).toBe(100);
+  expect((await w.s.get('/api/v1/student/dashboard')).body.data.myCourses[0].progressPct).toBe(100);
+});
