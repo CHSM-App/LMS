@@ -1013,7 +1013,9 @@
       "dateOptionalHint": "Leave empty to set the date for each batch later",
       "needDateForBatch": "Choose a date and time for this batch",
       "addBatch": "Add batch",
-      "addBatchTitle": "Schedule {{title}} for a batch"
+      "addBatchTitle": "Schedule {{title}} for a batch",
+      "deleteTitle": "Delete {{title}}?",
+      "deleteBody": "This removes the lesson for every batch: {{batches}}."
     }
   },
   "roles": {

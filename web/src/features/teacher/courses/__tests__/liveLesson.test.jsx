@@ -149,6 +149,21 @@ test('Add batch on a lesson schedules a session for that batch', async () => {
   }));
 });
 
+test('deleting a live lesson asks first and names every batch', async () => {
+  mockApi([twoSessions]);
+  const del = vi.spyOn(client.api, 'del').mockResolvedValue({ data: {} });
+  wrap(<CurriculumTab courseId={7} />);
+  await screen.findByText(/Evening/);
+  const lessonRow = screen.getByText('Live: factorisation').closest('li');
+  const deletes = within(lessonRow).getAllByRole('button', { name: 'Delete' });
+  await userEvent.click(deletes[deletes.length - 1]);
+  const dialog = await screen.findByRole('dialog');
+  expect(dialog).toHaveTextContent('Morning, Evening');
+  expect(del).not.toHaveBeenCalled();
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+  await waitFor(() => expect(del).toHaveBeenCalledWith('/teacher/contents/50', undefined));
+});
+
 test('a lesson with no date yet shows Not scheduled yet', async () => {
   mockApi([{ ...liveLesson, live: { slotId: 's1', liveClassId: null, startsAt: null, durationMin: null, batch: null, stage: 'unscheduled', meetLink: null, sessions: [] } }]);
   wrap(<CurriculumTab courseId={7} />);

@@ -51,6 +51,19 @@ test('saves only the filled rows in one request', async () => {
   }));
 });
 
+test('a Meet link typed for a lesson is sent with it', async () => {
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { created: 1, sessions: [] } });
+  const dialog = await openSchedule();
+  const [first] = await within(dialog).findAllByLabelText(/date and time/i);
+  await userEvent.type(first, '2099-07-01T18:00');
+  const [link] = within(dialog).getAllByLabelText(/meet link/i);
+  await userEvent.type(link, 'https://meet.google.com/abc-defg-hij');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save schedule' }));
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/teacher/courses/7/batches/4/live-schedule', {
+    items: [{ slotId: 's1', startsAt: new Date('2099-07-01T18:00').toISOString(), durationMin: 60, meetLink: 'https://meet.google.com/abc-defg-hij' }],
+  }));
+});
+
 test('a server error is shown and the dialog stays open', async () => {
   vi.spyOn(client.api, 'post').mockRejectedValue(new Error('This batch already has a session of Algebra'));
   const dialog = await openSchedule();

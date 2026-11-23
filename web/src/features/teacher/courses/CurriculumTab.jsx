@@ -198,7 +198,7 @@ export function CurriculumTab({ courseId }) {
                         )}
                         <MoveButtons name={c.title} index={ci} count={m.contents.length} onMove={(i, j) => run.mutate({ method: 'put', path: `/teacher/modules/${m.id}/contents/order`, body: { contentIds: swap(m.contents, i, j) } })} />
                         <Button variant="ghost" size="sm" onClick={() => setDialog({ kind: 'content', item: c, moduleId: m.id })}>{t('common.edit')}</Button>
-                        <Button variant="ghost" size="sm" onClick={() => run.mutate({ method: 'del', path: `/teacher/contents/${c.id}` })}>{t('common.delete')}</Button>
+                        <Button variant="ghost" size="sm" onClick={() => (c.live && sessionsOf(c).length ? setDialog({ kind: 'deleteLive', item: c }) : run.mutate({ method: 'del', path: `/teacher/contents/${c.id}` }))}>{t('common.delete')}</Button>
                       </span>
                     </li>
                   ))}
@@ -238,6 +238,12 @@ export function CurriculumTab({ courseId }) {
           onClose={() => setDialog(null)}
           onSave={dialog.item ? save('put', `/teacher/contents/${dialog.item.id}`) : save('post', `/teacher/modules/${dialog.moduleId}/contents`)}
         />
+      )}
+      {dialog?.kind === 'deleteLive' && (
+        <Modal open title={t('content.live.deleteTitle', { title: dialog.item.title })} onClose={() => setDialog(null)}
+          footer={<><Button variant="secondary" onClick={() => setDialog(null)}>{t('common.cancel')}</Button><Button loading={run.isPending} onClick={() => run.mutate({ method: 'del', path: `/teacher/contents/${dialog.item.id}` })}>{t('common.delete')}</Button></>}>
+          <p>{t('content.live.deleteBody', { batches: sessionsOf(dialog.item).map((s) => (s.batch ? s.batch.name : t('content.live.allBatches'))).join(', ') })}</p>
+        </Modal>
       )}
       {dialog?.kind === 'session' && (
         <LiveSessionDialog courseId={courseId} lesson={dialog.item} saving={run.isPending} onClose={() => setDialog(null)} onSave={save('post', `/teacher/contents/${dialog.item.id}/sessions`)} />

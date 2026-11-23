@@ -1013,7 +1013,9 @@
       "dateOptionalHint": "हर बैच की तारीख बाद में तय करनी हो तो खाली छोड़ें",
       "needDateForBatch": "इस बैच के लिए तारीख और समय चुनें",
       "addBatch": "बैच जोड़ें",
-      "addBatchTitle": "{{title}} किसी बैच के लिए तय करें"
+      "addBatchTitle": "{{title}} किसी बैच के लिए तय करें",
+      "deleteTitle": "{{title}} हटाएँ?",
+      "deleteBody": "यह पाठ हर बैच के लिए हट जाएगा: {{batches}}."
     }
   },
   "roles": {

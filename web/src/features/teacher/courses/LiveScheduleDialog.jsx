@@ -12,6 +12,7 @@ export function LiveScheduleDialog({ courseId, batch, onClose }) {
   const toast = useToast();
   const qc = useQueryClient();
   const [dates, setDates] = useState({});
+  const [links, setLinks] = useState({});
   const [error, setError] = useState('');
   const path = `/teacher/courses/${courseId}/batches/${batch.id}/live-schedule`;
   const q = useQuery({ queryKey: ['teacher', 'live-schedule', courseId, batch.id], queryFn: () => api.get(path) });
@@ -29,7 +30,7 @@ export function LiveScheduleDialog({ courseId, batch, onClose }) {
   const submit = () => {
     const items = rows
       .filter((r) => !r.session && dates[r.slotId])
-      .map((r) => ({ slotId: r.slotId, startsAt: new Date(dates[r.slotId]).toISOString(), durationMin: 60, meetLink: null }));
+      .map((r) => ({ slotId: r.slotId, startsAt: new Date(dates[r.slotId]).toISOString(), durationMin: 60, meetLink: (links[r.slotId] || '').trim() || null }));
     if (!items.length) return setError(t('batches.liveScheduleNothing'));
     setError('');
     return m.mutate({ items });
@@ -47,7 +48,13 @@ export function LiveScheduleDialog({ courseId, batch, onClose }) {
             <strong>{r.title}</strong> <span className="muted">· {r.module.name}</span>
             {r.session
               ? <p className="row"><LiveStageBadge stage={r.session.stage} /> <span className="muted">{formatDateTime(r.session.startsAt, i18n.language)}</span></p>
-              : <Input label={t('content.live.startsAt')} type="datetime-local" value={dates[r.slotId] || ''} onChange={(e) => setDates((d) => ({ ...d, [r.slotId]: e.target.value }))} />}
+              : (
+                <div className="grid grid--2">
+                  <Input label={t('content.live.startsAt')} type="datetime-local" value={dates[r.slotId] || ''} onChange={(e) => setDates((d) => ({ ...d, [r.slotId]: e.target.value }))} />
+                  <Input label={`${t('content.live.meetLink')} (${t('common.optional')})`} value={links[r.slotId] || ''} placeholder="https://meet.google.com/abc-defg-hij"
+                    onChange={(e) => setLinks((d) => ({ ...d, [r.slotId]: e.target.value }))} />
+                </div>
+              )}
           </li>
         ))}
       </ul>

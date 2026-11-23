@@ -1013,7 +1013,9 @@
       "dateOptionalHint": "प्रत्येक बॅचची तारीख नंतर ठरवायची असल्यास रिकामे ठेवा",
       "needDateForBatch": "या बॅचसाठी तारीख आणि वेळ निवडा",
       "addBatch": "बॅच जोडा",
-      "addBatchTitle": "{{title}} बॅचसाठी ठरवा"
+      "addBatchTitle": "{{title}} बॅचसाठी ठरवा",
+      "deleteTitle": "{{title}} हटवायचा?",
+      "deleteBody": "हा धडा प्रत्येक बॅचसाठी हटवला जाईल: {{batches}}."
     }
   },
   "roles": {
