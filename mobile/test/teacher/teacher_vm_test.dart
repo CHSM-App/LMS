@@ -51,6 +51,15 @@ class FakeTeacherRepo implements TeacherRepository {
   final meetLinks = <int, String>{};
 
   @override
+  Future<List<TeacherCourseRef>> courses() async => [const TeacherCourseRef(id: 3, title: 'Maths')];
+
+  @override
+  Future<List<LiveScheduleRow>> liveSchedule(int courseId, int batchId) async => [];
+
+  @override
+  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates) async {}
+
+  @override
   Future<List<LiveClass>> liveClasses() async => [
         LiveClass(id: 5, topic: 'Algebra', courseTitle: 'Maths', startsAt: DateTime.utc(2099), meetLink: meetLinks[5], needsMeetLink: meetLinks[5] == null, status: 'scheduled'),
       ];

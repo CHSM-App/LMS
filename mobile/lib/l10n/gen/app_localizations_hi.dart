@@ -740,4 +740,38 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get sLiveWaitingForLink => 'शिक्षक जल्द ही लिंक देंगे';
+
+  @override
+  String get sLiveUnscheduled => 'अभी समय तय नहीं';
+
+  @override
+  String get sLiveScheduleSoon => 'समय जल्द बताया जाएगा';
+
+  @override
+  String get tLiveSchedule => 'लाइव शेड्यूल';
+
+  @override
+  String get tLiveScheduleIntro =>
+      'इस बैच के लिए हर लाइव पाठ की तारीख तय करें। बाद में तय करनी हो तो पाठ खाली छोड़ें।';
+
+  @override
+  String get tLiveScheduleEmpty => 'इस कोर्स में अभी कोई लाइव पाठ नहीं है';
+
+  @override
+  String get tLiveScheduleSave => 'शेड्यूल सेव करें';
+
+  @override
+  String get tLiveScheduleNothing => 'कम से कम एक पाठ की तारीख भरें';
+
+  @override
+  String get tSetDate => 'तारीख तय करें';
+
+  @override
+  String get tChooseCourse => 'कोर्स';
+
+  @override
+  String get tChooseBatch => 'बैच';
+
+  @override
+  String get tOpenSchedule => 'शेड्यूल खोलें';
 }

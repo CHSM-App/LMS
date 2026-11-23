@@ -85,6 +85,7 @@ class LiveStageChip extends StatelessWidget {
   final String stage;
 
   static String label(AppLocalizations l, String stage) => switch (stage) {
+        'unscheduled' => l.sLiveUnscheduled,
         'live' => l.sLiveNow,
         'ended' => l.sLiveEnded,
         'recorded' => l.sLiveRecorded,

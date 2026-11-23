@@ -171,9 +171,10 @@ class _LivePanel extends ConsumerWidget {
         children: [
           Wrap(spacing: AppTokens.spaceS2, crossAxisAlignment: WrapCrossAlignment.center, children: [
             LiveStageChip(stage: live.stage),
-            Text(l.sLiveStartsAt(formatDateTime(context, live.startsAt)), style: const TextStyle(color: AppTokens.textSecondary)),
+            if (live.startsAt != null) Text(l.sLiveStartsAt(formatDateTime(context, live.startsAt!)), style: const TextStyle(color: AppTokens.textSecondary)),
           ]),
           const SizedBox(height: AppTokens.spaceS2),
+          if (live.stage == 'unscheduled') Text(l.sLiveScheduleSoon),
           if (live.stage == 'upcoming') Text(l.sLiveJoinOpens, style: const TextStyle(color: AppTokens.textSecondary)),
           if (live.stage == 'live' && live.meetLink != null)
             AppButton(label: l.sLiveJoin, icon: Icons.videocam_outlined, onPressed: () => joinLiveClass(ref, live.liveClassId, live.meetLink!)),

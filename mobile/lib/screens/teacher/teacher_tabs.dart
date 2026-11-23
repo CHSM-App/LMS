@@ -10,6 +10,7 @@ import '../../l10n/gen/app_localizations.dart';
 import '../../presentation/providers/teacher_providers.dart';
 import '../../presentation/viewModels/teacher_viewmodels.dart';
 import '../../widgets/app_widgets.dart';
+import 'live_schedule_screen.dart';
 
 String _when(BuildContext context, DateTime d) => DateFormat.yMMMd(Localizations.localeOf(context).toString()).add_jm().format(d.toLocal());
 String _iso(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
@@ -387,11 +388,22 @@ class _ClassesTabState extends ConsumerState<ClassesTab> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final s = ref.watch(liveClassesProvider);
+    // Opens a course + batch picker, then that batch's live schedule.
+    final scheduleButton = Align(
+      alignment: Alignment.centerLeft,
+      child: AppButton(
+        label: l.tLiveSchedule,
+        icon: Icons.event_outlined,
+        variant: AppButtonVariant.compact,
+        onPressed: () => showModalBottomSheet<void>(context: context, isScrollControlled: true, builder: (_) => const LiveSchedulePicker()),
+      ),
+    );
     return _states(context, s, () => ref.read(liveClassesProvider.notifier).load(), (List<LiveClass> list) {
-      if (list.isEmpty) return ListView(children: [EmptyState(title: l.tNoClasses, body: l.tClassesOnWeb)]);
+      if (list.isEmpty) return ListView(padding: const EdgeInsets.all(AppTokens.spaceS3), children: [scheduleButton, EmptyState(title: l.tNoClasses, body: l.tClassesOnWeb)]);
       return ListView(
         padding: const EdgeInsets.all(AppTokens.spaceS3),
         children: [
+          scheduleButton,
           for (final c in list)
             Card(
               child: Padding(

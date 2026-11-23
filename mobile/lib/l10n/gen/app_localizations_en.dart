@@ -741,4 +741,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sLiveWaitingForLink => 'The teacher will share the link soon';
+
+  @override
+  String get sLiveUnscheduled => 'Not scheduled yet';
+
+  @override
+  String get sLiveScheduleSoon => 'Schedule coming soon';
+
+  @override
+  String get tLiveSchedule => 'Live schedule';
+
+  @override
+  String get tLiveScheduleIntro =>
+      'Set the date of each live lesson for this batch. Leave a lesson empty to set it later.';
+
+  @override
+  String get tLiveScheduleEmpty => 'This course has no live lessons yet';
+
+  @override
+  String get tLiveScheduleSave => 'Save schedule';
+
+  @override
+  String get tLiveScheduleNothing => 'Fill a date for at least one lesson';
+
+  @override
+  String get tSetDate => 'Set date';
+
+  @override
+  String get tChooseCourse => 'Course';
+
+  @override
+  String get tChooseBatch => 'Batch';
+
+  @override
+  String get tOpenSchedule => 'Open schedule';
 }

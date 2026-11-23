@@ -223,5 +223,16 @@
   "tMeetLinkLabel": "Google Meet लिंक",
   "tMeetLinkHint": "meet.google.com खोलें, मीटिंग बनाएँ और उसका लिंक यहाँ पेस्ट करें।",
   "tSaveLink": "लिंक सहेजें",
-  "sLiveWaitingForLink": "शिक्षक जल्द ही लिंक देंगे"
+  "sLiveWaitingForLink": "शिक्षक जल्द ही लिंक देंगे",
+  "sLiveUnscheduled": "अभी समय तय नहीं",
+  "sLiveScheduleSoon": "समय जल्द बताया जाएगा",
+  "tLiveSchedule": "लाइव शेड्यूल",
+  "tLiveScheduleIntro": "इस बैच के लिए हर लाइव पाठ की तारीख तय करें। बाद में तय करनी हो तो पाठ खाली छोड़ें।",
+  "tLiveScheduleEmpty": "इस कोर्स में अभी कोई लाइव पाठ नहीं है",
+  "tLiveScheduleSave": "शेड्यूल सेव करें",
+  "tLiveScheduleNothing": "कम से कम एक पाठ की तारीख भरें",
+  "tSetDate": "तारीख तय करें",
+  "tChooseCourse": "कोर्स",
+  "tChooseBatch": "बैच",
+  "tOpenSchedule": "शेड्यूल खोलें"
 }

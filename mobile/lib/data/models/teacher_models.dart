@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 // Plain immutable models for the light teacher app (hand-written fromJson; see ledger ruling on codegen).
 
 DateTime? _date(dynamic v) => v == null ? null : DateTime.tryParse(v as String);
@@ -208,4 +209,38 @@ class WhatsAppResult {
   final bool sent;
   final String? message;
   final String? fallbackUrl;
+}
+
+/// A course of the teacher (for choosing which course's live schedule to open).
+@immutable
+class TeacherCourseRef {
+  const TeacherCourseRef({required this.id, required this.title});
+  final int id;
+  final String title;
+
+  factory TeacherCourseRef.fromJson(Map<String, dynamic> j) => TeacherCourseRef(id: j['id'] as int, title: j['title'] as String);
+}
+
+/// One live lesson in a batch's live schedule. No start time: the batch has no session of it yet.
+@immutable
+class LiveScheduleRow {
+  const LiveScheduleRow({required this.slotId, required this.title, required this.moduleName, this.startsAt, this.stage});
+  final String slotId;
+  final String title;
+  final String moduleName;
+  final DateTime? startsAt;
+  final String? stage;
+
+  bool get scheduled => startsAt != null;
+
+  factory LiveScheduleRow.fromJson(Map<String, dynamic> j) {
+    final session = j['session'] as Map<String, dynamic>?;
+    return LiveScheduleRow(
+      slotId: j['slotId'] as String,
+      title: j['title'] as String,
+      moduleName: ((j['module'] as Map<String, dynamic>?)?['name'] ?? '') as String,
+      startsAt: session?['startsAt'] == null ? null : DateTime.parse(session!['startsAt'] as String),
+      stage: session?['stage'] as String?,
+    );
+  }
 }

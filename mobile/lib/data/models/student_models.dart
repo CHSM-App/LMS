@@ -161,15 +161,16 @@ class StudentDashboard {
 }
 
 // ---------- Player ----------
-/// Schedule and stage of a live lesson. Stage: upcoming | live | ended | recorded | cancelled.
+/// Schedule and stage of a live lesson. Stage: unscheduled | upcoming | live | ended | recorded | cancelled.
+/// Unscheduled: my batch has no date for this lesson yet, so there is no start time.
 /// The Meet link is sent by the API only while the lesson is upcoming or live.
 @immutable
 class LessonLive {
-  const LessonLive({this.liveClassId, required this.startsAt, required this.durationMin, required this.stage, this.meetLink, this.waitingForLink = false});
+  const LessonLive({this.liveClassId, this.startsAt, required this.durationMin, required this.stage, this.meetLink, this.waitingForLink = false});
 
   /// The live class behind this lesson; Join marks attendance on it.
   final int? liveClassId;
-  final DateTime startsAt;
+  final DateTime? startsAt;
   final int durationMin;
   final String stage;
   final String? meetLink;
@@ -181,7 +182,7 @@ class LessonLive {
     if (j is! Map) return null;
     return LessonLive(
       liveClassId: (j['liveClassId'] as num?)?.toInt(),
-      startsAt: DateTime.parse(j['startsAt'] as String),
+      startsAt: j['startsAt'] == null ? null : DateTime.parse(j['startsAt'] as String),
       durationMin: _int(j['durationMin']),
       stage: j['stage'] as String,
       meetLink: j['meetLink'] as String?,

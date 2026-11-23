@@ -1443,6 +1443,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The teacher will share the link soon'**
   String get sLiveWaitingForLink;
+
+  /// No description provided for @sLiveUnscheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not scheduled yet'**
+  String get sLiveUnscheduled;
+
+  /// No description provided for @sLiveScheduleSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule coming soon'**
+  String get sLiveScheduleSoon;
+
+  /// No description provided for @tLiveSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Live schedule'**
+  String get tLiveSchedule;
+
+  /// No description provided for @tLiveScheduleIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Set the date of each live lesson for this batch. Leave a lesson empty to set it later.'**
+  String get tLiveScheduleIntro;
+
+  /// No description provided for @tLiveScheduleEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This course has no live lessons yet'**
+  String get tLiveScheduleEmpty;
+
+  /// No description provided for @tLiveScheduleSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save schedule'**
+  String get tLiveScheduleSave;
+
+  /// No description provided for @tLiveScheduleNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill a date for at least one lesson'**
+  String get tLiveScheduleNothing;
+
+  /// No description provided for @tSetDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Set date'**
+  String get tSetDate;
+
+  /// No description provided for @tChooseCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get tChooseCourse;
+
+  /// No description provided for @tChooseBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch'**
+  String get tChooseBatch;
+
+  /// No description provided for @tOpenSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Open schedule'**
+  String get tOpenSchedule;
 }
 
 class _AppLocalizationsDelegate

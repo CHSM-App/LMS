@@ -429,5 +429,16 @@
   "tMeetLinkLabel": "Google Meet link",
   "tMeetLinkHint": "Open meet.google.com, create a meeting and paste its link here.",
   "tSaveLink": "Save link",
-  "sLiveWaitingForLink": "The teacher will share the link soon"
+  "sLiveWaitingForLink": "The teacher will share the link soon",
+  "sLiveUnscheduled": "Not scheduled yet",
+  "sLiveScheduleSoon": "Schedule coming soon",
+  "tLiveSchedule": "Live schedule",
+  "tLiveScheduleIntro": "Set the date of each live lesson for this batch. Leave a lesson empty to set it later.",
+  "tLiveScheduleEmpty": "This course has no live lessons yet",
+  "tLiveScheduleSave": "Save schedule",
+  "tLiveScheduleNothing": "Fill a date for at least one lesson",
+  "tSetDate": "Set date",
+  "tChooseCourse": "Course",
+  "tChooseBatch": "Batch",
+  "tOpenSchedule": "Open schedule"
 }

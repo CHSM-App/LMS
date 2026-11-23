@@ -15,6 +15,10 @@ abstract class TeacherRepository {
   Future<List<StudentRow>> students({int? courseId});
   Future<void> setAccess(String studentPublicId, int courseId, {required String startDate, required String endDate, required bool accessEnabled});
   Future<List<LiveClass>> liveClasses();
+  Future<List<TeacherCourseRef>> courses();
+  Future<List<LiveScheduleRow>> liveSchedule(int courseId, int batchId);
+  /// dates: slotId -> start time. All lessons are scheduled for the batch in one call (all or nothing).
+  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates);
   Future<void> setMeetLink(int liveClassId, String meetLink);
   Future<List<AttendanceRow>> attendance(int liveClassId);
   Future<void> saveAttendance(int liveClassId, List<AttendanceRow> rows);
@@ -76,6 +80,20 @@ class ApiTeacherRepository implements TeacherRepository {
 
   @override
   Future<List<LiveClass>> liveClasses() async => _list(await api.get('/teacher/live-classes')).map(LiveClass.fromJson).toList();
+
+  @override
+  Future<List<TeacherCourseRef>> courses() async => _list(await api.get('/teacher/courses')).map(TeacherCourseRef.fromJson).toList();
+
+  @override
+  Future<List<LiveScheduleRow>> liveSchedule(int courseId, int batchId) async =>
+      _list(await api.get('/teacher/courses/$courseId/batches/$batchId/live-schedule')).map(LiveScheduleRow.fromJson).toList();
+
+  @override
+  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates) => api.post('/teacher/courses/$courseId/batches/$batchId/live-schedule', {
+        'items': [
+          for (final e in dates.entries) {'slotId': e.key, 'startsAt': e.value.toUtc().toIso8601String(), 'durationMin': 60, 'meetLink': null},
+        ],
+      });
 
   @override
   Future<void> setMeetLink(int liveClassId, String meetLink) => api.put('/teacher/live-classes/$liveClassId/meet-link', {'meetLink': meetLink});
