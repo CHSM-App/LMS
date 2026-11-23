@@ -209,3 +209,66 @@ test("an offline licence stops renewing when the student moves to a batch the le
   const renew = await w.s.post("/api/v1/student/downloads/renew", { deviceId: "device-aaaa-1111", contentIds: [r.body.data.id] });
   expect(renew.body.data[0]).toEqual({ contentId: r.body.data.id, revoked: true, reason: "content_removed" });
 });
+
+describe('one lesson, a session per batch: batches never see each other', () => {
+  const B_START = '2026-06-16T12:30:00Z';
+  const liveIds = (view) => view.body.data.subjects.flatMap((s) => s.modules).flatMap((m) => m.contents).filter((x) => x.type === 'live').map((x) => x.id);
+
+  async function twoBatches() {
+    const w = await world();
+    const evening = (await w.t.post(`/api/v1/teacher/courses/${w.courseId}/batches`, { name: 'Evening', startDate: '2026-01-01' })).body.data;
+    const a = (await w.t.post(`/api/v1/teacher/modules/${w.moduleId}/contents`, liveLessonBody({ startsAt: START, batchId: w.batch.id }))).body.data;
+    const bSession = (await w.t.post(`/api/v1/teacher/contents/${a.id}/sessions`, { batchId: evening.id, startsAt: B_START, meetLink: MEET })).body.data;
+    const e = await student({ name: 'Evening kid' });
+    await activeEnrollment(w.courseId, w.t.user.user_id, e.user_id, evening.id);
+    return { ...w, evening, a, bId: bSession.contentId, es: await asStudent(e) };
+  }
+
+  test('each batch sees only its own session of the lesson, in the same module', async () => {
+    const w = await twoBatches();
+    expect(liveIds(await w.s.get(`/api/v1/student/courses/${w.courseId}`))).toEqual([w.a.id]);
+    expect(liveIds(await w.es.get(`/api/v1/student/courses/${w.courseId}`))).toEqual([w.bId]);
+    expect((await w.es.get(`/api/v1/student/contents/${w.a.id}`)).status).toBe(404);
+    expect((await w.s.get(`/api/v1/student/contents/${w.bId}`)).status).toBe(404);
+  });
+
+  test("the evening batch does not get the morning batch's recording, before or after its own class", async () => {
+    const w = await twoBatches();
+    const key = await uploadVideo(w.t);
+    await w.t.put(`/api/v1/teacher/contents/${w.a.id}/recording`, { videoSource: 'upload', fileKey: key });
+    clock.set(new Date('2026-06-15T14:00:00Z')); // morning class is over, evening is tomorrow
+    const morning = await w.s.get(`/api/v1/student/contents/${w.a.id}`);
+    expect(morning.body.data).toMatchObject({ live: { stage: 'recorded' } });
+    expect(morning.body.data.url).toBeTruthy();
+    const evening = await w.es.get(`/api/v1/student/contents/${w.bId}`);
+    expect(evening.body.data).toMatchObject({ live: { stage: 'upcoming' }, url: null });
+    expect(JSON.stringify(evening.body)).not.toContain(MEET);
+    clock.set(new Date('2026-06-16T14:00:00Z')); // evening class is over, still no recording of its own
+    const after = await w.es.get(`/api/v1/student/contents/${w.bId}`);
+    expect(after.body.data).toMatchObject({ live: { stage: 'ended' }, url: null });
+    const eKey = await uploadVideo(w.t);
+    await w.t.put(`/api/v1/teacher/contents/${w.bId}/recording`, { videoSource: 'upload', fileKey: eKey });
+    const own = await w.es.get(`/api/v1/student/contents/${w.bId}`);
+    expect(own.body.data).toMatchObject({ live: { stage: 'recorded' } });
+    expect(own.body.data.url).toBeTruthy();
+    expect(own.body.data.url).not.toBe(morning.body.data.url);
+  });
+
+  test('the morning recording cannot be downloaded or renewed by the evening student', async () => {
+    const w = await twoBatches();
+    const key = await uploadVideo(w.t);
+    await w.t.put(`/api/v1/teacher/contents/${w.a.id}/recording`, { videoSource: 'upload', fileKey: key });
+    await w.es.post('/api/v1/student/devices', { deviceId: 'device-bbbb-2222', deviceName: 'Redmi', platform: 'android' });
+    const dl = await request(app).post(`/api/v1/student/contents/${w.a.id}/download`)
+      .set('Authorization', `Bearer ${w.es.token}`).set('X-Device-Id', 'device-bbbb-2222').send({});
+    expect(dl.status).toBe(404);
+  });
+
+  test("a batch's session does not change the other batch's progress numbers", async () => {
+    const w = await twoBatches();
+    const m = (await w.s.get('/api/v1/student/dashboard')).body.data.myCourses[0];
+    const e = (await w.es.get('/api/v1/student/dashboard')).body.data.myCourses[0];
+    expect(m.progressPct).toBe(0);
+    expect(e.progressPct).toBe(0);
+  });
+});
