@@ -51,3 +51,13 @@ test('006 adds live lesson columns', async () => {
        OR (TABLE_NAME = 'live_classes' AND COLUMN_NAME = 'reminder2_sent_at')`);
   expect(r.recordset).toHaveLength(2);
 });
+
+test('010 adds contents.live_slot_id with its index and a live-only check', async () => {
+  const pool = await getPool();
+  const col = await pool.request().query("SELECT DATA_TYPE d, IS_NULLABLE n FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'contents' AND COLUMN_NAME = 'live_slot_id'");
+  expect(col.recordset).toEqual([{ d: 'uniqueidentifier', n: 'YES' }]);
+  const idx = await pool.request().query("SELECT name FROM sys.indexes WHERE name = 'IX_contents_live_slot'");
+  expect(idx.recordset).toHaveLength(1);
+  const ck = await pool.request().query("SELECT name FROM sys.check_constraints WHERE name = 'CK_contents_live_slot'");
+  expect(ck.recordset).toHaveLength(1);
+});
