@@ -1,4 +1,4 @@
-const { one, T, reset, closeAll, createUser } = require('../setup/helpers');
+const { one, query, T, reset, closeAll, createUser } = require('../setup/helpers');
 const fs = require('fs');
 const { seedDemo, DEMO } = require('../../scripts/seed-demo');
 const storage = require('../../src/providers/storage');
@@ -63,8 +63,16 @@ test('seedDemo builds a complete demo teacher through the real API, and a re-run
   expect(await count(`SELECT COUNT(*) n FROM dbo.live_classes l WHERE course_id = @c AND status = 'completed' AND ${standalone}`, c)).toBe(1);
   expect(await count(`SELECT COUNT(*) n FROM dbo.live_classes l WHERE course_id = @c AND status = 'scheduled' AND ${standalone}`, c)).toBe(1);
 
-  // Live lessons inside modules: one held (recording + attendance), one live right now, one tomorrow.
-  expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live'", c)).toBe(3);
+  // Live lessons inside modules: one held (recording + attendance), one live right now, and one with
+  // a session per batch (Morning tomorrow, Evening the day after).
+  expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live'", c)).toBe(4);
+  const perBatch = await query(
+    `SELECT b.name FROM dbo.contents x JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id JOIN dbo.batches b ON b.batch_id = l.batch_id
+     WHERE x.course_id = @c AND x.title = @t ORDER BY l.starts_at`,
+    { ...c, t: T.nvarchar('Live: solving quadratics together', 200) },
+  );
+  expect(perBatch.map((r) => r.name)).toEqual(['Morning Batch', 'Evening Batch']);
+  expect(await count("SELECT COUNT(DISTINCT live_slot_id) n FROM dbo.contents WHERE course_id = @c AND title = 'Live: solving quadratics together'", c)).toBe(1);
   expect(await count("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type = 'live' AND video_source = 'youtube'", c)).toBe(1);
   const liveNow = await one(
     `SELECT x.content_id, l.starts_at, l.duration_min FROM dbo.contents x JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id

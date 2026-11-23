@@ -60,7 +60,7 @@ components:
         fileKey: { type: string, nullable: true }
         url: { type: string, nullable: true }
         isFreePreview: { type: boolean, description: Always false for live lessons }
-        startsAt: { type: string, format: date-time, description: Live lessons only (required) }
+        startsAt: { type: string, format: date-time, description: 'Live lessons only. Leave out (with batchId) to add the lesson without a date; batches are scheduled later through sessions or the live schedule' }
         durationMin: { type: integer, minimum: 5, maximum: 600, description: Live lessons only (default 60) }
         meetLink: { type: string, nullable: true, description: Live lessons only. Empty means create one automatically }
         batchId: { type: integer, nullable: true, description: Live lessons only. Empty means every batch }

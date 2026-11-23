@@ -398,7 +398,7 @@ async function ensureLiveClasses(teacher, courseId, batches, students, today) {
 //  - held three days ago: attendance taken, YouTube recording added (stage "recorded")
 //  - the demo class: live right now for 2 hours, so the Join button can be tried (re-seeding re-opens it)
 //  - tomorrow 18:00 IST (stage "upcoming")
-async function ensureLiveLessons(teacher, mods, today, students) {
+async function ensureLiveLessons(teacher, mods, today, students, batches) {
   const find = async (moduleId, title) => one(
     "SELECT x.content_id, x.live_class_id, l.starts_at, l.duration_min FROM dbo.contents x JOIN dbo.live_classes l ON l.live_class_id = x.live_class_id WHERE x.module_id = @m AND x.title = @t AND x.type = 'live'",
     { m: T.int(moduleId), t: T.nvarchar(title, 200) },
@@ -434,10 +434,14 @@ async function ensureLiveLessons(teacher, mods, today, students) {
       s: T.datetime(today), id: T.int(demo.live_class_id),
     });
   }
+  // One lesson, a session per batch: Morning tomorrow, Evening the day after (each gets its own Meet link and recording).
   const next = 'Live: solving quadratics together';
   if (!(await find(mods.quadratic, next))) {
-    await teacher.post(`/api/v1/teacher/modules/${mods.quadratic}/contents`, {
-      title: next, type: 'live', startsAt: at(addDays(today, 1), 12).toISOString(), durationMin: 60, meetLink: MEET,
+    const x = await teacher.post(`/api/v1/teacher/modules/${mods.quadratic}/contents`, {
+      title: next, type: 'live', batchId: batches['Morning Batch'], startsAt: at(addDays(today, 1), 12).toISOString(), durationMin: 60, meetLink: MEET,
+    });
+    await teacher.post(`/api/v1/teacher/contents/${x.id}/sessions`, {
+      batchId: batches['Evening Batch'], startsAt: at(addDays(today, 2), 12).toISOString(), durationMin: 60, meetLink: MEET,
     });
   }
 }
@@ -586,7 +590,7 @@ async function seedDemo({ admin, log = console.log }) {
   await ensureStudent(app, anon, DEMO.pendingStudent, course);
 
   await ensureLiveClasses(teacher, course.id, batches, students, today);
-  await ensureLiveLessons(teacher, mods, today, students);
+  await ensureLiveLessons(teacher, mods, today, students, batches);
   await ensureDoubts(app, teacher, course.id, students);
   await ensureDemoRequests(anon, teacher, course, today);
   await ensureProgram(teacher, user, course.id, batches, today);
