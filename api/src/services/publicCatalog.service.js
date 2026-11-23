@@ -1,6 +1,7 @@
 // Public (no login) catalog. Only published courses of approved, non-deleted teachers.
 // Serializers list allowed fields explicitly: no mobile, email, internal ids or private file keys.
 const { query, one, T } = require('../db/query');
+const { firstOfSlotSql } = require('./liveSlots');
 const storage = require('../providers/storage');
 const { notFound } = require('../utils/APIError');
 
@@ -78,7 +79,8 @@ async function details(slug) {
   const p = { c: T.int(c.course_id) };
   const subjects = await query('SELECT * FROM dbo.subjects WHERE course_id = @c ORDER BY sort_order', p);
   const modules = await query('SELECT * FROM dbo.modules WHERE course_id = @c ORDER BY sort_order', p);
-  const contents = await query('SELECT * FROM dbo.contents WHERE course_id = @c ORDER BY sort_order', p);
+  // Each lesson once: a live lesson's batch sessions show as one row.
+  const contents = await query(`SELECT x.* FROM dbo.contents x WHERE x.course_id = @c AND ${firstOfSlotSql('x')} ORDER BY x.sort_order`, p);
   const batches = await query("SELECT name, start_date, timing_text FROM dbo.batches WHERE course_id = @c AND status = 'active' ORDER BY start_date", p);
   return {
     slug: c.slug,

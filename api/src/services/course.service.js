@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { firstOfSlotSql } = require('./liveSlots');
 const { query, one, T } = require('../db/query');
 const { withTransaction } = require('../db/tx');
 const uploads = require('./upload.service');
@@ -119,7 +120,7 @@ async function update(teacherId, courseId, body) {
 
 async function list(teacherId) {
   const rows = await query(
-    `SELECT c.*, (SELECT COUNT(*) FROM dbo.contents x WHERE x.course_id = c.course_id) AS content_count
+    `SELECT c.*, (SELECT COUNT(*) FROM dbo.contents x WHERE x.course_id = c.course_id AND ${firstOfSlotSql('x')}) AS content_count
      FROM dbo.courses c WHERE c.teacher_id = @t ORDER BY c.updated_at DESC, c.course_id DESC`,
     { t: T.int(teacherId) },
   );

@@ -121,3 +121,21 @@ describe('live demo request', () => {
     expect(dup.body.error).toBe('You already have a pending demo request for this course');
   });
 });
+
+test('a live lesson with a session per batch is listed once in the catalog and counted once for the teacher', async () => {
+  process.env.MEET_PROVIDER = 'console';
+  const t = await teacher({ name: 'Suresh' });
+  const c = await published(t);
+  const mk = async (name) => (await t.post(`/api/v1/teacher/courses/${c.courseId}/batches`, { name, startDate: '2026-01-01' })).body.data;
+  const morning = await mk('Morning');
+  const evening = await mk('Evening');
+  const live = (await t.post(`/api/v1/teacher/modules/${c.moduleId}/contents`, {
+    title: 'Live: algebra', type: 'live', batchId: morning.id, startsAt: '2099-06-15T12:30:00Z', meetLink: 'https://meet.google.com/abc-defg-hij',
+  })).body.data;
+  await t.post(`/api/v1/teacher/contents/${live.id}/sessions`, { batchId: evening.id, startsAt: '2099-06-16T12:30:00Z' });
+  const d = (await request(app).get(`/api/v1/public/courses/${c.slug}`)).body.data;
+  expect(d.curriculum[0].modules[0].contents.filter((x) => x.title === 'Live: algebra')).toHaveLength(1);
+  const mine = (await t.get('/api/v1/teacher/courses')).body.data.find((x) => x.id === c.courseId);
+  const rows = await one("SELECT COUNT(*) n FROM dbo.contents WHERE course_id = @c AND type <> 'live'", { c: T.int(c.courseId) });
+  expect(mine.contentCount).toBe(rows.n + 1);
+});
