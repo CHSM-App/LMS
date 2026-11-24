@@ -60,8 +60,11 @@ class SectionTitle extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: AppTokens.spaceS5, bottom: AppTokens.spaceS2),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppTokens.heading, fontWeight: FontWeight.w800)),
+        padding: const EdgeInsets.only(top: AppTokens.spaceS5, bottom: AppTokens.spaceS3),
+        child: Semantics(
+          header: true,
+          child: Text(text, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppTokens.heading, fontWeight: FontWeight.w800)),
+        ),
       );
 }
 
@@ -82,15 +85,32 @@ class LiveClassTile extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final link = meetLink;
     return Card(
-      child: ListTile(
-        title: Text(topic, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(subtitle),
-        trailing: link != null
-            ? TextButton(onPressed: () => joinLiveClass(ref, liveClassId, link), child: Text(l.join))
-            : ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 120),
-                child: Text(waitingForLink ? l.sLiveWaitingForLink : l.sLiveJoinSoon, textAlign: TextAlign.end, style: const TextStyle(color: AppTokens.textSecondary)),
+      child: Padding(
+        padding: const EdgeInsets.all(AppTokens.spaceS3),
+        child: Row(
+          children: [
+            const CoverBadge(size: 48, icon: Icons.videocam_rounded),
+            const SizedBox(width: AppTokens.spaceS3),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(topic, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: AppTokens.textBase, fontWeight: FontWeight.w800, color: AppTokens.heading, height: 1.25)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: AppTokens.textSm, color: AppTokens.textSecondary)),
+                ],
               ),
+            ),
+            const SizedBox(width: AppTokens.spaceS2),
+            if (link != null)
+              AppButton(label: l.join, variant: AppButtonVariant.compact, onPressed: () => joinLiveClass(ref, liveClassId, link))
+            else
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 96),
+                child: Text(waitingForLink ? l.sLiveWaitingForLink : l.sLiveJoinSoon, textAlign: TextAlign.end, style: const TextStyle(fontSize: AppTokens.textXs, color: AppTokens.textSecondary)),
+              ),
+          ],
+        ),
       ),
     );
   }

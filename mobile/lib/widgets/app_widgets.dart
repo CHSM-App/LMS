@@ -276,6 +276,45 @@ class LabeledProgress extends StatelessWidget {
   }
 }
 
+/// Square brand cover (navy to blue with the orange ring) for things that have no photo, such as a
+/// course on the student dashboard. Same look as the catalogue's generated cover.
+class CoverBadge extends StatelessWidget {
+  const CoverBadge({super.key, this.size = 56, this.icon = Icons.menu_book_rounded});
+
+  final double size;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppTokens.radiusMd),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppTokens.brandNavy, AppTokens.brandNavy, AppTokens.brandBlue], stops: [0, 0.55, 1]),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                top: -size * 0.28,
+                right: -size * 0.28,
+                child: Container(
+                  width: size * 0.7,
+                  height: size * 0.7,
+                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppTokens.brandOrange, width: size * 0.12)),
+                ),
+              ),
+              Center(child: Icon(icon, color: AppTokens.brandWhite, size: size * 0.45)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class EmptyState extends StatelessWidget {
   const EmptyState({super.key, required this.title, this.body, this.actionLabel, this.onAction});
 

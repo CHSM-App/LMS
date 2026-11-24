@@ -55,8 +55,10 @@ abstract final class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppTokens.surface,
-        elevation: 0,
-        margin: EdgeInsets.zero,
+        elevation: 2,
+        shadowColor: AppTokens.shadow,
+        surfaceTintColor: AppTokens.surface,
+        margin: EdgeInsets.only(bottom: AppTokens.spaceS3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusLg),
           side: const BorderSide(color: AppTokens.border),

@@ -25,19 +25,33 @@ class StudentDashboardScreen extends ConsumerWidget {
         builder: (d) => ListView(
           padding: const EdgeInsets.all(AppTokens.spaceS4),
           children: [
-            Text(l.hello(name), style: Theme.of(context).textTheme.headlineSmall),
+            Text(l.hello(name), style: Theme.of(context).textTheme.headlineMedium),
             if (d.nextUp != null) ...[
               const SizedBox(height: AppTokens.spaceS4),
               Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTokens.radiusMd), side: const BorderSide(color: AppTokens.actionPrimary, width: 2)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTokens.radiusLg), side: const BorderSide(color: AppTokens.actionPrimary, width: 2)),
                 child: Padding(
                   padding: const EdgeInsets.all(AppTokens.spaceS4),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(l.sNextUp, style: const TextStyle(color: AppTokens.textSecondary)),
-                      Text(d.nextUp!.title, style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: AppTokens.spaceS3),
+                      Row(
+                        children: [
+                          const CoverBadge(size: 64),
+                          const SizedBox(width: AppTokens.spaceS3),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(l.sNextUp, style: const TextStyle(fontSize: AppTokens.textSm, fontWeight: FontWeight.w700, color: AppTokens.textSecondary)),
+                                const SizedBox(height: 2),
+                                Text(d.nextUp!.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleLarge),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTokens.spaceS4),
                       LabeledProgress(value: d.nextUp!.progressPct / 100, semanticLabel: d.nextUp!.title),
                       const SizedBox(height: AppTokens.spaceS3),
                       AppButton(label: l.sContinue, expand: true, onPressed: () => context.push('/student/courses/${d.nextUp!.courseId}')),
@@ -86,9 +100,23 @@ class _CourseCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(c.title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-              const SizedBox(height: AppTokens.spaceS1),
-              Text([c.teacher, ?c.batch].join(' · '), style: const TextStyle(color: AppTokens.textSecondary)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CoverBadge(size: 56),
+                  const SizedBox(width: AppTokens.spaceS3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(c.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 2),
+                        Text([c.teacher, ?c.batch].join(' · '), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: AppTokens.textSm, color: AppTokens.textSecondary)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: AppTokens.spaceS3),
               LabeledProgress(value: c.progressPct / 100, semanticLabel: c.title),
               const SizedBox(height: AppTokens.spaceS2),
