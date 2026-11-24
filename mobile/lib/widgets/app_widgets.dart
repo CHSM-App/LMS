@@ -88,6 +88,10 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.enabled = true,
     this.requiredField = false,
+    this.prefixText,
+    this.inputFormatters,
+    this.autofocus = false,
+    this.onSubmitted,
   });
 
   final String label;
@@ -99,6 +103,12 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final bool enabled;
   final bool requiredField;
+
+  /// Fixed text before what the person types, such as "+91".
+  final String? prefixText;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool autofocus;
+  final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +125,17 @@ class AppTextField extends StatelessWidget {
             maxLines: maxLines,
             enabled: enabled,
             onChanged: onChanged,
-            decoration: InputDecoration(errorText: errorText, hintText: hint, helperMaxLines: 2, errorMaxLines: 3),
+            onSubmitted: onSubmitted,
+            autofocus: autofocus,
+            inputFormatters: inputFormatters,
+            decoration: InputDecoration(
+              errorText: errorText,
+              hintText: hint,
+              helperMaxLines: 2,
+              errorMaxLines: 3,
+              prefixText: prefixText == null ? null : '$prefixText  ',
+              prefixStyle: const TextStyle(color: AppTokens.text, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),

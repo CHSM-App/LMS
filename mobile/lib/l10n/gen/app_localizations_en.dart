@@ -22,6 +22,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use your mobile number. We\'ll send you a one-time password.';
 
   @override
+  String get loginWelcome => 'Welcome back';
+
+  @override
+  String get loginTerms =>
+      'By continuing, you agree to the Terms and Privacy Policy.';
+
+  @override
+  String loginStep(int n, int total) {
+    return 'Step $n of $total';
+  }
+
+  @override
+  String get loginStepMobile => 'Mobile number';
+
+  @override
+  String get loginStepVerify => 'Verify OTP';
+
+  @override
   String get mobileNumber => 'Mobile number';
 
   @override
@@ -606,6 +624,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pNoResults => 'No courses match your search';
+
+  @override
+  String get pNoResultsHint =>
+      'Try a different word, or clear the search to see every course.';
+
+  @override
+  String get pClearSearch => 'Clear search';
+
+  @override
+  String get pAll => 'All subjects';
+
+  @override
+  String get pAllLanguages => 'All languages';
+
+  @override
+  String get pFreeDemo => 'Free live demo';
+
+  @override
+  String get pDemoBadge => 'Free demo';
+
+  @override
+  String pResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count courses',
+      one: '1 course',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pLangEn => 'English';
+
+  @override
+  String get pLangMr => 'Marathi';
+
+  @override
+  String get pLangHi => 'Hindi';
 
   @override
   String pBy(String teacher) {

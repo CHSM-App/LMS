@@ -7,6 +7,7 @@ import 'core/session/session.dart';
 import 'core/theme/app_theme.dart';
 import 'l10n/gen/app_localizations.dart';
 import 'presentation/providers/core_providers.dart';
+import 'presentation/providers/locale_provider.dart';
 import 'presentation/providers/student_providers.dart';
 
 void main() {
@@ -26,6 +27,7 @@ class LmsApp extends ConsumerWidget {
       }
     });
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       routerConfig: ref.watch(routerProvider),
       onGenerateTitle: (context) => AppLocalizations.of(context).appName,
@@ -36,6 +38,7 @@ class LmsApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+      locale: ref.watch(localeProvider),
     );
   }
 }

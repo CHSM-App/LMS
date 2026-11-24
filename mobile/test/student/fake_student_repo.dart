@@ -135,8 +135,8 @@ class FakePublicRepo implements PublicRepository {
   Future<List<CourseCard>> courses({String? q, int page = 1}) async {
     queries.add(q);
     const all = [
-      CourseCard(slug: 'maths-10', title: 'Maths 10th', teacherName: 'Suresh'),
-      CourseCard(slug: 'science-10', title: 'Science 10th', teacherName: 'Kavita'),
+      CourseCard(slug: 'maths-10', title: 'Maths 10th', teacherName: 'Suresh', subject: 'Maths', language: 'en'),
+      CourseCard(slug: 'science-10', title: 'Science 10th', teacherName: 'Kavita', subject: 'Science', language: 'mr'),
     ];
     return (q == null || q.isEmpty) ? all : all.where((c) => c.title.toLowerCase().contains(q.toLowerCase())).toList();
   }

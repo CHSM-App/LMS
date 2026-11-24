@@ -51,6 +51,24 @@ void main() {
     expect(find.text('Send OTP'), findsOneWidget);
   });
 
+  testWidgets('login shows the +91 prefix and switches language from the header', (tester) async {
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        tokenStoreProvider.overrideWithValue(_NoTokens()),
+        authRepositoryProvider.overrideWith((ref) => _LoggedOutRepo(ref.read(sessionProvider.notifier))),
+      ],
+      child: const LmsApp(),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('+91  '), findsOneWidget);
+    expect(find.text('Send OTP'), findsOneWidget);
+
+    await tester.tap(find.text('मराठी'));
+    await tester.pumpAndSettle();
+    expect(find.text('OTP पाठवा'), findsOneWidget);
+    expect(find.text('Send OTP'), findsNothing);
+  });
+
   test('supports en, mr and hi', () {
     final codes = AppLocalizations.supportedLocales.map((l) => l.languageCode).toSet();
     expect(codes, containsAll(['en', 'mr', 'hi']));

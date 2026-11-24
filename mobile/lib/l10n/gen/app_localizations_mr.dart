@@ -22,6 +22,24 @@ class AppLocalizationsMr extends AppLocalizations {
       'तुमचा मोबाईल नंबर वापरा. आम्ही एक-वेळ पासवर्ड पाठवू.';
 
   @override
+  String get loginWelcome => 'पुन्हा स्वागत आहे';
+
+  @override
+  String get loginTerms =>
+      'पुढे गेल्यास तुम्ही अटी आणि गोपनीयता धोरणाशी सहमत आहात.';
+
+  @override
+  String loginStep(int n, int total) {
+    return 'पायरी $n / $total';
+  }
+
+  @override
+  String get loginStepMobile => 'मोबाईल नंबर';
+
+  @override
+  String get loginStepVerify => 'OTP तपासा';
+
+  @override
   String get mobileNumber => 'मोबाईल नंबर';
 
   @override
@@ -607,6 +625,45 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get pNoResults => 'तुमच्या शोधाशी जुळणारे अभ्यासक्रम नाहीत';
+
+  @override
+  String get pNoResultsHint =>
+      'दुसरा शब्द वापरून पहा, किंवा सर्व अभ्यासक्रम पाहण्यासाठी शोध पुसा.';
+
+  @override
+  String get pClearSearch => 'शोध पुसा';
+
+  @override
+  String get pAll => 'सर्व विषय';
+
+  @override
+  String get pAllLanguages => 'सर्व भाषा';
+
+  @override
+  String get pFreeDemo => 'मोफत लाइव्ह डेमो';
+
+  @override
+  String get pDemoBadge => 'मोफत डेमो';
+
+  @override
+  String pResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count अभ्यासक्रम',
+      one: '1 अभ्यासक्रम',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pLangEn => 'इंग्रजी';
+
+  @override
+  String get pLangMr => 'मराठी';
+
+  @override
+  String get pLangHi => 'हिंदी';
 
   @override
   String pBy(String teacher) {

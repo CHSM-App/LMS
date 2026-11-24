@@ -124,6 +124,36 @@ abstract class AppLocalizations {
   /// **'Use your mobile number. We\'ll send you a one-time password.'**
   String get loginIntro;
 
+  /// No description provided for @loginWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get loginWelcome;
+
+  /// No description provided for @loginTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing, you agree to the Terms and Privacy Policy.'**
+  String get loginTerms;
+
+  /// No description provided for @loginStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {n} of {total}'**
+  String loginStep(int n, int total);
+
+  /// No description provided for @loginStepMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get loginStepMobile;
+
+  /// No description provided for @loginStepVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify OTP'**
+  String get loginStepVerify;
+
   /// No description provided for @mobileNumber.
   ///
   /// In en, this message translates to:
@@ -1191,6 +1221,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No courses match your search'**
   String get pNoResults;
+
+  /// No description provided for @pNoResultsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different word, or clear the search to see every course.'**
+  String get pNoResultsHint;
+
+  /// No description provided for @pClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get pClearSearch;
+
+  /// No description provided for @pAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All subjects'**
+  String get pAll;
+
+  /// No description provided for @pAllLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'All languages'**
+  String get pAllLanguages;
+
+  /// No description provided for @pFreeDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Free live demo'**
+  String get pFreeDemo;
+
+  /// No description provided for @pDemoBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Free demo'**
+  String get pDemoBadge;
+
+  /// No description provided for @pResultCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 course} other{{count} courses}}'**
+  String pResultCount(int count);
+
+  /// No description provided for @pLangEn.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get pLangEn;
+
+  /// No description provided for @pLangMr.
+  ///
+  /// In en, this message translates to:
+  /// **'Marathi'**
+  String get pLangMr;
+
+  /// No description provided for @pLangHi.
+  ///
+  /// In en, this message translates to:
+  /// **'Hindi'**
+  String get pLangHi;
 
   /// No description provided for @pBy.
   ///

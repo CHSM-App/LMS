@@ -219,6 +219,9 @@ void main() {
   });
 
   testWidgets('catalog search sends the query and shows matching courses', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final pub = FakePublicRepo();
     await tester.pumpWidget(app(const CatalogScreen(), overrides: [publicRepositoryProvider.overrideWithValue(pub)]));
     await tester.pumpAndSettle();
@@ -228,6 +231,57 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
     expect(pub.queries.last, 'sci');
+    expect(find.text('Maths 10th'), findsNothing);
+    expect(find.text('Science 10th'), findsOneWidget);
+  });
+
+  testWidgets('catalog searches while typing, after a short pause', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final pub = FakePublicRepo();
+    await tester.pumpWidget(app(const CatalogScreen(), overrides: [publicRepositoryProvider.overrideWithValue(pub)]));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'sci');
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(pub.queries.last, isNot('sci')); // still waiting for the pause
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+    expect(pub.queries.last, 'sci');
+    expect(find.text('Maths 10th'), findsNothing);
+  });
+
+  testWidgets('catalog subject chips filter the list and "All subjects" brings it back', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(const CatalogScreen(), overrides: [publicRepositoryProvider.overrideWithValue(FakePublicRepo())]));
+    await tester.pumpAndSettle();
+    expect(find.text('2 courses'), findsOneWidget);
+
+    await tester.tap(find.text('Science').first); // the chip comes before the course covers
+    await tester.pumpAndSettle();
+    expect(find.text('Maths 10th'), findsNothing);
+    expect(find.text('Science 10th'), findsOneWidget);
+    expect(find.text('1 course'), findsOneWidget);
+
+    await tester.tap(find.text('All subjects'));
+    await tester.pumpAndSettle();
+    expect(find.text('Maths 10th'), findsOneWidget);
+    expect(find.text('Science 10th'), findsOneWidget);
+  });
+
+  testWidgets('catalog language filter opens a sheet and keeps only that language', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(const CatalogScreen(), overrides: [publicRepositoryProvider.overrideWithValue(FakePublicRepo())]));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.tune_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.descendant(of: find.byType(BottomSheet), matching: find.text('Marathi')));
+    await tester.pumpAndSettle();
     expect(find.text('Maths 10th'), findsNothing);
     expect(find.text('Science 10th'), findsOneWidget);
   });

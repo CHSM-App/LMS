@@ -4,6 +4,21 @@
   "appTagline": "Learn from teachers you trust",
   "loginTitle": "Log in",
   "loginIntro": "Use your mobile number. We'll send you a one-time password.",
+  "loginWelcome": "Welcome back",
+  "loginTerms": "By continuing, you agree to the Terms and Privacy Policy.",
+  "loginStep": "Step {n} of {total}",
+  "@loginStep": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "loginStepMobile": "Mobile number",
+  "loginStepVerify": "Verify OTP",
   "mobileNumber": "Mobile number",
   "mobileHint": "10-digit mobile number",
   "invalidMobile": "Enter a valid 10-digit mobile number",
@@ -367,6 +382,23 @@
   "pCourses": "Courses",
   "pSearch": "Search courses",
   "pNoResults": "No courses match your search",
+  "pNoResultsHint": "Try a different word, or clear the search to see every course.",
+  "pClearSearch": "Clear search",
+  "pAll": "All subjects",
+  "pAllLanguages": "All languages",
+  "pFreeDemo": "Free live demo",
+  "pDemoBadge": "Free demo",
+  "pResultCount": "{count, plural, =1{1 course} other{{count} courses}}",
+  "@pResultCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pLangEn": "English",
+  "pLangMr": "Marathi",
+  "pLangHi": "Hindi",
   "pBy": "by {teacher}",
   "@pBy": {
     "placeholders": {
