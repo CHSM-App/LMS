@@ -16,7 +16,6 @@ export default function BecomeTeacherPage() {
   const [f, setF] = useState(EMPTY);
   const [files, setFiles] = useState({});
   const [accept, setAccept] = useState(false);
-  const [whatsapp, setWhatsapp] = useState(true);
   const [errors, setErrors] = useState({});
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -34,7 +33,8 @@ export default function BecomeTeacherPage() {
     if (!f.subject.trim()) e.subject = t('validation.required');
     const y = Number(f.experienceYears);
     if (f.experienceYears === '' || !Number.isInteger(y) || y < 0 || y > 60) e.experienceYears = t('validation.years');
-    if (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = t('validation.email');
+    if (!f.email.trim()) e.email = t('validation.required');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = t('validation.email');
     if (!accept) e.accept = t('consent.required');
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -53,7 +53,7 @@ export default function BecomeTeacherPage() {
     Object.entries(f).forEach(([k, v]) => v !== '' && fd.append(k, v));
     fd.append('otp', code);
     fd.append('acceptTerms', String(accept));
-    fd.append('whatsappOptIn', String(whatsapp));
+    fd.append('whatsappOptIn', 'true');
     if (files.photo) fd.append('photo', files.photo);
     if (files.idDocument) fd.append('idDocument', files.idDocument);
     try {
@@ -86,10 +86,12 @@ export default function BecomeTeacherPage() {
           <form onSubmit={onContinue} noValidate>
             <fieldset className="form-group">
               <legend className="form-group__title">{t('teacherReg.groupAbout')}</legend>
-              <div className="grid reg-cols reg-cols--3">
+              <div className="grid reg-cols reg-cols--2">
                 <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
                 <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
-                <Input label={t('common.email')} placeholder={t('common.optional')} type="email" value={f.email} onChange={set('email')} error={errors.email} autoComplete="email" />
+                <div className="reg-cols__full">
+                <Input label={t('teacherReg.googleEmail')} hint={t('teacherReg.googleEmailHint')} type="email" value={f.email} onChange={set('email')} error={errors.email} required autoComplete="email" />
+                </div>
               </div>
             </fieldset>
             <fieldset className="form-group">
@@ -109,7 +111,7 @@ export default function BecomeTeacherPage() {
                 <FileUpload label={optional(t('teacherReg.idDocument'))} accept="image/*,application/pdf" maxMb={5} onFile={(file) => setFiles((x) => ({ ...x, idDocument: file }))} />
               </div>
             </fieldset>
-            <ConsentFields accept={accept} onAccept={setAccept} whatsapp={whatsapp} onWhatsapp={setWhatsapp} error={errors.accept} />
+            <ConsentFields accept={accept} onAccept={setAccept} error={errors.accept} />
             {otp.error && <Banner kind="error" message={otp.error} />}
             <Button type="submit" block loading={otp.sending}>{t('teacherReg.continue')}</Button>
             <p className="auth-split__switch"><Link to="/login">{t('enroll.haveAccount')}</Link></p>

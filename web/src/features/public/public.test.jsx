@@ -263,6 +263,11 @@ test('live demo form: required fields, OTP step keeps values on Back, success me
   await userEvent.type(screen.getByLabelText(/mobile number/i), '9822200001');
   await userEvent.type(screen.getByLabelText(/^education/i), '10th');
   await userEvent.click(screen.getByLabelText(/i agree to the/i));
+  // The email is required: without it the OTP step does not start.
+  await userEvent.click(screen.getByRole('button', { name: 'Verify mobile number' }));
+  expect(screen.getByLabelText(/^email/i)).toBeRequired();
+  expect(screen.queryByRole('group', { name: /one-time password/i })).not.toBeInTheDocument();
+  await userEvent.type(screen.getByLabelText(/^email/i), 'ravi@gmail.com');
   await userEvent.click(screen.getByRole('button', { name: 'Verify mobile number' }));
   expect(await screen.findByRole('group', { name: /one-time password/i })).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Edit details' }));
@@ -273,7 +278,7 @@ test('live demo form: required fields, OTP step keeps values on Back, success me
   for (let i = 0; i < 6; i += 1) await userEvent.type(boxes[i], String(i + 1));
   await userEvent.click(screen.getByRole('button', { name: 'Send demo request' }));
   expect(await screen.findByText('Request sent. Suresh will message you on WhatsApp with the date and time.')).toBeInTheDocument();
-  expect(post).toHaveBeenLastCalledWith('/public/demo-requests', expect.objectContaining({ courseSlug: 'maths-10', name: 'Ravi', otp: '123456', acceptTerms: true, whatsappOptIn: true }));
+  expect(post).toHaveBeenLastCalledWith('/public/demo-requests', expect.objectContaining({ courseSlug: 'maths-10', name: 'Ravi', email: 'ravi@gmail.com', otp: '123456', acceptTerms: true, whatsappOptIn: true }));
 });
 
 test('signed-in student browses inside the student area: cards and Enroll stay under /student', async () => {

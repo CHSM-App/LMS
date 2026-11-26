@@ -30,6 +30,110 @@ describe('MSG91 OTP', () => {
   });
 });
 
+describe('SMSALA OTP', () => {
+  const URL = 'https://api2.smsala.com/whatsapp/SendOtp';
+  beforeEach(() => {
+    process.env.WHATSAPP_API_TOKEN = 'sm-token';
+    process.env.WHATSAPP_TPL_OTP = '463';
+  });
+
+  test('posts the code, number, token and template id', async () => {
+    http.reply(URL, 200, { IsSuccess: true, ErrorCode: 0 });
+    await require('../../src/providers/otp/smsala').send('+919812345678', '123456', 'login');
+    expect(http.calls[0]).toMatchObject({
+      method: 'POST',
+      body: { PhoneNumber: '919812345678', OtpCode: '123456', ApiToken: 'sm-token', TemplateId: '463' },
+    });
+  });
+
+  test('an unsuccessful reply throws the provider message', async () => {
+    http.reply(URL, 200, { IsSuccess: false, ErrorCode: 7, ErrorDescription: 'Invalid number' });
+    await expect(require('../../src/providers/otp/smsala').send('+919812345678', '123456')).rejects.toThrow('Invalid number');
+  });
+
+  test('an HTTP error throws', async () => {
+    http.reply(URL, 500);
+    await expect(require('../../src/providers/otp/smsala').send('+919812345678', '123456')).rejects.toThrow('500');
+  });
+
+  test('a missing token throws without calling the API', async () => {
+    delete process.env.WHATSAPP_API_TOKEN;
+    await expect(require('../../src/providers/otp/smsala').send('+919812345678', '123456')).rejects.toThrow('WHATSAPP_API_TOKEN');
+    expect(http.calls).toHaveLength(0);
+  });
+
+  test('the error never contains the token or the code', async () => {
+    http.reply(URL, 200, { IsSuccess: false, ErrorCode: 9, ErrorDescription: 'Rejected' });
+    const err = await require('../../src/providers/otp/smsala').send('+919812345678', '123456').catch((e) => e);
+    expect(err.message).not.toContain('sm-token');
+    expect(err.message).not.toContain('123456');
+  });
+
+  test('OTP_PROVIDER=smsala selects it, and console is still refused in production', () => {
+    process.env.OTP_PROVIDER = 'smsala';
+    expect(require('../../src/providers/otp').otpSender().name).toBe('smsala');
+    jest.resetModules();
+    process.env.OTP_PROVIDER = 'console';
+    process.env.NODE_ENV = 'production';
+    expect(() => require('../../src/providers/otp').otpSender()).toThrow('not allowed in production');
+  });
+});
+
+describe('SMSALA WhatsApp templates', () => {
+  const URL = 'https://api2.smsala.com/whatsapp/SendMessage';
+  const wa = () => require('../../src/providers/whatsapp');
+  beforeEach(() => {
+    process.env.WHATSAPP_PROVIDER = 'smsala';
+    process.env.WHATSAPP_API_TOKEN = 'sm-token';
+    process.env.WHATSAPP_TPL_LIVE_CLASS = '959';
+    process.env.WHATSAPP_TPL_DEMO_SCHEDULED = '958';
+  });
+
+  test('sends the template id, token, number and ordered values as a form', async () => {
+    http.reply(URL, 200, { IsSuccess: true, ErrorCode: 0, ReturnData: '77' });
+    await wa().send('+919812345678', 'x', {
+      template: 'live_class',
+      vars: { topic: 'Algebra', course: 'Maths', date: '2026-06-15', time: '09:00', link: 'https://meet.google.com/abc-defg-hij' },
+    });
+    expect(http.calls[0].method).toBe('POST');
+    expect(http.calls[0].headers['content-type']).toBe('application/x-www-form-urlencoded');
+    expect(http.calls[0].body).toMatchObject({
+      ApiToken: 'sm-token', TemplateId: '959', QuickNumber: '919812345678', CampaignName: 'live_class',
+      Sample: 'Algebra,Maths,2026-06-15,09:00,https://meet.google.com/abc-defg-hij',
+    });
+  });
+
+  test('removes commas from values and fills empty or missing ones with a dash', async () => {
+    http.reply(URL, 200, { IsSuccess: true });
+    await wa().send('+919812345678', 'x', { template: 'live_class', vars: { topic: 'A, B', course: '', date: '1', time: '2' } });
+    expect(http.calls[0].body.Sample).toBe('A B,-,1,2,-');
+  });
+
+  test('an unsuccessful reply throws the provider message', async () => {
+    http.reply(URL, 200, { IsSuccess: false, ErrorCode: 5, ErrorDescription: 'Template not approved' });
+    await expect(wa().send('+919812345678', 'x', { template: 'live_class', vars: {} })).rejects.toThrow('Template not approved');
+  });
+
+  test('an HTTP error throws', async () => {
+    http.reply(URL, 500);
+    await expect(wa().send('+919812345678', 'x', { template: 'live_class', vars: {} })).rejects.toThrow('500');
+  });
+
+  test('a missing token or template id throws without calling the API', async () => {
+    delete process.env.WHATSAPP_API_TOKEN;
+    await expect(wa().send('+919812345678', 'x', { template: 'live_class', vars: {} })).rejects.toThrow('WHATSAPP_API_TOKEN');
+    process.env.WHATSAPP_API_TOKEN = 'sm-token';
+    delete process.env.WHATSAPP_TPL_LIVE_CLASS;
+    await expect(wa().send('+919812345678', 'x', { template: 'live_class', vars: {} })).rejects.toThrow('WHATSAPP_TPL_LIVE_CLASS');
+    expect(http.calls).toHaveLength(0);
+  });
+
+  test('plain text without a template throws without calling the API', async () => {
+    await expect(wa().send('+919812345678', 'hello')).rejects.toThrow('template');
+    expect(http.calls).toHaveLength(0);
+  });
+});
+
 describe('WhatsApp Cloud API', () => {
   beforeEach(() => {
     process.env.WHATSAPP_PROVIDER = 'meta';
@@ -161,5 +265,60 @@ describe('Google Meet via Calendar API with an OAuth refresh token (no service a
     const meet = require('../../src/providers/meet');
     await expect(meet.createLink({ title: 'Algebra', start: new Date(), durationMin: 30 })).resolves.toBeNull();
     expect(http.calls).toHaveLength(0);
+  });
+});
+
+describe('Google Meet via the Meet API (teacher is co-host, only invited people join directly)', () => {
+  beforeEach(() => {
+    process.env.MEET_PROVIDER = 'google';
+    process.env.GOOGLE_CLIENT_ID = 'client-1.apps.googleusercontent.com';
+    process.env.GOOGLE_CLIENT_SECRET = 'secret-1';
+    process.env.GOOGLE_REFRESH_TOKEN = '1//refresh-1';
+    delete process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+    process.env.GOOGLE_CALENDAR_ID = 'primary';
+  });
+  const opts = { title: 'Algebra', start: new Date('2026-06-15T03:30:00Z'), durationMin: 60, hostEmail: 'Teacher@Gmail.com' };
+
+  test('creates a space, makes it restricted and adds the teacher as co-host', async () => {
+    http.reply('https://oauth2.googleapis.com/token', 200, { access_token: 'u-token', expires_in: 3600 });
+    http.reply('https://meet.googleapis.com/v2/spaces/abc/members', 200, { name: 'spaces/abc/members/1' });
+    http.reply('https://meet.googleapis.com/v2/spaces/abc?', 200, {});
+    http.reply('https://meet.googleapis.com/v2/spaces', 200, { name: 'spaces/abc', meetingUri: 'https://meet.google.com/xyz-abcd-efg' });
+    const link = await require('../../src/providers/meet').createLink(opts);
+    expect(link).toBe('https://meet.google.com/xyz-abcd-efg');
+    const [, create, patch, member] = http.calls;
+    expect(create).toMatchObject({ method: 'POST', url: 'https://meet.googleapis.com/v2/spaces', headers: { authorization: 'Bearer u-token' } });
+    expect(patch).toMatchObject({ method: 'PATCH', url: 'https://meet.googleapis.com/v2/spaces/abc?updateMask=config.accessType', body: { config: { accessType: 'RESTRICTED' } } });
+    expect(member).toMatchObject({ method: 'POST', url: 'https://meet.googleapis.com/v2/spaces/abc/members', body: { email: 'teacher@gmail.com', role: 'COHOST' } });
+  });
+
+  test('without a teacher email the Calendar event is used as before', async () => {
+    http.reply('https://oauth2.googleapis.com/token', 200, { access_token: 'u-token', expires_in: 3600 });
+    http.reply('https://www.googleapis.com/calendar/v3/calendars/primary/events', 200, { hangoutLink: 'https://meet.google.com/aaa-bbbb-ccc' });
+    const link = await require('../../src/providers/meet').createLink({ ...opts, hostEmail: null });
+    expect(link).toBe('https://meet.google.com/aaa-bbbb-ccc');
+  });
+
+  test('an account that cannot change the access setting still gets the link (new spaces are restricted by default)', async () => {
+    http.reply('https://oauth2.googleapis.com/token', 200, { access_token: 'u-token', expires_in: 3600 });
+    http.reply('https://meet.googleapis.com/v2/spaces/abc/members', 200, { name: 'spaces/abc/members/1' });
+    http.reply('https://meet.googleapis.com/v2/spaces/abc?', 400, { error: { status: 'FAILED_PRECONDITION', message: 'This feature is not available to this user' } });
+    http.reply('https://meet.googleapis.com/v2/spaces', 200, { name: 'spaces/abc', meetingUri: 'https://meet.google.com/xyz-abcd-efg' });
+    await expect(require('../../src/providers/meet').createLink(opts)).resolves.toBe('https://meet.google.com/xyz-abcd-efg');
+    expect(http.calls.some((c) => c.url.endsWith('/members'))).toBe(true);
+  });
+
+  test('if the teacher cannot be made co-host no link is returned (never a link the teacher cannot admit people on)', async () => {
+    http.reply('https://oauth2.googleapis.com/token', 200, { access_token: 'u-token', expires_in: 3600 });
+    http.reply('https://meet.googleapis.com/v2/spaces/abc/members', 403, { error: { message: 'no' } });
+    http.reply('https://meet.googleapis.com/v2/spaces/abc?', 200, {});
+    http.reply('https://meet.googleapis.com/v2/spaces', 200, { name: 'spaces/abc', meetingUri: 'https://meet.google.com/xyz-abcd-efg' });
+    await expect(require('../../src/providers/meet').createLink(opts)).resolves.toBeNull();
+  });
+
+  test('a Meet API error (for example the token has no Meet scope) returns null', async () => {
+    http.reply('https://oauth2.googleapis.com/token', 200, { access_token: 'u-token', expires_in: 3600 });
+    http.reply('https://meet.googleapis.com/v2/spaces', 403, { error: { message: 'insufficient scope' } });
+    await expect(require('../../src/providers/meet').createLink(opts)).resolves.toBeNull();
   });
 });

@@ -31,7 +31,8 @@ class _DemoRequestScreenState extends ConsumerState<DemoRequestScreen> {
             AppBanner(kind: 'success', message: l.pDemoSent)
           else
             OtpForm(
-              extraFields: const ['classStandard', 'preferredTime', 'message'],
+              extraFields: const ['email', 'classStandard', 'preferredTime', 'message'],
+              requiredFields: const ['email'],
               submitLabel: l.pRequestDemo,
               sendOtp: (mobile) => repo.sendOtp(mobile, 'demo_request'),
               submit: (f) async {

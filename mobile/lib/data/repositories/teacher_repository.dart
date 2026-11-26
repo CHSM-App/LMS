@@ -15,11 +15,19 @@ abstract class TeacherRepository {
   Future<List<StudentRow>> students({int? courseId});
   Future<void> setAccess(String studentPublicId, int courseId, {required String startDate, required String endDate, required bool accessEnabled});
   Future<List<LiveClass>> liveClasses();
+  /// Creates a live class (id null) or updates one. batchId null = all batches of the course.
+  Future<void> saveLiveClass({int? id, required int courseId, int? batchId, required String topic, required DateTime startsAt, required int durationMin, String? meetLink, String status = 'scheduled'});
+  Future<void> cancelLiveClass(int id);
   Future<List<TeacherCourseRef>> courses();
   Future<List<LiveScheduleRow>> liveSchedule(int courseId, int batchId);
   /// dates: slotId -> start time. All lessons are scheduled for the batch in one call (all or nothing).
-  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates);
+  /// links: slotId -> Meet link made with [generateMeetLink] (optional).
+  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates, {Map<String, String> links = const {}});
   Future<void> setMeetLink(int liveClassId, String meetLink);
+  /// "Generate link" in a schedule form: returns a new Meet link, saves nothing. Throws ApiException when links are not set up.
+  Future<String> generateMeetLink({required String topic, required DateTime startsAt, required int durationMin});
+  /// "Generate link" on a saved class that has no link yet.
+  Future<void> generateClassLink(int liveClassId);
   Future<List<AttendanceRow>> attendance(int liveClassId);
   Future<void> saveAttendance(int liveClassId, List<AttendanceRow> rows);
   Future<List<Doubt>> doubts({String? status});
@@ -82,6 +90,22 @@ class ApiTeacherRepository implements TeacherRepository {
   Future<List<LiveClass>> liveClasses() async => _list(await api.get('/teacher/live-classes')).map(LiveClass.fromJson).toList();
 
   @override
+  Future<void> saveLiveClass({int? id, required int courseId, int? batchId, required String topic, required DateTime startsAt, required int durationMin, String? meetLink, String status = 'scheduled'}) {
+    final body = {
+      'courseId': courseId,
+      'batchId': batchId,
+      'topic': topic.trim(),
+      'startsAt': startsAt.toUtc().toIso8601String(),
+      'durationMin': durationMin,
+      'meetLink': (meetLink == null || meetLink.trim().isEmpty) ? null : meetLink.trim(),
+    };
+    return id == null ? api.post('/teacher/live-classes', body) : api.put('/teacher/live-classes/$id', {...body, 'status': status});
+  }
+
+  @override
+  Future<void> cancelLiveClass(int id) => api.delete('/teacher/live-classes/$id');
+
+  @override
   Future<List<TeacherCourseRef>> courses() async => _list(await api.get('/teacher/courses')).map(TeacherCourseRef.fromJson).toList();
 
   @override
@@ -89,14 +113,23 @@ class ApiTeacherRepository implements TeacherRepository {
       _list(await api.get('/teacher/courses/$courseId/batches/$batchId/live-schedule')).map(LiveScheduleRow.fromJson).toList();
 
   @override
-  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates) => api.post('/teacher/courses/$courseId/batches/$batchId/live-schedule', {
+  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates, {Map<String, String> links = const {}}) => api.post('/teacher/courses/$courseId/batches/$batchId/live-schedule', {
         'items': [
-          for (final e in dates.entries) {'slotId': e.key, 'startsAt': e.value.toUtc().toIso8601String(), 'durationMin': 60, 'meetLink': null},
+          for (final e in dates.entries) {'slotId': e.key, 'startsAt': e.value.toUtc().toIso8601String(), 'durationMin': 60, 'meetLink': links[e.key]},
         ],
       });
 
   @override
   Future<void> setMeetLink(int liveClassId, String meetLink) => api.put('/teacher/live-classes/$liveClassId/meet-link', {'meetLink': meetLink});
+
+  @override
+  Future<String> generateMeetLink({required String topic, required DateTime startsAt, required int durationMin}) async {
+    final r = await api.post('/teacher/live-classes/meet-link/generate', {'topic': topic.trim(), 'startsAt': startsAt.toUtc().toIso8601String(), 'durationMin': durationMin}) as Map<String, dynamic>;
+    return r['meetLink'] as String;
+  }
+
+  @override
+  Future<void> generateClassLink(int liveClassId) => api.post('/teacher/live-classes/$liveClassId/meet-link/generate');
 
   @override
   Future<List<AttendanceRow>> attendance(int liveClassId) async =>

@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { h } = require('../utils/http');
 const { authLimiter } = require('../middlewares/rateLimits');
 const { authenticate } = require('../middlewares/authenticate');
-const { requireMobile, text, bool, email } = require('../utils/validate');
+const { requireMobile, text, bool, requiredEmail } = require('../utils/validate');
 const { badRequest } = require('../utils/APIError');
 const { clientIp } = require('../utils/http');
 const registration = require('../services/studentRegistration.service');
@@ -12,7 +12,7 @@ const tokenService = require('../services/token.service');
 
 const PUBLIC_PURPOSES = ['login', 'teacher_register', 'student_register', 'demo_request', 'delete_account'];
 const COOKIE = 'rt';
-const cookieOpts = { httpOnly: true, secure: true, sameSite: 'strict', path: '/api/v1/auth', maxAge: tokenService.REFRESH_TTL_MS };
+const cookieOpts = { httpOnly: true, secure: process.env.COOKIE_SECURE !== 'false', sameSite: 'strict', path: '/api/v1/auth', maxAge: tokenService.REFRESH_TTL_MS };
 const isMobileClient = (req) => req.get('x-client') === 'mobile';
 
 function sendTokens(req, res, { accessToken, refreshToken, user }) {
@@ -32,7 +32,7 @@ router.post('/auth/login', authLimiter, h(async (req, res) => {
   return sendTokens(req, res, result);
 }));
 
-// Student registration (spec §4): name*, mobile*, OTP*, education*, city, email. Logs the student in.
+// Student registration (spec §4): name*, mobile*, OTP*, education*, email*, city. Logs the student in.
 router.post('/auth/register-student', authLimiter, h(async (req, res) => {
   const b = req.body;
   if (!bool(b.acceptTerms)) throw badRequest('Accept the Terms and Privacy Policy to continue', 'TERMS_REQUIRED');
@@ -43,7 +43,7 @@ router.post('/auth/register-student', authLimiter, h(async (req, res) => {
     education: text(b.education, 'education', { max: 120 }),
     classStandard: text(b.classStandard, 'classStandard', { required: false, max: 40 }),
     city: text(b.city, 'city', { required: false, max: 80 }),
-    email: email(b.email),
+    email: requiredEmail(b.email),
     preferredLang: b.preferredLang,
     whatsappOptIn: bool(b.whatsappOptIn),
   }, { ip: clientIp(req), deviceId: b.deviceId });

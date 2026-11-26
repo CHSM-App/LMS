@@ -6,6 +6,7 @@ router.use(require('./teacherRequests.routes'));
 router.use(require('./account.routes'));
 router.use(require('./public.routes'));
 router.use(require('./notification.routes'));
+router.use(require('./pushToken.routes'));
 router.use(require('./admin.routes'));
 router.use(require('./teacher.routes'));
 router.use(require('./teacherExams.routes'));

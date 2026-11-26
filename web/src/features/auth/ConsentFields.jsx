@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '../../components';
 
-export function ConsentFields({ accept, onAccept, whatsapp, onWhatsapp, error, whatsappHint }) {
+export function ConsentFields({ accept, onAccept, error }) {
   const { t } = useTranslation();
   return (
     <div className="stack" style={{ gap: 'var(--space-2)' }}>
@@ -17,8 +17,7 @@ export function ConsentFields({ accept, onAccept, whatsapp, onWhatsapp, error, w
           </>
         }
       />
-      <Checkbox checked={whatsapp} onChange={(e) => onWhatsapp(e.target.checked)} label={t('consent.whatsapp')} />
-      {whatsappHint && <p className="field__hint">{whatsappHint}</p>}
+      <p className="field__hint">{t('consent.whatsappNotice')}</p>
     </div>
   );
 }

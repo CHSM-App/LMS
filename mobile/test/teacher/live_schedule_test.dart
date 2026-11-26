@@ -11,7 +11,11 @@ import 'package:lms_app/screens/teacher/live_schedule_screen.dart';
 
 class FakeScheduleRepo extends Fake implements TeacherRepository {
   Map<String, DateTime>? saved;
+  Map<String, String>? savedLinks;
   bool fail = false;
+
+  @override
+  Future<String> generateMeetLink({required String topic, required DateTime startsAt, required int durationMin}) async => 'https://meet.google.com/xyz-abcd-efg';
 
   @override
   Future<List<LiveScheduleRow>> liveSchedule(int courseId, int batchId) async => [
@@ -21,9 +25,10 @@ class FakeScheduleRepo extends Fake implements TeacherRepository {
       ];
 
   @override
-  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates) async {
+  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates, {Map<String, String> links = const {}}) async {
     if (fail) throw ApiException(409, 'This batch already has a session of Algebra');
     saved = dates;
+    savedLinks = links;
   }
 }
 
@@ -69,6 +74,21 @@ void main() {
     await tester.tap(find.text('Save schedule'));
     await tester.pumpAndSettle();
     expect(repo.saved, {'s1': picked});
+  });
+
+  testWidgets('Generate link shows once a lesson has a date, and the link is saved with the schedule', (tester) async {
+    final repo = FakeScheduleRepo();
+    await tester.pumpWidget(screen(repo));
+    await tester.pumpAndSettle();
+    expect(find.text('Generate link'), findsNothing);
+    await tester.tap(find.text('Set date').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Generate link'));
+    await tester.pumpAndSettle();
+    expect(find.text('https://meet.google.com/xyz-abcd-efg'), findsOneWidget);
+    await tester.tap(find.text('Save schedule'));
+    await tester.pumpAndSettle();
+    expect(repo.savedLinks, {'s1': 'https://meet.google.com/xyz-abcd-efg'});
   });
 
   testWidgets('nothing filled asks for a date and saves nothing', (tester) async {

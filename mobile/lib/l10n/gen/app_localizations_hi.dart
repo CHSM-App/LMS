@@ -469,6 +469,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get sNoExams => 'अभी कोई परीक्षा नहीं';
 
   @override
+  String get sExamsTodo => 'देनी हैं';
+
+  @override
+  String get sExamsDone => 'पूरी';
+
+  @override
+  String get sExamsLocked => 'बंद';
+
+  @override
   String sQuestionN(String n) {
     return 'प्रश्न $n';
   }
@@ -506,6 +515,19 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get sSubmitNow => 'अभी सबमिट करें';
+
+  @override
+  String get sLeaveTitle => 'परीक्षा छोड़ें?';
+
+  @override
+  String get sLeaveBody =>
+      'बाहर जाने पर भी टाइमर चलता रहता है। परीक्षा खत्म करने के लिए अभी सबमिट करें, या रुककर उत्तर देते रहें।';
+
+  @override
+  String get sStay => 'परीक्षा में ही रहें';
+
+  @override
+  String get sSubmitAndLeave => 'सबमिट करें और बाहर जाएँ';
 
   @override
   String get sCorrect => 'सही';
@@ -642,6 +664,80 @@ class AppLocalizationsHi extends AppLocalizations {
   String get pFreeDemo => 'मुफ़्त लाइव डेमो';
 
   @override
+  String get pAbout => 'इस कोर्स के बारे में';
+
+  @override
+  String get pSeeAll => 'सभी देखें';
+
+  @override
+  String get sLatestExam => 'ताज़ा परीक्षा';
+
+  @override
+  String get sExamNotStarted => 'शुरू नहीं की';
+
+  @override
+  String get sExamInProgress => 'जारी है';
+
+  @override
+  String get sExamCompleted => 'पूरी हुई';
+
+  @override
+  String get sExamClosed => 'बंद';
+
+  @override
+  String get sExamNotOpen => 'अभी खुली नहीं';
+
+  @override
+  String get sAllExams => 'सभी परीक्षाएँ';
+
+  @override
+  String sAllClasses(int n) {
+    return 'सभी क्लास ($n)';
+  }
+
+  @override
+  String get sLiveNow => 'अभी लाइव';
+
+  @override
+  String get sDiscover => 'नए कोर्स देखें';
+
+  @override
+  String get onbTitle1 => 'भरोसेमंद शिक्षकों से सीखें';
+
+  @override
+  String get onbBody1 =>
+      'अपने शिक्षक की लाइव क्लास, रिकॉर्डेड पाठ और नोट्स, अपनी पसंदीदा भाषा में।';
+
+  @override
+  String get onbTitle2 => 'अभ्यास करें और खुद को परखें';
+
+  @override
+  String get onbBody2 =>
+      'टेस्ट और फाइनल परीक्षा, तुरंत नतीजे, आपकी रैंक और हर उत्तर की समीक्षा।';
+
+  @override
+  String get onbTitle3 => 'ऑफ़लाइन भी सीखते रहें';
+
+  @override
+  String get onbBody3 =>
+      'वाई-फ़ाई पर पाठ डाउनलोड करें और बिना इंटरनेट देखें। ऑनलाइन आते ही आपकी प्रगति सेव हो जाती है।';
+
+  @override
+  String get onbNext => 'आगे';
+
+  @override
+  String get onbSkip => 'छोड़ें';
+
+  @override
+  String get onbStart => 'शुरू करें';
+
+  @override
+  String get sYourAccount => 'आपका खाता';
+
+  @override
+  String get tNeedsAttention => 'आपके ध्यान की ज़रूरत';
+
+  @override
   String get pDemoBadge => 'मुफ़्त डेमो';
 
   @override
@@ -673,6 +769,52 @@ class AppLocalizationsHi extends AppLocalizations {
   String get pDemoVideos => 'डेमो वीडियो';
 
   @override
+  String get pWatchDemo => 'मुफ़्त डेमो देखें';
+
+  @override
+  String get pIncludes => 'इस कोर्स में क्या है';
+
+  @override
+  String get pReadMore => 'और पढ़ें';
+
+  @override
+  String get pReadLess => 'कम दिखाएँ';
+
+  @override
+  String get pStatDuration => 'अवधि';
+
+  @override
+  String get pStatSubjects => 'विषय';
+
+  @override
+  String get pStatModules => 'मॉड्यूल';
+
+  @override
+  String get pStatBatches => 'बैच';
+
+  @override
+  String pIncSubjects(int s, int m) {
+    return '$s विषय · $m मॉड्यूल';
+  }
+
+  @override
+  String pIncBatches(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'चुनने के लिए $n बैच',
+      one: 'चुनने के लिए 1 बैच',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pIncDemo => 'पहले आज़माने के लिए मुफ़्त डेमो वीडियो';
+
+  @override
+  String get pIncDoubts => 'शिक्षक से कभी भी सवाल पूछें';
+
+  @override
   String get pCurriculum => 'आप क्या सीखेंगे';
 
   @override
@@ -683,6 +825,41 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get pEnroll => 'अभी नामांकन करें';
+
+  @override
+  String get pEnrolledBadge => 'नामांकित';
+
+  @override
+  String get pRequestedBadge => 'अनुरोध भेजा';
+
+  @override
+  String get pEnrolledNote => 'आप इस कोर्स में नामांकित हैं।';
+
+  @override
+  String get pGoToCourse => 'कोर्स पर जाएँ';
+
+  @override
+  String get pPendingTitle => 'अनुरोध भेजा गया';
+
+  @override
+  String pPendingNote(String teacher) {
+    return '$teacher की मंज़ूरी का इंतज़ार है। मंज़ूरी मिलते ही आपको बताएँगे।';
+  }
+
+  @override
+  String pRejectedNote(String reason) {
+    return 'आपका पिछला अनुरोध अस्वीकार हुआ: $reason';
+  }
+
+  @override
+  String get pRejectedNoReason => 'आपका पिछला अनुरोध अस्वीकार हुआ।';
+
+  @override
+  String get pEnrollAgain => 'नया अनुरोध भेजें';
+
+  @override
+  String get pBlockedNote =>
+      'शिक्षक ने इस कोर्स में आपको नामांकन की अनुमति नहीं दी है।';
 
   @override
   String get pDemoSent => 'अनुरोध भेजा गया। शिक्षक डेमो का समय आपको बताएँगे।';
@@ -751,9 +928,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get sLiveUpcoming => 'आने वाली';
 
   @override
-  String get sLiveNow => 'अभी लाइव';
-
-  @override
   String get sLiveEnded => 'समाप्त';
 
   @override
@@ -784,6 +958,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get tAddMeetLink => 'Meet लिंक जोड़ें';
+
+  @override
+  String get tGenerateLink => 'लिंक बनाएँ';
 
   @override
   String get tMeetLinkLabel => 'Google Meet लिंक';
@@ -831,4 +1008,56 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get tOpenSchedule => 'शेड्यूल खोलें';
+
+  @override
+  String get tAddLiveClass => 'लाइव क्लास जोड़ें';
+
+  @override
+  String get tEditLiveClass => 'लाइव क्लास बदलें';
+
+  @override
+  String get tAllBatches => 'सभी बैच';
+
+  @override
+  String get tAllCourses => 'सभी कोर्स';
+
+  @override
+  String get tTopic => 'विषय';
+
+  @override
+  String get tWhen => 'तारीख और समय';
+
+  @override
+  String get tDuration => 'अवधि (मिनट)';
+
+  @override
+  String get tSaveClass => 'क्लास सेव करें';
+
+  @override
+  String get tCancelClass => 'क्लास रद्द करें';
+
+  @override
+  String get tCancelClassAsk =>
+      'यह क्लास रद्द करें? विद्यार्थियों को यह रद्द दिखेगा।';
+
+  @override
+  String get tKeepClass => 'रहने दें';
+
+  @override
+  String get tEditClass => 'बदलें';
+
+  @override
+  String get tPickDateTime => 'तारीख और समय चुनें';
+
+  @override
+  String get tClassSaved => 'क्लास सेव हो गया';
+
+  @override
+  String get tClassCancelled => 'क्लास रद्द हो गया';
+
+  @override
+  String get tDurationInvalid => '5 से 600 मिनट डालें';
+
+  @override
+  String get pushOpen => 'खोलें';
 }

@@ -469,6 +469,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sNoExams => 'No exams yet';
 
   @override
+  String get sExamsTodo => 'To do';
+
+  @override
+  String get sExamsDone => 'Done';
+
+  @override
+  String get sExamsLocked => 'Locked';
+
+  @override
   String sQuestionN(String n) {
     return 'Question $n';
   }
@@ -506,6 +515,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sSubmitNow => 'Submit now';
+
+  @override
+  String get sLeaveTitle => 'Leave the exam?';
+
+  @override
+  String get sLeaveBody =>
+      'The timer keeps running even if you leave. Submit now to finish, or stay and keep answering.';
+
+  @override
+  String get sStay => 'Stay in the exam';
+
+  @override
+  String get sSubmitAndLeave => 'Submit and leave';
 
   @override
   String get sCorrect => 'Correct';
@@ -642,6 +664,80 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pFreeDemo => 'Free live demo';
 
   @override
+  String get pAbout => 'About this course';
+
+  @override
+  String get pSeeAll => 'See all';
+
+  @override
+  String get sLatestExam => 'Latest exam';
+
+  @override
+  String get sExamNotStarted => 'Not started';
+
+  @override
+  String get sExamInProgress => 'In progress';
+
+  @override
+  String get sExamCompleted => 'Completed';
+
+  @override
+  String get sExamClosed => 'Closed';
+
+  @override
+  String get sExamNotOpen => 'Not open yet';
+
+  @override
+  String get sAllExams => 'All exams';
+
+  @override
+  String sAllClasses(int n) {
+    return 'All classes ($n)';
+  }
+
+  @override
+  String get sLiveNow => 'Live now';
+
+  @override
+  String get sDiscover => 'Explore courses';
+
+  @override
+  String get onbTitle1 => 'Learn from teachers you trust';
+
+  @override
+  String get onbBody1 =>
+      'Live classes, recorded lessons and notes from your own teacher, in the language you like.';
+
+  @override
+  String get onbTitle2 => 'Practise and test yourself';
+
+  @override
+  String get onbBody2 =>
+      'Unit tests and final exams with instant results, your rank and a review of every answer.';
+
+  @override
+  String get onbTitle3 => 'Keep learning, even offline';
+
+  @override
+  String get onbBody3 =>
+      'Download lessons on Wi-Fi and watch without internet. Your progress syncs when you are back online.';
+
+  @override
+  String get onbNext => 'Next';
+
+  @override
+  String get onbSkip => 'Skip';
+
+  @override
+  String get onbStart => 'Get started';
+
+  @override
+  String get sYourAccount => 'Your account';
+
+  @override
+  String get tNeedsAttention => 'Needs your attention';
+
+  @override
   String get pDemoBadge => 'Free demo';
 
   @override
@@ -673,6 +769,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pDemoVideos => 'Demo videos';
 
   @override
+  String get pWatchDemo => 'Watch free demo';
+
+  @override
+  String get pIncludes => 'This course includes';
+
+  @override
+  String get pReadMore => 'Read more';
+
+  @override
+  String get pReadLess => 'Show less';
+
+  @override
+  String get pStatDuration => 'Duration';
+
+  @override
+  String get pStatSubjects => 'Subjects';
+
+  @override
+  String get pStatModules => 'Modules';
+
+  @override
+  String get pStatBatches => 'Batches';
+
+  @override
+  String pIncSubjects(int s, int m) {
+    return '$s subjects · $m modules';
+  }
+
+  @override
+  String pIncBatches(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: '$n batches to choose from',
+      one: '1 batch to choose from',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pIncDemo => 'Free demo videos to try first';
+
+  @override
+  String get pIncDoubts => 'Ask your teacher doubts any time';
+
+  @override
   String get pCurriculum => 'What you\'ll learn';
 
   @override
@@ -683,6 +825,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pEnroll => 'Enroll now';
+
+  @override
+  String get pEnrolledBadge => 'Enrolled';
+
+  @override
+  String get pRequestedBadge => 'Requested';
+
+  @override
+  String get pEnrolledNote => 'You\'re enrolled in this course.';
+
+  @override
+  String get pGoToCourse => 'Go to course';
+
+  @override
+  String get pPendingTitle => 'Request sent';
+
+  @override
+  String pPendingNote(String teacher) {
+    return 'Waiting for $teacher to approve. You\'ll be notified.';
+  }
+
+  @override
+  String pRejectedNote(String reason) {
+    return 'Your last request was declined: $reason';
+  }
+
+  @override
+  String get pRejectedNoReason => 'Your last request was declined.';
+
+  @override
+  String get pEnrollAgain => 'Send a new request';
+
+  @override
+  String get pBlockedNote =>
+      'The teacher has not allowed enrollment for you in this course.';
 
   @override
   String get pDemoSent =>
@@ -751,9 +928,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sLiveUpcoming => 'Upcoming';
 
   @override
-  String get sLiveNow => 'Live now';
-
-  @override
   String get sLiveEnded => 'Ended';
 
   @override
@@ -785,6 +959,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tAddMeetLink => 'Add Meet link';
+
+  @override
+  String get tGenerateLink => 'Generate link';
 
   @override
   String get tMeetLinkLabel => 'Google Meet link';
@@ -832,4 +1009,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tOpenSchedule => 'Open schedule';
+
+  @override
+  String get tAddLiveClass => 'Add live class';
+
+  @override
+  String get tEditLiveClass => 'Edit live class';
+
+  @override
+  String get tAllBatches => 'All batches';
+
+  @override
+  String get tAllCourses => 'All courses';
+
+  @override
+  String get tTopic => 'Topic';
+
+  @override
+  String get tWhen => 'Date and time';
+
+  @override
+  String get tDuration => 'Duration (minutes)';
+
+  @override
+  String get tSaveClass => 'Save class';
+
+  @override
+  String get tCancelClass => 'Cancel class';
+
+  @override
+  String get tCancelClassAsk =>
+      'Cancel this class? Students will see it as cancelled.';
+
+  @override
+  String get tKeepClass => 'Keep it';
+
+  @override
+  String get tEditClass => 'Edit';
+
+  @override
+  String get tPickDateTime => 'Pick date and time';
+
+  @override
+  String get tClassSaved => 'Class saved';
+
+  @override
+  String get tClassCancelled => 'Class cancelled';
+
+  @override
+  String get tDurationInvalid => 'Enter 5 to 600 minutes';
+
+  @override
+  String get pushOpen => 'Open';
 }

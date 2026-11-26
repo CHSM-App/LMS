@@ -1,0 +1,20 @@
+{
+  "en": {
+    "tAddLiveClass": "Add live class", "tEditLiveClass": "Edit live class", "tAllBatches": "All batches", "tAllCourses": "All courses",
+    "tTopic": "Topic", "tWhen": "Date and time", "tDuration": "Duration (minutes)", "tSaveClass": "Save class", "tCancelClass": "Cancel class",
+    "tCancelClassAsk": "Cancel this class? Students will see it as cancelled.", "tKeepClass": "Keep it", "tEditClass": "Edit", "tPickDateTime": "Pick date and time",
+    "tClassSaved": "Class saved", "tClassCancelled": "Class cancelled", "tDurationInvalid": "Enter 5 to 600 minutes"
+  },
+  "mr": {
+    "tAddLiveClass": "लाइव्ह क्लास जोडा", "tEditLiveClass": "लाइव्ह क्लास बदला", "tAllBatches": "सर्व बॅचेस", "tAllCourses": "सर्व कोर्सेस",
+    "tTopic": "विषय", "tWhen": "तारीख आणि वेळ", "tDuration": "कालावधी (मिनिटे)", "tSaveClass": "क्लास सेव्ह करा", "tCancelClass": "क्लास रद्द करा",
+    "tCancelClassAsk": "हा क्लास रद्द करायचा? विद्यार्थ्यांना तो रद्द म्हणून दिसेल.", "tKeepClass": "ठेवा", "tEditClass": "बदला", "tPickDateTime": "तारीख आणि वेळ निवडा",
+    "tClassSaved": "क्लास सेव्ह झाला", "tClassCancelled": "क्लास रद्द झाला", "tDurationInvalid": "५ ते ६०० मिनिटे टाका"
+  },
+  "hi": {
+    "tAddLiveClass": "लाइव क्लास जोड़ें", "tEditLiveClass": "लाइव क्लास बदलें", "tAllBatches": "सभी बैच", "tAllCourses": "सभी कोर्स",
+    "tTopic": "विषय", "tWhen": "तारीख और समय", "tDuration": "अवधि (मिनट)", "tSaveClass": "क्लास सेव करें", "tCancelClass": "क्लास रद्द करें",
+    "tCancelClassAsk": "यह क्लास रद्द करें? विद्यार्थियों को यह रद्द दिखेगा।", "tKeepClass": "रहने दें", "tEditClass": "बदलें", "tPickDateTime": "तारीख और समय चुनें",
+    "tClassSaved": "क्लास सेव हो गया", "tClassCancelled": "क्लास रद्द हो गया", "tDurationInvalid": "5 से 600 मिनट डालें"
+  }
+}

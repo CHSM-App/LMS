@@ -6,7 +6,9 @@ import 'core/session/session.dart';
 import 'presentation/providers/core_providers.dart';
 import 'screens/auth/account_screen.dart';
 import 'screens/auth/admin_web_only_screen.dart';
+import 'presentation/providers/onboarding_provider.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/onboarding_screen.dart';
 import 'screens/auth/splash_screen.dart';
 import 'screens/public/catalog_screen.dart';
 import 'screens/public/course_details_screen.dart';
@@ -57,11 +59,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       final s = refresh.value;
       final loc = state.matchedLocation;
       if (s.restoring) return loc == '/splash' ? null : '/splash';
-      if (!s.isLoggedIn) return isPublicRoute(loc) ? null : '/login';
+      if (!s.isLoggedIn) {
+        // A fresh install sees the intro slides once, before login.
+        if (!ref.read(onboardingSeenProvider)) return loc == '/onboarding' ? null : '/onboarding';
+        return isPublicRoute(loc) ? null : '/login';
+      }
       return roleRedirect(loc, s.user!.role);
     },
     routes: [
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
+      GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, s) => RegisterScreen(slug: s.uri.queryParameters['slug'])),
       GoRoute(path: '/courses', builder: (_, _) => const CatalogScreen()),

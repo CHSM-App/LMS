@@ -19,30 +19,45 @@ async function setup() {
 }
 
 describe('demo requests', () => {
-  test('schedule generates a Meet link; WhatsApp sends to opted-in students', async () => {
+  test('schedule keeps the Meet link the teacher generated or pasted; WhatsApp sends to opted-in students', async () => {
     const { t, courseId } = await setup();
     const d = await demoRequest(courseId, t.user.user_id, { name: 'Asha' });
     await query("UPDATE dbo.demo_requests SET whatsapp_opt_in = 1 WHERE demo_request_id = @id", { id: T.int(d.demo_request_id) });
     const past = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2020-01-01T10:00:00Z' });
     expect(past.status).toBe(400);
-    const s = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z' });
+    const s = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z', meetLink: 'https://meet.google.com/abc-defg-hij' });
     expect(s.status).toBe(200);
-    expect(s.body.data).toMatchObject({ status: 'scheduled' });
-    expect(s.body.data.meetLink).toMatch(/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/);
+    expect(s.body.data).toMatchObject({ status: 'scheduled', meetLink: 'https://meet.google.com/abc-defg-hij' });
     const w = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/send-whatsapp`);
     expect(w.status).toBe(200);
     expect(whatsapp.sentMessages()[0].text).toContain(s.body.data.meetLink);
     expect((await one('SELECT whatsapp_sent_at FROM dbo.demo_requests WHERE demo_request_id = @id', { id: T.int(d.demo_request_id) })).whatsapp_sent_at).toBeTruthy();
   });
 
-  test('pasted link must be a Meet link; manual provider needs one', async () => {
+  test('the demo WhatsApp passes every template variable (a template provider would send blanks otherwise)', async () => {
+    const { t, courseId } = await setup();
+    const d = await demoRequest(courseId, t.user.user_id, { name: 'Asha' });
+    await query('UPDATE dbo.demo_requests SET whatsapp_opt_in = 1 WHERE demo_request_id = @id', { id: T.int(d.demo_request_id) });
+    await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z', meetLink: 'https://meet.google.com/abc-defg-hij' });
+    const spy = jest.spyOn(whatsapp, 'send');
+    const w = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/send-whatsapp`);
+    expect(w.status).toBe(200);
+    expect(spy.mock.calls[0][2]).toMatchObject({
+      template: 'demo_scheduled',
+      vars: { name: 'Asha', date: '2099-05-01', time: '10:00', link: 'https://meet.google.com/abc-defg-hij' },
+    });
+    expect(spy.mock.calls[0][2].vars.course).toBeTruthy();
+    spy.mockRestore();
+  });
+
+  test('the link must be a Meet link, and saving never creates one by itself (even with the console provider)', async () => {
     const { t, courseId } = await setup();
     const d = await demoRequest(courseId, t.user.user_id);
     expect((await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z', meetLink: 'https://zoom.us/j/1' })).status).toBe(400);
-    process.env.MEET_PROVIDER = 'manual';
     const r = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z' });
     expect(r.status).toBe(400);
-    expect(r.body.error).toBe('Paste a Meet link');
+    expect(r.body.code).toBe('MEET_LINK_REQUIRED');
+    expect(r.body.error).toBe('Generate or paste a Meet link');
     const ok = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z', meetLink: 'https://meet.google.com/abc-defg-hij' });
     expect(ok.body.data.meetLink).toBe('https://meet.google.com/abc-defg-hij');
   });
@@ -50,7 +65,7 @@ describe('demo requests', () => {
   test('WhatsApp without opt-in or on provider failure returns a wa.me fallback', async () => {
     const { t, courseId } = await setup();
     const d = await demoRequest(courseId, t.user.user_id);
-    await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z' });
+    await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z', meetLink: 'https://meet.google.com/abc-defg-hij' });
     const noOptIn = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/send-whatsapp`);
     expect(noOptIn.status).toBe(409);
     expect(noOptIn.body.error).toBe("This student hasn't agreed to WhatsApp messages");

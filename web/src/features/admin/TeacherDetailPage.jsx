@@ -83,6 +83,18 @@ export default function TeacherDetailPage() {
           {d.photoUrl && (<><dt>{t('teacherRequests.photo')}</dt><dd><a href={fileUrl(d.photoUrl)} target="_blank" rel="noreferrer">{t('common.view')}</a></dd></>)}
         </dl>
       </Card>
+      <Card title={t('nav.courses')}>
+        <Table
+          columns={[
+            { key: 'title', header: t('teachers.course') },
+            { key: 'status', header: t('common.status'), render: (r) => <StatusBadge status={r.status} /> },
+            { key: 'studentCount', header: t('teachers.students'), align: 'right' },
+          ]}
+          rows={d.courses || []}
+          empty={t('teachers.noCourses')}
+        />
+        <p className="muted">{t('teachers.courseNote')}</p>
+      </Card>
       <Card title={t('nav.subscriptions')} actions={<Button variant="compact" size="sm" onClick={() => setAdding(true)}>{t('subscriptions.add')}</Button>}>
         <Table
           columns={[

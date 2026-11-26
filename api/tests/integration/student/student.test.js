@@ -8,13 +8,14 @@ afterAll(closeAll);
 describe('registration and enrollment', () => {
   test('student registers with OTP and is logged in; a teacher number is refused', async () => {
     const otp = await sendOtp('+919833300001', 'student_register');
-    const body = { name: 'Asha', mobile: '9833300001', otp, education: '12th Science', city: 'Pune', acceptTerms: true, whatsappOptIn: true };
+    const body = { name: 'Asha', mobile: '9833300001', otp, education: '12th Science', city: 'Pune', email: 'Asha@Gmail.com', acceptTerms: true, whatsappOptIn: true };
     const res = await request(app).post('/api/v1/auth/register-student').send(body);
     expect(res.status).toBe(201);
     expect(res.body.data.accessToken).toBeTruthy();
     expect(res.body.data.user).toMatchObject({ role: 'student', status: 'approved', name: 'Asha' });
     const u = await one("SELECT user_id, whatsapp_opt_in FROM dbo.users WHERE mobile = '+919833300001'");
     expect(u.whatsapp_opt_in).toBe(true);
+    expect((await one("SELECT email FROM dbo.users WHERE mobile = '+919833300001'")).email).toBe('asha@gmail.com');
     expect((await one('SELECT education FROM dbo.student_profiles WHERE user_id = @u', { u: T.int(u.user_id) })).education).toBe('12th Science');
     await createUser({ role: 'teacher', mobile: '+919833300002' });
     const otp2 = await sendOtp('+919833300002', 'student_register');
@@ -24,19 +25,37 @@ describe('registration and enrollment', () => {
     expect((await request(app).post('/api/v1/auth/register-student').send({ ...body, acceptTerms: false })).status).toBe(400);
   });
 
+  test('the email is required to register, and must be valid', async () => {
+    const otp = await sendOtp('+919833300003', 'student_register');
+    const body = { name: 'Asha', mobile: '9833300003', otp, education: '12th Science', acceptTerms: true };
+    expect((await request(app).post('/api/v1/auth/register-student').send(body)).status).toBe(400);
+    expect((await request(app).post('/api/v1/auth/register-student').send({ ...body, email: '' })).status).toBe(400);
+    expect((await request(app).post('/api/v1/auth/register-student').send({ ...body, email: 'not-an-email' })).status).toBe(400);
+    expect((await one("SELECT COUNT(*) n FROM dbo.users WHERE mobile = '+919833300003'")).n).toBe(0);
+    expect((await request(app).post('/api/v1/auth/register-student').send({ ...body, email: 'asha@gmail.com' })).status).toBe(201);
+  });
+
   test('enroll request goes to the teacher; duplicates refused; can re-request after rejection', async () => {
     const t = await teacher({ name: 'Suresh' });
     const c = await readyCourse(t);
     await t.post(`/api/v1/teacher/courses/${c.courseId}/status`, { status: 'published' });
     const { slug } = (await t.get(`/api/v1/teacher/courses/${c.courseId}`)).body.data;
     const s = await asStudent(await createUser({ role: 'student', name: 'Ravi' }));
-    const r = await s.post('/api/v1/student/enrollments', { courseSlug: slug, message: 'Morning batch please' });
+    // Enroll now always needs an email, and keeps it on the account.
+    const noEmail = await s.post('/api/v1/student/enrollments', { courseSlug: slug, message: 'Morning batch please' });
+    expect(noEmail.status).toBe(400);
+    expect(noEmail.body).toMatchObject({ code: 'VALIDATION_ERROR', error: expect.stringContaining('email') });
+    expect((await s.post('/api/v1/student/enrollments', { courseSlug: slug, email: 'not-an-email' })).status).toBe(400);
+    expect((await s.get('/api/v1/student/enrollments')).body.data).toHaveLength(0);
+    const r = await s.post('/api/v1/student/enrollments', { courseSlug: slug, message: 'Morning batch please', email: 'Ravi@Gmail.com' });
     expect(r.status).toBe(201);
+    expect((await one('SELECT email FROM dbo.users WHERE user_id = @s', { s: T.int(s.user.user_id) })).email).toBe('ravi@gmail.com');
     expect(r.body.data).toMatchObject({ status: 'pending', course: { title: 'Class 10 Maths' } });
     expect((await one('SELECT message FROM dbo.notifications WHERE user_id = @t', { t: T.int(t.user.user_id) })).message).toBe('Ravi wants to enroll in Class 10 Maths.');
-    expect((await s.post('/api/v1/student/enrollments', { courseSlug: slug })).status).toBe(409);
+    expect((await s.post('/api/v1/student/enrollments', { courseSlug: slug })).status).toBe(400); // even with an email on the account
+    expect((await s.post('/api/v1/student/enrollments', { courseSlug: slug, email: 'ravi@gmail.com' })).status).toBe(409);
     await query("UPDATE dbo.enrollments SET status = 'rejected' WHERE student_id = @s", { s: T.int(s.user.user_id) });
-    expect((await s.post('/api/v1/student/enrollments', { courseSlug: slug })).status).toBe(201);
+    expect((await s.post('/api/v1/student/enrollments', { courseSlug: slug, email: 'ravi@gmail.com' })).status).toBe(201);
     expect((await s.get('/api/v1/student/enrollments')).body.data[0].status).toBe('pending');
   });
 });

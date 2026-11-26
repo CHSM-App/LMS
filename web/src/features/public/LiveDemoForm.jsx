@@ -7,7 +7,7 @@ import { isValidMobile } from '../../utils/format';
 import { useOtp } from '../auth/useOtp';
 import { ConsentFields } from '../auth/ConsentFields';
 
-const EMPTY = { name: '', mobile: '', education: '', classStandard: '', preferredTime: '', message: '' };
+const EMPTY = { name: '', mobile: '', email: '', education: '', classStandard: '', preferredTime: '', message: '' };
 
 // Live demo request (spec §3.3 / §4): name*, mobile*, OTP*, education*, class, preferred time, message.
 export function LiveDemoForm({ courseSlug, courseTitle, onSent }) {
@@ -15,7 +15,6 @@ export function LiveDemoForm({ courseSlug, courseTitle, onSent }) {
   const otp = useOtp('demo_request');
   const [f, setF] = useState(EMPTY);
   const [accept, setAccept] = useState(false);
-  const [whatsapp, setWhatsapp] = useState(true);
   const [errors, setErrors] = useState({});
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -30,6 +29,8 @@ export function LiveDemoForm({ courseSlug, courseTitle, onSent }) {
     if (!f.name.trim()) errs.name = t('validation.required');
     if (!f.mobile.trim()) errs.mobile = t('validation.required');
     else if (!isValidMobile(f.mobile)) errs.mobile = t('auth.invalidMobile');
+    if (!f.email.trim()) errs.email = t('validation.required');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) errs.email = t('validation.email');
     if (!f.education.trim()) errs.education = t('validation.required');
     if (!accept) errs.accept = t('consent.required');
     setErrors(errs);
@@ -42,7 +43,7 @@ export function LiveDemoForm({ courseSlug, courseTitle, onSent }) {
     setServerError('');
     try {
       const r = await api.post('/public/demo-requests', {
-        courseSlug, ...f, otp: code, acceptTerms: accept, whatsappOptIn: whatsapp,
+        courseSlug, ...f, otp: code, acceptTerms: accept, whatsappOptIn: true,
         classStandard: f.classStandard || null, preferredTime: f.preferredTime || null, message: f.message || null,
       });
       setDone(r.data);
@@ -93,12 +94,13 @@ export function LiveDemoForm({ courseSlug, courseTitle, onSent }) {
       <div className="grid grid--2 demo__grid">
         <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
         <Input label={t('common.mobile')} type="tel" inputMode="numeric" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
+        <Input label={t('common.email')} type="email" value={f.email} onChange={set('email')} error={errors.email} required autoComplete="email" />
         <Input label={t('requests.education')} value={f.education} onChange={set('education')} error={errors.education} placeholder={t('demoForm.educationPlaceholder')} required />
         <Input label={t('demoForm.classStandard')} placeholder={t('common.optional')} value={f.classStandard} onChange={set('classStandard')} />
         <Input label={t('demoForm.preferredTime')} placeholder={t('common.optional')} value={f.preferredTime} onChange={set('preferredTime')} />
         <Textarea label={optional(t('requests.message'))} value={f.message} onChange={set('message')} rows={2} maxLength={1000} />
       </div>
-      <ConsentFields accept={accept} onAccept={setAccept} whatsapp={whatsapp} onWhatsapp={setWhatsapp} error={errors.accept} />
+      <ConsentFields accept={accept} onAccept={setAccept} error={errors.accept} />
       {otp.error && <Banner kind="error" message={otp.error} />}
       <Button type="submit" size="lg" block loading={otp.sending}>{t('teacherReg.continue')}</Button>
     </form>

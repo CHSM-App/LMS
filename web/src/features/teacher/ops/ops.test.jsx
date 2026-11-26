@@ -110,3 +110,43 @@ test('live classes: Join when there is a link; Add Meet link when there is none'
   await userEvent.click(within(dialog).getByRole('button', { name: 'Save link' }));
   await waitFor(() => expect(put).toHaveBeenCalledWith('/teacher/live-classes/2/meet-link', { meetLink: 'https://meet.google.com/xyz-abcd-efg' }));
 });
+
+test('live classes: Generate link on a class without a link asks the API and refreshes', async () => {
+  const get = vi.spyOn(client.api, 'get').mockImplementation(async (path) => (path === '/teacher/live-classes' ? { data: [liveRow({ id: 2, topic: 'No link' })] } : { data: [] }));
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: {} });
+  wrap(<LiveClassesPage />);
+  const row = (await screen.findByText('No link')).closest('tr');
+  const calls = get.mock.calls.length;
+  await userEvent.click(within(row).getByRole('button', { name: 'Generate link' }));
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/teacher/live-classes/2/meet-link/generate'));
+  await waitFor(() => expect(get.mock.calls.length).toBeGreaterThan(calls));
+});
+
+test('Schedule a class: Generate link fills the optional Meet link field once topic and date are set', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: [] });
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { meetLink: 'https://meet.google.com/xyz-abcd-efg' } });
+  wrap(<LiveClassesPage />);
+  await userEvent.click(await screen.findByRole('button', { name: 'Schedule a class' }));
+  const dialog = await screen.findByRole('dialog');
+  expect(within(dialog).getByRole('button', { name: 'Generate link' })).toBeDisabled();
+  await userEvent.type(within(dialog).getByLabelText(/Topic/), 'Algebra');
+  const when = within(dialog).getByLabelText(/Date and time/);
+  await userEvent.type(when, '2099-06-15T18:00');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Generate link' }));
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/teacher/live-classes/meet-link/generate', expect.objectContaining({ topic: 'Algebra', durationMin: 60 })));
+  await waitFor(() => expect(within(dialog).getByLabelText(/Meet link/)).toHaveValue('https://meet.google.com/xyz-abcd-efg'));
+});
+
+test('live demo schedule: Generate link fills the Meet link field once the date is set', async () => {
+  mockGets();
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { meetLink: 'https://meet.google.com/xyz-abcd-efg' } });
+  wrap(<RequestsPage />);
+  const row = (await screen.findByText('Ravi')).closest('tr');
+  await userEvent.click(within(row).getByRole('button', { name: 'Schedule' }));
+  const dialog = screen.getByRole('dialog');
+  expect(within(dialog).getByRole('button', { name: 'Generate link' })).toBeDisabled();
+  await userEvent.type(within(dialog).getByLabelText(/Date and time/), '2099-06-15T18:00');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Generate link' }));
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/teacher/live-classes/meet-link/generate', expect.objectContaining({ topic: expect.stringContaining('Demo'), durationMin: 30 })));
+  await waitFor(() => expect(within(dialog).getByLabelText(/Meet link/)).toHaveValue('https://meet.google.com/xyz-abcd-efg'));
+});

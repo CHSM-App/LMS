@@ -17,11 +17,14 @@ abstract class AuthRepository {
 }
 
 class ApiAuthRepository implements AuthRepository {
-  ApiAuthRepository(this.api, this.session, this.store);
+  ApiAuthRepository(this.api, this.session, this.store, {this.beforeLogout});
 
   final ApiClient api;
   final SessionController session;
   final TokenStore store;
+
+  /// Runs while the access token is still valid (e.g. stop push notifications for this phone).
+  final Future<void> Function()? beforeLogout;
 
   @override
   Future<int> sendOtp(String mobile, String purpose) async {
@@ -62,6 +65,9 @@ class ApiAuthRepository implements AuthRepository {
 
   @override
   Future<void> logout({String? deviceId}) async {
+    try {
+      await beforeLogout?.call();
+    } catch (_) {}
     final rt = await store.readRefresh();
     try {
       await api.post('/auth/logout', {'refreshToken': rt, 'deviceId': ?deviceId});

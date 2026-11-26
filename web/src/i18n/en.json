@@ -177,7 +177,7 @@
     "terms": "Terms of Use",
     "and": "and",
     "privacy": "Privacy Policy",
-    "whatsapp": "Send me class updates and Meet links on WhatsApp",
+    "whatsappNotice": "By continuing, you agree to receive class updates and Meet links on WhatsApp.",
     "required": "Accept the Terms and Privacy Policy to continue"
   },
   "teacherReg": {
@@ -197,7 +197,9 @@
     "sentBody": "Your teacher account is ready. Log in with your mobile number to open your dashboard.",
     "groupAbout": "About you",
     "groupTeaching": "Your teaching",
-    "groupMore": "More details (optional)"
+    "groupMore": "More details (optional)",
+    "googleEmail": "Google email",
+    "googleEmailHint": "Use your Google (Gmail) email. You join your Meet classes directly with it and admit students."
   },
   "teacherRequests": {
     "title": "Teacher requests",
@@ -246,6 +248,9 @@
     "searchHint": "Name, mobile or subject",
     "joined": "Joined",
     "students": "Students",
+    "course": "Course",
+    "noCourses": "This teacher has no courses yet",
+    "courseNote": "A student in more than one course is counted in each.",
     "block": "Block",
     "activate": "Activate",
     "empty": "No teachers match",
@@ -605,7 +610,7 @@
     "saveSchedule": "Save schedule",
     "needWhen": "Choose the date and time",
     "meetLink": "Google Meet link",
-    "meetHint": "Leave empty to create a Meet link automatically (when Google is connected), or paste your own.",
+    "meetHint": "Optional. Paste a link, or press Generate link. A link is needed before you save.",
     "sendWhatsApp": "Send on WhatsApp",
     "sent": "Sent ✓",
     "notSent": "Not sent",
@@ -660,7 +665,9 @@
     "addLinkHint": "Open meet.google.com, create a meeting and paste its link here.",
     "saveLink": "Save link",
     "waitingForLink": "The teacher will share the link soon",
-    "noLink": "No link yet"
+    "noLink": "No link yet",
+    "generateLink": "Generate link",
+    "meetHint": "Optional. Paste a link, or press Generate link. You can also generate it later from this list."
   },
   "attendance": {
     "title": "Attendance: {{topic}}",
@@ -836,7 +843,11 @@
     "confirmTitle": "Submit the exam?",
     "confirmBody": "You answered {{n}} of {{total}} questions. You can't change answers after submitting.",
     "keepGoing": "Keep answering",
-    "submitNow": "Submit now"
+    "submitNow": "Submit now",
+    "leaveTitle": "Leave the exam?",
+    "leaveBody": "The timer keeps running even if you leave. Submit now to finish, or stay and keep answering.",
+    "stay": "Stay in the exam",
+    "submitAndLeave": "Submit and leave"
   },
   "player": {
     "progress": "Course progress",
@@ -964,7 +975,8 @@
     "perk2": "Tests, results and progress in one place",
     "perk3": "Fees are arranged with the teacher",
     "trust": "No payment happens on this site.",
-    "sendTitle": "Send your enrollment request"
+    "sendTitle": "Send your enrollment request",
+    "emailHint": "We use it to contact you about this course."
   },
   "register": {
     "create": "Create account"
@@ -992,7 +1004,7 @@
       "startsAt": "Date and time",
       "duration": "Duration (minutes)",
       "meetLink": "Meet link",
-      "meetLinkHint": "Leave empty to create one automatically",
+      "meetLinkHint": "Optional. Paste a link, or press Generate link. You can also generate it later from Live classes.",
       "batch": "Batch",
       "allBatches": "All batches",
       "addRecording": "Add recording",
@@ -1018,7 +1030,9 @@
       "addBatch": "Add batch",
       "addBatchTitle": "Schedule {{title}} for a batch",
       "deleteTitle": "Delete {{title}}?",
-      "deleteBody": "This removes the lesson for every batch: {{batches}}."
+      "deleteBody": "This removes the lesson for every batch: {{batches}}.",
+      "generateLink": "Generate link",
+      "generateNeedsDate": "(fill the date first)"
     }
   },
   "roles": {

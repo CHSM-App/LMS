@@ -55,6 +55,11 @@ async function findTeacher(publicId, tx) {
 async function detail(publicId) {
   const t = await findTeacher(publicId);
   const counts = await studentCount.countActiveByTeacher([t.user_id]);
+  const perCourse = await studentCount.countActiveByCourse(t.user_id);
+  const courseRows = await query(
+    'SELECT course_id, title, status FROM dbo.courses WHERE teacher_id = @t ORDER BY created_at, course_id',
+    { t: T.int(t.user_id) },
+  );
   return {
     ...serialize(t, counts.get(t.user_id)),
     email: t.email,
@@ -64,6 +69,7 @@ async function detail(publicId) {
     qualification: t.qualification,
     bio: t.bio,
     publicSlug: t.public_slug,
+    courses: courseRows.map((c) => ({ courseId: c.course_id, title: c.title, status: c.status, studentCount: perCourse.get(c.course_id) ?? 0 })),
     subscriptions: await subscriptions.forTeacher(t.user_id),
   };
 }

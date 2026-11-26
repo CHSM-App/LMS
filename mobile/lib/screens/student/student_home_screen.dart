@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../l10n/gen/app_localizations.dart';
+import '../../core/theme/app_tokens.g.dart';
+import '../../presentation/providers/core_providers.dart';
 import '../../presentation/providers/student_providers.dart';
+import '../../widgets/app_chrome.dart';
 import 'student_dashboard_screen.dart';
 import 'student_exams_screen.dart';
 import 'student_more_screens.dart';
@@ -32,27 +35,35 @@ class _StudentHomeScreenState extends ConsumerState<StudentHomeScreen> {
     final titles = [l.dashboard, l.sExams, l.sLiveClasses, l.sDoubts, l.sMore];
     return Scaffold(
       appBar: AppBar(
-        title: Text(titles[_tab]),
+        // Home shows the student's avatar and name; the other tabs name themselves.
+        title: _tab == 0 ? AvatarTitle(name: ref.watch(sessionProvider).user?.name ?? l.appName) : Text(titles[_tab]),
         actions: [
-          IconButton(tooltip: l.sNotifications, icon: const Icon(Icons.notifications_none), onPressed: () => context.push('/student/notifications')),
+          NotificationBell(tooltip: l.sNotifications, onPressed: () => context.push('/student/notifications')),
           IconButton(tooltip: l.sDownloads, icon: const Icon(Icons.download_for_offline_outlined), onPressed: () => context.push('/student/downloads')),
+          const SizedBox(width: AppTokens.spaceS1),
         ],
       ),
       body: IndexedStack(
         index: _tab,
-        children: const [StudentDashboardScreen(), StudentExamsScreen(), StudentLiveClassesScreen(), StudentDoubtsScreen(), StudentMoreScreen()],
+        children: [
+          StudentDashboardScreen(onOpenClasses: () => setState(() => _tab = 2), onOpenExams: () => setState(() => _tab = 1)),
+          const StudentExamsScreen(),
+          const StudentLiveClassesScreen(),
+          const StudentDoubtsScreen(),
+          const StudentMoreScreen(),
+        ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: RoundedNavBar(child: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
         destinations: [
-          NavigationDestination(icon: const Icon(Icons.home_outlined), label: l.sHome),
-          NavigationDestination(icon: const Icon(Icons.quiz_outlined), label: l.sExams),
-          NavigationDestination(icon: const Icon(Icons.videocam_outlined), label: l.sClasses),
-          NavigationDestination(icon: const Icon(Icons.help_outline), label: l.sDoubts),
-          NavigationDestination(icon: const Icon(Icons.menu), label: l.sMore),
+          NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home_rounded), label: l.sHome),
+          NavigationDestination(icon: const Icon(Icons.quiz_outlined), selectedIcon: const Icon(Icons.quiz_rounded), label: l.sExams),
+          NavigationDestination(icon: const Icon(Icons.videocam_outlined), selectedIcon: const Icon(Icons.videocam_rounded), label: l.sClasses),
+          NavigationDestination(icon: const Icon(Icons.help_outline), selectedIcon: const Icon(Icons.help_rounded), label: l.sDoubts),
+          NavigationDestination(icon: const Icon(Icons.menu), selectedIcon: const Icon(Icons.menu_open_rounded), label: l.sMore),
         ],
-      ),
+      )),
     );
   }
 }

@@ -20,7 +20,31 @@ final catalogProvider = FutureProvider.autoDispose.family<List<CourseCard>, Stri
 final courseDetailProvider = FutureProvider.autoDispose.family<CourseDetail, String>((ref, slug) => ref.read(publicRepositoryProvider).course(slug));
 
 final studentDashboardProvider = FutureProvider.autoDispose<StudentDashboard>((ref) => ref.read(studentRepositoryProvider).dashboard());
-final courseViewProvider = FutureProvider.autoDispose.family<CourseView, int>((ref, id) => ref.read(studentRepositoryProvider).course(id));
+/// Where I stand with one catalogue course: [status] is enrolled | pending | rejected | blocked.
+/// Courses that are not in the map are open to enroll.
+class MyEnrollment {
+  const MyEnrollment({required this.status, this.courseId, this.rejectReason, this.teacher});
+  final String status;
+  final int? courseId;
+  final String? rejectReason;
+  final String? teacher;
+}
+
+/// Same idea as the website's useMyEnrollments: built from the dashboard (approved courses, then every other
+/// request), so no extra endpoint. Empty for visitors and for non-students, and while the dashboard loads.
+final myEnrollmentsProvider = Provider.autoDispose<Map<String, MyEnrollment>>((ref) {
+  if (ref.watch(sessionProvider).user?.role != 'student') return const {};
+  final d = ref.watch(studentDashboardProvider).valueOrNull;
+  if (d == null) return const {};
+  return {
+    for (final r in d.requests)
+      if (r.courseSlug != null) r.courseSlug!: MyEnrollment(status: r.status, rejectReason: r.rejectReason, teacher: r.teacher),
+    for (final c in d.myCourses)
+      if (c.slug != null) c.slug!: MyEnrollment(status: 'enrolled', courseId: c.courseId),
+  };
+});
+
+final courseViewProvider =FutureProvider.autoDispose.family<CourseView, int>((ref, id) => ref.read(studentRepositoryProvider).course(id));
 final lessonProvider = FutureProvider.autoDispose.family<LessonDetail, int>((ref, id) => ref.read(studentRepositoryProvider).lesson(id));
 final studentExamsProvider = FutureProvider.autoDispose.family<List<ExamCard>, int>((ref, courseId) => ref.read(studentRepositoryProvider).exams(courseId));
 final attemptResultProvider = FutureProvider.autoDispose.family<AttemptResult, String>((ref, id) => ref.read(studentRepositoryProvider).result(id));

@@ -17,13 +17,14 @@ async function create(fields, ip) {
   await otpService.verify(fields.mobile, 'demo_request', fields.otp);
   await withTransaction(async (tx) => {
     await one(
-      `INSERT INTO dbo.demo_requests (course_id, teacher_id, name, mobile, education, class_standard, preferred_time, message, whatsapp_opt_in)
-       OUTPUT INSERTED.demo_request_id VALUES (@c, @t, @n, @m, @e, @cls, @pt, @msg, @wa)`,
+      `INSERT INTO dbo.demo_requests (course_id, teacher_id, name, mobile, email, education, class_standard, preferred_time, message, whatsapp_opt_in)
+       OUTPUT INSERTED.demo_request_id VALUES (@c, @t, @n, @m, @em, @e, @cls, @pt, @msg, @wa)`,
       {
         c: T.int(course.course_id),
         t: T.int(course.teacher_id),
         n: T.nvarchar(fields.name, 120),
         m: T.varchar(fields.mobile, 20),
+        em: T.varchar(fields.email, 160),
         e: T.nvarchar(fields.education, 120),
         cls: T.nvarchar(fields.classStandard, 40),
         pt: T.nvarchar(fields.preferredTime, 80),

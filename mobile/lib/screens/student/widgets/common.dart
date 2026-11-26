@@ -7,6 +7,7 @@ import '../../../core/theme/app_tokens.g.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../../presentation/providers/student_providers.dart';
 import '../../../widgets/app_widgets.dart';
+import '../../../widgets/skeleton.dart';
 
 /// Spinner / error-with-retry / data for a FutureProvider value.
 class AsyncView<T> extends StatelessWidget {
@@ -20,7 +21,7 @@ class AsyncView<T> extends StatelessWidget {
     final l = AppLocalizations.of(context);
     return value.when(
       data: builder,
-      loading: () => const Center(child: Padding(padding: EdgeInsets.all(AppTokens.spaceS6), child: CircularProgressIndicator())),
+      loading: () => const ListSkeleton(),
       error: (e, _) => EmptyState(title: e.toString(), actionLabel: onRetry == null ? null : l.tryAgain, onAction: onRetry),
     );
   }
@@ -60,10 +61,10 @@ class SectionTitle extends StatelessWidget {
   final String text;
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: AppTokens.spaceS5, bottom: AppTokens.spaceS3),
+        padding: const EdgeInsets.only(top: AppTokens.spaceS6, bottom: AppTokens.spaceS3),
         child: Semantics(
           header: true,
-          child: Text(text, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppTokens.heading, fontWeight: FontWeight.w800)),
+          child: Text(text, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppTokens.heading, fontWeight: FontWeight.w800, fontSize: 17)),
         ),
       );
 }

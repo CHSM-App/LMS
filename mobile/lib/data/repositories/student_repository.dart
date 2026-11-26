@@ -33,7 +33,8 @@ class ApiPublicRepository implements PublicRepository {
 /// Everything a logged-in student does.
 abstract class StudentRepository {
   Future<StudentDashboard> dashboard();
-  Future<void> requestEnrollment(String courseSlug, {String? message});
+  /// Enroll now: the email is compulsory (kept on the account).
+  Future<void> requestEnrollment(String courseSlug, {String? message, String? email});
   Future<CourseView> course(int courseId);
   Future<LessonDetail> lesson(int contentId);
   Future<void> saveProgress(int contentId, {int? positionSec, bool? completed});
@@ -72,8 +73,11 @@ class ApiStudentRepository implements StudentRepository {
   Future<StudentDashboard> dashboard() async => StudentDashboard.fromJson(await api.get('/student/dashboard') as Json);
 
   @override
-  Future<void> requestEnrollment(String courseSlug, {String? message}) =>
-      api.post('/student/enrollments', {'courseSlug': courseSlug, 'message': (message == null || message.trim().isEmpty) ? null : message.trim()});
+  Future<void> requestEnrollment(String courseSlug, {String? message, String? email}) => api.post('/student/enrollments', {
+        'courseSlug': courseSlug,
+        'message': (message == null || message.trim().isEmpty) ? null : message.trim(),
+        if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+      });
 
   @override
   Future<CourseView> course(int courseId) async => CourseView.fromJson(await api.get('/student/courses/$courseId') as Json);

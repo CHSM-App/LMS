@@ -275,7 +275,7 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [name, mobile, otp, courseName, subject, experienceYears, acceptTerms]
+              required: [name, mobile, otp, courseName, subject, experienceYears, email, acceptTerms]
               properties:
                 name: { type: string, maxLength: 120 }
                 mobile: { type: string }
@@ -283,7 +283,7 @@ paths:
                 courseName: { type: string, maxLength: 200 }
                 subject: { type: string, maxLength: 120 }
                 experienceYears: { type: integer, minimum: 0, maximum: 60 }
-                email: { type: string }
+                email: { type: string, description: "The teacher's Google email. Required: it makes the teacher co-host of their Meet classes." }
                 city: { type: string }
                 qualification: { type: string }
                 acceptTerms: { type: boolean }
@@ -430,7 +430,7 @@ paths:
       security: [{ bearerAuth: [] }]
       parameters: [{ name: publicId, in: path, required: true, schema: { type: string, format: uuid } }]
       responses:
-        '200': { description: Teacher detail with subscriptions }
+        '200': { description: 'Teacher detail with subscriptions and courses: [{ courseId, title, status, studentCount }]. A course studentCount is its active students, by the same rule as the teacher total.' }
         '404': { description: Not found }
   /admin/teachers/{publicId}/block:
     post:
@@ -521,6 +521,39 @@ paths:
         - $ref: '#/components/parameters/Limit'
       responses:
         '200': { description: The caller's notifications }
+  /push-tokens:
+    post:
+      tags: [notifications]
+      summary: Register this device for push notifications (Firebase token). Same token again just refreshes it.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, platform]
+              properties:
+                token: { type: string, minLength: 20, maxLength: 512 }
+                platform: { type: string, enum: [android, ios, web] }
+      responses:
+        '200': { description: Registered }
+        '400': { description: Invalid token or platform }
+    delete:
+      tags: [notifications]
+      summary: Stop push notifications on this device (call on logout).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string, minLength: 20, maxLength: 512 }
+      responses:
+        '200': { description: Removed }
   /notifications/read-all:
     post:
       tags: [notifications]
@@ -989,7 +1022,7 @@ paths:
     post:
       tags: [teacher-ops]
       security: [{ bearerAuth: [] }]
-      summary: Set date and time; a Meet link is generated unless one is pasted.
+      summary: Set date and time with a Meet link (generated with the Generate link button or pasted). Saving never creates one.
       requestBody:
         required: true
         content:
@@ -1175,6 +1208,38 @@ paths:
         '200': { description: 'The class, with meetLink and needsMeetLink: false' }
         '400': { description: 'INVALID_MEET_LINK: not a Google Meet link' }
         '404': { description: Not your class }
+  /teacher/live-classes/meet-link/generate:
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Generate a Google Meet link before the class is saved (the "Generate link" button in the schedule form)
+      description: Nothing is saved. The link is returned so the form can fill its Meet link field. Saving a class never creates a link by itself.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [topic, startsAt]
+              properties:
+                topic: { type: string }
+                startsAt: { type: string, format: date-time }
+                durationMin: { type: integer, minimum: 5, maximum: 600, default: 60 }
+      responses:
+        '200': { description: 'data: { meetLink }' }
+        '400': { description: Topic or start time missing or invalid }
+        '409': { description: 'MEET_TEACHER_EMAIL_MISSING (add your Google email in your profile), MEET_GENERATE_UNAVAILABLE (automatic links are not set up) or MEET_GENERATE_FAILED (Google gave no link)' }
+  /teacher/live-classes/{id}/meet-link/generate:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Generate a Google Meet link for a class that has none (the "Generate link" button)
+      description: Works only when MEET_PROVIDER=google. The link is a Meet space where the teacher (their profile email) is co-host and only invited people join without asking, so the teacher joins directly and admits students. Needs the teacher's email.
+      responses:
+        '200': { description: 'The class, with meetLink and needsMeetLink: false' }
+        '404': { description: Not your class }
+        '409': { description: 'MEET_TEACHER_EMAIL_MISSING (add your Google email in your profile), MEET_LINK_EXISTS (the class already has a link), MEET_GENERATE_UNAVAILABLE (automatic links are not set up, paste a link instead) or MEET_GENERATE_FAILED (Google gave no link, try again or paste one)' }
   /teacher/live-classes/{id}/attendance:
     parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
     get:
@@ -1320,12 +1385,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [courseSlug, name, mobile, otp, education, acceptTerms]
+              required: [courseSlug, name, mobile, otp, email, education, acceptTerms]
               properties:
                 courseSlug: { type: string }
                 name: { type: string }
                 mobile: { type: string }
                 otp: { type: string }
+                email: { type: string, description: Required }
                 education: { type: string }
                 classStandard: { type: string, nullable: true }
                 preferredTime: { type: string, nullable: true }
@@ -1345,7 +1411,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name, mobile, otp, education, acceptTerms]
+              required: [name, mobile, otp, education, email, acceptTerms]
               properties:
                 name: { type: string }
                 mobile: { type: string }
@@ -1353,7 +1419,7 @@ paths:
                 education: { type: string }
                 classStandard: { type: string, nullable: true }
                 city: { type: string, nullable: true }
-                email: { type: string, nullable: true }
+                email: { type: string, description: Required }
                 preferredLang: { type: string, nullable: true }
                 acceptTerms: { type: boolean }
                 whatsappOptIn: { type: boolean }
@@ -1387,9 +1453,10 @@ paths:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [courseSlug], properties: { courseSlug: { type: string }, message: { type: string, nullable: true } } }
+            schema: { type: object, required: [courseSlug, email], properties: { courseSlug: { type: string }, email: { type: string, description: 'Required. Kept on the account.' }, message: { type: string, nullable: true } } }
       responses:
         '201': { description: Request sent to the teacher }
+        '400': { description: 'VALIDATION_ERROR with details.field = email when the email is missing or invalid' }
         '409': { description: Already pending or enrolled }
   /student/courses/{courseId}:
     parameters: [{ $ref: '#/components/parameters/CourseId' }]

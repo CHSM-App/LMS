@@ -109,7 +109,7 @@ export const api = {
   post: (path, body) => request('POST', path, { body: body ?? {} }),
   put: (path, body) => request('PUT', path, { body: body ?? {} }),
   patch: (path, body) => request('PATCH', path, { body: body ?? {} }),
-  del: (path) => request('DELETE', path),
+  del: (path, body) => request('DELETE', path, { body }),
   form: (path, formData, method = 'POST') => request(method, path, { form: formData }),
   putChunk: (path, blob, contentRange) => request('PUT', path, { binary: blob, contentRange }),
 };

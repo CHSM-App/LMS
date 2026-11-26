@@ -10,7 +10,7 @@ const PNG = Buffer.from('89504E470D0A1A0A0000000D4948445200000001000000010806000
 async function submit(fields = {}, opts = {}) {
   const mobile = fields.mobile || '+919822222221';
   const otp = opts.otp || (await sendOtp(mobile, 'teacher_register'));
-  const body = { name: 'Suresh Patil', mobile, otp, courseName: 'Class 10 Maths', subject: 'Maths', experienceYears: '5', acceptTerms: 'true', whatsappOptIn: 'true', ...fields };
+  const body = { name: 'Suresh Patil', mobile, otp, courseName: 'Class 10 Maths', subject: 'Maths', experienceYears: '5', email: 'Suresh@Gmail.com', acceptTerms: 'true', whatsappOptIn: 'true', ...fields };
   let r = request(app).post('/api/v1/teacher-requests');
   for (const [k, v] of Object.entries(body)) if (v !== undefined) r = r.field(k, v);
   if (opts.photo) r = r.attach('photo', opts.photo.buffer, opts.photo.name);
@@ -45,6 +45,15 @@ test('valid registration is auto-approved: teacher account created, admins notif
   const otp = await sendOtp('+919822222221', 'login');
   const login = await request(app).post('/api/v1/auth/login').send({ mobile: '+919822222221', otp });
   expect(login.status).toBe(200);
+});
+
+test('the Google email is required (it makes the teacher co-host of their Meet classes) and is saved on the account', async () => {
+  const missing = await submit({ email: undefined });
+  expect(missing.status).toBe(400);
+  expect(missing.body.details).toMatchObject({ field: 'email' });
+  expect((await submit({ email: 'not-an-email' })).status).toBe(400);
+  expect((await submit()).status).toBe(201);
+  expect((await one("SELECT email FROM dbo.users WHERE mobile = '+919822222221'")).email).toBe('suresh@gmail.com');
 });
 
 test('missing subject -> 400', async () => {

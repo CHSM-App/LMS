@@ -38,6 +38,8 @@ class _LiveScheduleScreenState extends ConsumerState<LiveScheduleScreen> {
   String? _error;
   bool _saving = false;
   final _dates = <String, DateTime>{};
+  final _links = <String, String>{}; // slotId -> generated Meet link
+  String? _generating; // slotId being generated
 
   @override
   void initState() {
@@ -60,6 +62,22 @@ class _LiveScheduleScreenState extends ConsumerState<LiveScheduleScreen> {
     if (d != null && mounted) setState(() => _dates[r.slotId] = d);
   }
 
+  /// "Generate link" for one lesson: needs its date first. The link is sent with the schedule on save.
+  Future<void> _generate(LiveScheduleRow r) async {
+    setState(() {
+      _generating = r.slotId;
+      _error = null;
+    });
+    try {
+      final link = await ref.read(teacherRepositoryProvider).generateMeetLink(topic: r.title, startsAt: _dates[r.slotId]!, durationMin: 60);
+      if (mounted) setState(() => _links[r.slotId] = link);
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _generating = null);
+    }
+  }
+
   Future<void> _save() async {
     final l = AppLocalizations.of(context);
     if (_dates.isEmpty) return setState(() => _error = l.tLiveScheduleNothing);
@@ -68,8 +86,9 @@ class _LiveScheduleScreenState extends ConsumerState<LiveScheduleScreen> {
       _error = null;
     });
     try {
-      await ref.read(teacherRepositoryProvider).saveLiveSchedule(widget.courseId, widget.batchId, Map.of(_dates));
+      await ref.read(teacherRepositoryProvider).saveLiveSchedule(widget.courseId, widget.batchId, Map.of(_dates), links: Map.of(_links));
       _dates.clear();
+      _links.clear();
       await _load();
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -94,7 +113,8 @@ class _LiveScheduleScreenState extends ConsumerState<LiveScheduleScreen> {
                 if (rows != null && rows.isEmpty) EmptyState(title: l.tLiveScheduleEmpty),
                 for (final r in rows ?? const <LiveScheduleRow>[])
                   Card(
-                    child: ListTile(
+                    child: Column(children: [
+                    ListTile(
                       title: Text(r.title),
                       subtitle: Text(r.scheduled
                           ? '${r.moduleName} · ${formatDateTime(context, r.startsAt!)}'
@@ -103,6 +123,17 @@ class _LiveScheduleScreenState extends ConsumerState<LiveScheduleScreen> {
                           ? LiveStageChip(stage: r.stage ?? 'upcoming')
                           : AppButton(label: l.tSetDate, variant: AppButtonVariant.compact, onPressed: () => _pick(r)),
                     ),
+                    if (!r.scheduled && _dates[r.slotId] != null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(AppTokens.spaceS4, 0, AppTokens.spaceS4, AppTokens.spaceS3),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _links[r.slotId] != null
+                              ? Text(_links[r.slotId]!, style: const TextStyle(color: AppTokens.textSecondary))
+                              : AppButton(label: l.tGenerateLink, variant: AppButtonVariant.compact, loading: _generating == r.slotId, onPressed: () => _generate(r)),
+                        ),
+                      ),
+                    ]),
                   ),
                 if (_error != null) Padding(padding: const EdgeInsets.only(top: AppTokens.spaceS2), child: Text(_error!, style: const TextStyle(color: AppTokens.functionalError))),
                 const SizedBox(height: AppTokens.spaceS3),

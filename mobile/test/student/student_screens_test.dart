@@ -92,6 +92,46 @@ void main() {
     await tester.pump(const Duration(minutes: 1));
   });
 
+  group('leaving an exam with Back', () {
+    Future<FakeStudentRepo> open(WidgetTester tester, {required String mode}) async {
+      final repo = FakeStudentRepo(paper: paperFixture(mode: mode, deadlineAt: mode == 'mock' ? DateTime.now().toUtc().add(const Duration(minutes: 10)) : null));
+      await tester.pumpWidget(app(
+        Builder(builder: (c) => Scaffold(body: TextButton(onPressed: () => Navigator.of(c).push(MaterialPageRoute<void>(builder: (_) => const ExamScreen(examId: 9))), child: const Text('open')))),
+        overrides: [studentRepositoryProvider.overrideWithValue(repo)],
+      ));
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      return repo;
+    }
+
+    testWidgets('mock: Back asks to stay or submit, and staying keeps the exam open', (tester) async {
+      final repo = await open(tester, mode: 'mock');
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Leave the exam?'), findsOneWidget);
+      expect(find.textContaining('timer keeps running'), findsOneWidget);
+      await tester.tap(find.text('Stay in the exam'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Leave the exam?'), findsNothing);
+      expect(find.text('Unit Test 1'), findsOneWidget);
+      expect(repo.submits, 0);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(minutes: 1));
+    });
+
+    testWidgets('practice: Back leaves straight away with no question', (tester) async {
+      await open(tester, mode: 'practice');
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Leave the exam?'), findsNothing);
+      expect(find.text('open'), findsOneWidget);
+    });
+  });
+
   testWidgets('Marathi dashboard with a long teacher name fits a 360 dp phone without overflow', (tester) async {
     tester.view.physicalSize = const Size(360, 720);
     tester.view.devicePixelRatio = 1;

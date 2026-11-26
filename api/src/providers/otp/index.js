@@ -1,4 +1,4 @@
-const providers = { console: require('./console'), msg91: require('./msg91') };
+const providers = { console: require('./console'), msg91: require('./msg91'), smsala: require('./smsala') };
 
 function otpSender() {
   const name = process.env.OTP_PROVIDER || 'console';

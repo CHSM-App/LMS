@@ -75,8 +75,11 @@ class CourseDetail {
 // ---------- Dashboard ----------
 @immutable
 class MyCourse {
-  const MyCourse({required this.courseId, required this.title, required this.teacher, required this.progressPct, required this.accessStatus, this.batch, this.endDate, this.readOnly = false});
+  const MyCourse({required this.courseId, required this.title, required this.teacher, required this.progressPct, required this.accessStatus, this.batch, this.endDate, this.readOnly = false, this.slug});
   final int courseId;
+
+  /// The catalogue slug, so the browse screens can tell which courses I already joined.
+  final String? slug;
   final String title;
   final String teacher;
   final String? batch;
@@ -94,12 +97,13 @@ class MyCourse {
         endDate: j['endDate'] as String?,
         accessStatus: (j['accessStatus'] ?? 'active') as String,
         readOnly: j['readOnly'] == true,
+        slug: j['slug'] as String?,
       );
 }
 
 @immutable
 class LiveClassItem {
-  const LiveClassItem({required this.id, required this.topic, required this.course, required this.startsAt, this.meetLink, this.canJoin = false, this.waitingForLink = false, this.batch, this.durationMin = 60});
+  const LiveClassItem({required this.id, required this.topic, required this.course, required this.startsAt, this.meetLink, this.canJoin = false, this.waitingForLink = false, this.batch, this.durationMin = 60, this.stage = 'upcoming'});
   final int id;
   final String topic;
   final String course;
@@ -114,6 +118,9 @@ class LiveClassItem {
   /// Class time, but the teacher has not added the Meet link yet.
   final bool waitingForLink;
 
+  /// upcoming | live | ended ...: "live" means the class is running now.
+  final String stage;
+
   factory LiveClassItem.fromJson(Json j) => LiveClassItem(
         id: _int(j['id']),
         topic: j['topic'] as String,
@@ -124,26 +131,41 @@ class LiveClassItem {
         meetLink: j['meetLink'] as String?,
         canJoin: j['canJoin'] == true && j['meetLink'] != null,
         waitingForLink: j['waitingForLink'] == true,
+        stage: (j['stage'] ?? 'upcoming') as String,
       );
 }
 
 @immutable
 class EnrollmentRequestItem {
-  const EnrollmentRequestItem({required this.id, required this.courseTitle, required this.status, this.rejectReason});
+  const EnrollmentRequestItem({required this.id, required this.courseTitle, required this.status, this.rejectReason, this.courseSlug, this.teacher});
   final int id;
   final String courseTitle;
   final String status;
   final String? rejectReason;
+
+  /// Which catalogue course the request is for, and the teacher who will approve it.
+  final String? courseSlug;
+  final String? teacher;
   factory EnrollmentRequestItem.fromJson(Json j) =>
-      EnrollmentRequestItem(id: _int(j['id']), courseTitle: ((j['course'] as Json?)?['title'] ?? '') as String, status: j['status'] as String, rejectReason: j['rejectReason'] as String?);
+      EnrollmentRequestItem(
+        id: _int(j['id']),
+        courseTitle: ((j['course'] as Json?)?['title'] ?? '') as String,
+        status: j['status'] as String,
+        rejectReason: j['rejectReason'] as String?,
+        courseSlug: (j['course'] as Json?)?['slug'] as String?,
+        teacher: j['teacher'] is String ? j['teacher'] as String : (j['teacher'] as Json?)?['name'] as String?,
+      );
 }
 
 @immutable
 class StudentDashboard {
-  const StudentDashboard({this.myCourses = const [], this.upcomingLiveClasses = const [], this.requests = const []});
+  const StudentDashboard({this.myCourses = const [], this.upcomingLiveClasses = const [], this.requests = const [], this.latestExam});
   final List<MyCourse> myCourses;
   final List<LiveClassItem> upcomingLiveClasses;
   final List<EnrollmentRequestItem> requests;
+
+  /// The newest exam across my courses, with my state on it (null when there is none).
+  final LatestExam? latestExam;
 
   /// The course to continue: active, writable and not finished.
   MyCourse? get nextUp {
@@ -157,6 +179,40 @@ class StudentDashboard {
         myCourses: _list(j['myCourses']).map(MyCourse.fromJson).toList(),
         upcomingLiveClasses: _list(j['upcomingLiveClasses']).map(LiveClassItem.fromJson).toList(),
         requests: _list(j['requests']).map(EnrollmentRequestItem.fromJson).toList(),
+        latestExam: j['latestExam'] is Json ? LatestExam.fromJson(j['latestExam'] as Json) : null,
+      );
+}
+
+/// The dashboard's "Latest exam" card. [status]: notStarted | inProgress | completed.
+@immutable
+class LatestExam {
+  const LatestExam({required this.id, required this.title, required this.course, required this.status, this.timeLimitMin, this.attemptsLeft, this.bestPct, this.lastAttemptId, this.closed = false, this.notOpen = false});
+  final int id;
+  final String title;
+  final String course;
+  final String status;
+  final int? timeLimitMin;
+  final int? attemptsLeft;
+  final double? bestPct;
+  final String? lastAttemptId;
+
+  /// The window has ended / has not opened yet, so the exam cannot be started.
+  final bool closed;
+  final bool notOpen;
+
+  bool get canStart => !closed && !notOpen;
+
+  factory LatestExam.fromJson(Json j) => LatestExam(
+        id: _int(j['id']),
+        title: j['title'] as String,
+        course: (j['course'] ?? '') as String,
+        status: (j['status'] ?? 'notStarted') as String,
+        timeLimitMin: (j['timeLimitMin'] as num?)?.toInt(),
+        attemptsLeft: (j['attemptsLeft'] as num?)?.toInt(),
+        bestPct: j['best'] is Json ? _num((j['best'] as Json)['pct']) : null,
+        lastAttemptId: j['lastAttemptId'] as String?,
+        closed: j['closed'] == true,
+        notOpen: j['notOpen'] == true,
       );
 }
 

@@ -9,9 +9,12 @@ import '../../widgets/app_widgets.dart';
 /// Details → consent → OTP → submit. Used by the live demo request and student registration.
 /// [extraFields] are optional text fields ('classStandard', 'city', 'email', 'preferredTime', 'message').
 class OtpForm extends StatefulWidget {
-  const OtpForm({super.key, required this.extraFields, required this.sendOtp, required this.submit, required this.submitLabel});
+  const OtpForm({super.key, required this.extraFields, this.requiredFields = const [], required this.sendOtp, required this.submit, required this.submitLabel});
 
   final List<String> extraFields;
+
+  /// Extra fields that must be filled (for example 'email' on the live demo form).
+  final List<String> requiredFields;
   final Future<void> Function(String mobile) sendOtp;
 
   /// Receives the filled fields (mobile normalised, consents, otp). Throws [ApiException] on failure.
@@ -50,13 +53,24 @@ class _OtpFormState extends State<OtpForm> {
         _ => l.sOptional(l.pMessage),
       };
 
+  String _requiredLabel(AppLocalizations l, String k) => switch (k) {
+        'email' => l.sEmail,
+        'classStandard' => l.sClass,
+        'city' => l.sCity,
+        'preferredTime' => l.pPreferredTime,
+        _ => l.pMessage,
+      };
+
   Future<void> _continue(AppLocalizations l) async {
     final e = <String, String>{};
     if (_c['name']!.text.trim().isEmpty) e['name'] = l.requiredField;
     if (!isValidIndianMobile(_c['mobile']!.text)) e['mobile'] = l.invalidMobile;
     if (_c['education']!.text.trim().isEmpty) e['education'] = l.requiredField;
+    for (final k in widget.requiredFields) {
+      if (_c[k]!.text.trim().isEmpty) e[k] = l.requiredField;
+    }
     final email = _c['email']!.text.trim();
-    if (email.isNotEmpty && !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) e['email'] = l.requiredField;
+    if (email.isNotEmpty && !e.containsKey('email') && !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) e['email'] = l.requiredField;
     setState(() {
       _errors
         ..clear()
@@ -124,7 +138,8 @@ class _OtpFormState extends State<OtpForm> {
         AppTextField(label: l.sEducation, controller: _c['education'], errorText: _errors['education'], requiredField: true),
         for (final k in widget.extraFields)
           AppTextField(
-            label: _label(l, k),
+            label: widget.requiredFields.contains(k) ? _requiredLabel(l, k) : _label(l, k),
+            requiredField: widget.requiredFields.contains(k),
             controller: _c[k],
             errorText: _errors[k],
             maxLines: k == 'message' ? 3 : 1,

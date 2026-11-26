@@ -6,7 +6,8 @@ const jobs = require('./jobs');
 
 const cfg = config();
 const app = createApp();
-app.listen(cfg.port, () => console.log(`API listening on http://localhost:${cfg.port}/api/v1`));
+const host = process.env.HOST || '0.0.0.0'; // reachable from other devices on the network
+app.listen(cfg.port, host, () => console.log(`API listening on http://${host}:${cfg.port}/api/v1`));
 getPool()
   .then(() => console.log('Database connected'))
   .catch((e) => console.error('Database unavailable:', e.message));

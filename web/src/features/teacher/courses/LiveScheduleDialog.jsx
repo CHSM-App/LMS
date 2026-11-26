@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../../api/client';
 import { Button, EmptyState, Input, LiveStageBadge, Modal, Spinner, useToast } from '../../../components';
 import { formatDateTime } from '../../../utils/format';
+import { GenerateLinkButton } from './GenerateLinkButton';
 
 // Live schedule of one batch: every live lesson of the course, with a date to fill for each lesson
 // the batch has no session of yet. One save schedules all filled rows (all or nothing on the server).
@@ -56,6 +57,7 @@ export function LiveScheduleDialog({ courseId, batch, onClose }) {
                   <Input label={t('content.live.startsAt')} type="datetime-local" value={dates[r.slotId] || ''} onChange={(e) => setDates((d) => ({ ...d, [r.slotId]: e.target.value }))} />
                   <Input label={`${t('content.live.meetLink')} (${t('common.optional')})`} value={links[r.slotId] || ''} placeholder="https://meet.google.com/abc-defg-hij"
                     onChange={(e) => setLinks((d) => ({ ...d, [r.slotId]: e.target.value }))} />
+                  <GenerateLinkButton topic={r.title} startsAt={dates[r.slotId] || ''} onLink={(link) => setLinks((d) => ({ ...d, [r.slotId]: link }))} />
                 </div>
               )}
           </li>

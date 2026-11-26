@@ -13,7 +13,7 @@ import 'widgets/common.dart';
 String _clock(Duration d) => '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
 
 /// Exam attempt. Leaving and reopening (even after the app is killed) resumes the same attempt
-/// with the time the server says is left.
+/// with the time the server says is left. In a Mock exam Back asks to stay or submit (same rule as the website).
 class ExamScreen extends ConsumerWidget {
   const ExamScreen({super.key, required this.examId});
   final int examId;
@@ -34,7 +34,14 @@ class ExamScreen extends ConsumerWidget {
       return Scaffold(appBar: AppBar(), body: s.error != null ? EmptyState(title: s.error!) : const Center(child: CircularProgressIndicator()));
     }
     final low = s.remaining != null && s.remaining! < const Duration(minutes: 1);
-    return Scaffold(
+    // Mock: leaving never pauses the timer, so Back asks to stay or submit. Practice: leave freely (answers autosave).
+    final isMock = paper.mode != 'practice';
+    return PopScope(
+      canPop: !isMock || s.submitted,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmLeave(context, l, vm);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(paper.title, overflow: TextOverflow.ellipsis),
         actions: [
@@ -94,7 +101,23 @@ class ExamScreen extends ConsumerWidget {
           ),
         ],
       ),
+      ),
     );
+  }
+
+  Future<void> _confirmLeave(BuildContext context, AppLocalizations l, ExamViewModel vm) async {
+    final submit = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l.sLeaveTitle),
+        content: Text(l.sLeaveBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(l.sStay)),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(l.sSubmitAndLeave)),
+        ],
+      ),
+    );
+    if (submit == true) await vm.submit();
   }
 
   Future<void> _confirm(BuildContext context, AppLocalizations l, ExamState s, ExamViewModel vm) async {

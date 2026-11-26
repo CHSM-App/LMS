@@ -104,7 +104,7 @@ function ContentDialog({ courseId, initial, onSave, onClose, saving, error }) {
           { value: 'link', label: t('curriculum.types.link') },
           ...(!initial || initial.type === 'live' ? [{ value: 'live', label: t('curriculum.types.live') }] : []),
         ]} />
-      {f.type === 'live' && !isTemplate && <LiveLessonFields courseId={courseId} value={live} onChange={setLive} />}
+      {f.type === 'live' && !isTemplate && <LiveLessonFields courseId={courseId} topic={f.title} value={live} onChange={setLive} />}
       {f.type === 'video' && <VideoSourceField label={t('curriculum.types.video')} kind="video" value={f.video} onChange={(v) => setF((x) => ({ ...x, video: v }))} required />}
       {f.type === 'pdf' && (
         <FileUpload label={t('curriculum.pdfFile')} accept="application/pdf" maxMb={20} onFile={onPdf} error={pdfError} hint={f.fileKey ? t('curriculum.pdfReady') : t('curriculum.pdfHint')} required />

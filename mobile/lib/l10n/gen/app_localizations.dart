@@ -940,6 +940,24 @@ abstract class AppLocalizations {
   /// **'No exams yet'**
   String get sNoExams;
 
+  /// No description provided for @sExamsTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get sExamsTodo;
+
+  /// No description provided for @sExamsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get sExamsDone;
+
+  /// No description provided for @sExamsLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get sExamsLocked;
+
   /// No description provided for @sQuestionN.
   ///
   /// In en, this message translates to:
@@ -1005,6 +1023,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit now'**
   String get sSubmitNow;
+
+  /// No description provided for @sLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the exam?'**
+  String get sLeaveTitle;
+
+  /// No description provided for @sLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The timer keeps running even if you leave. Submit now to finish, or stay and keep answering.'**
+  String get sLeaveBody;
+
+  /// No description provided for @sStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay in the exam'**
+  String get sStay;
+
+  /// No description provided for @sSubmitAndLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit and leave'**
+  String get sSubmitAndLeave;
 
   /// No description provided for @sCorrect.
   ///
@@ -1252,6 +1294,144 @@ abstract class AppLocalizations {
   /// **'Free live demo'**
   String get pFreeDemo;
 
+  /// No description provided for @pAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About this course'**
+  String get pAbout;
+
+  /// No description provided for @pSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get pSeeAll;
+
+  /// No description provided for @sLatestExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest exam'**
+  String get sLatestExam;
+
+  /// No description provided for @sExamNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get sExamNotStarted;
+
+  /// No description provided for @sExamInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get sExamInProgress;
+
+  /// No description provided for @sExamCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get sExamCompleted;
+
+  /// No description provided for @sExamClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get sExamClosed;
+
+  /// No description provided for @sExamNotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Not open yet'**
+  String get sExamNotOpen;
+
+  /// No description provided for @sAllExams.
+  ///
+  /// In en, this message translates to:
+  /// **'All exams'**
+  String get sAllExams;
+
+  /// No description provided for @sAllClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'All classes ({n})'**
+  String sAllClasses(int n);
+
+  /// No description provided for @sLiveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Live now'**
+  String get sLiveNow;
+
+  /// No description provided for @sDiscover.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore courses'**
+  String get sDiscover;
+
+  /// No description provided for @onbTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn from teachers you trust'**
+  String get onbTitle1;
+
+  /// No description provided for @onbBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'Live classes, recorded lessons and notes from your own teacher, in the language you like.'**
+  String get onbBody1;
+
+  /// No description provided for @onbTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise and test yourself'**
+  String get onbTitle2;
+
+  /// No description provided for @onbBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit tests and final exams with instant results, your rank and a review of every answer.'**
+  String get onbBody2;
+
+  /// No description provided for @onbTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep learning, even offline'**
+  String get onbTitle3;
+
+  /// No description provided for @onbBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Download lessons on Wi-Fi and watch without internet. Your progress syncs when you are back online.'**
+  String get onbBody3;
+
+  /// No description provided for @onbNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onbNext;
+
+  /// No description provided for @onbSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onbSkip;
+
+  /// No description provided for @onbStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onbStart;
+
+  /// No description provided for @sYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account'**
+  String get sYourAccount;
+
+  /// No description provided for @tNeedsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs your attention'**
+  String get tNeedsAttention;
+
   /// No description provided for @pDemoBadge.
   ///
   /// In en, this message translates to:
@@ -1294,6 +1474,78 @@ abstract class AppLocalizations {
   /// **'Demo videos'**
   String get pDemoVideos;
 
+  /// No description provided for @pWatchDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch free demo'**
+  String get pWatchDemo;
+
+  /// No description provided for @pIncludes.
+  ///
+  /// In en, this message translates to:
+  /// **'This course includes'**
+  String get pIncludes;
+
+  /// No description provided for @pReadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get pReadMore;
+
+  /// No description provided for @pReadLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get pReadLess;
+
+  /// No description provided for @pStatDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get pStatDuration;
+
+  /// No description provided for @pStatSubjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Subjects'**
+  String get pStatSubjects;
+
+  /// No description provided for @pStatModules.
+  ///
+  /// In en, this message translates to:
+  /// **'Modules'**
+  String get pStatModules;
+
+  /// No description provided for @pStatBatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Batches'**
+  String get pStatBatches;
+
+  /// No description provided for @pIncSubjects.
+  ///
+  /// In en, this message translates to:
+  /// **'{s} subjects · {m} modules'**
+  String pIncSubjects(int s, int m);
+
+  /// No description provided for @pIncBatches.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{1 batch to choose from} other{{n} batches to choose from}}'**
+  String pIncBatches(int n);
+
+  /// No description provided for @pIncDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Free demo videos to try first'**
+  String get pIncDemo;
+
+  /// No description provided for @pIncDoubts.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your teacher doubts any time'**
+  String get pIncDoubts;
+
   /// No description provided for @pCurriculum.
   ///
   /// In en, this message translates to:
@@ -1317,6 +1569,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enroll now'**
   String get pEnroll;
+
+  /// No description provided for @pEnrolledBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolled'**
+  String get pEnrolledBadge;
+
+  /// No description provided for @pRequestedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get pRequestedBadge;
+
+  /// No description provided for @pEnrolledNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re enrolled in this course.'**
+  String get pEnrolledNote;
+
+  /// No description provided for @pGoToCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to course'**
+  String get pGoToCourse;
+
+  /// No description provided for @pPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent'**
+  String get pPendingTitle;
+
+  /// No description provided for @pPendingNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {teacher} to approve. You\'ll be notified.'**
+  String pPendingNote(String teacher);
+
+  /// No description provided for @pRejectedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last request was declined: {reason}'**
+  String pRejectedNote(String reason);
+
+  /// No description provided for @pRejectedNoReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last request was declined.'**
+  String get pRejectedNoReason;
+
+  /// No description provided for @pEnrollAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new request'**
+  String get pEnrollAgain;
+
+  /// No description provided for @pBlockedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The teacher has not allowed enrollment for you in this course.'**
+  String get pBlockedNote;
 
   /// No description provided for @pDemoSent.
   ///
@@ -1444,12 +1756,6 @@ abstract class AppLocalizations {
   /// **'Upcoming'**
   String get sLiveUpcoming;
 
-  /// No description provided for @sLiveNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Live now'**
-  String get sLiveNow;
-
   /// No description provided for @sLiveEnded.
   ///
   /// In en, this message translates to:
@@ -1509,6 +1815,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Meet link'**
   String get tAddMeetLink;
+
+  /// No description provided for @tGenerateLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate link'**
+  String get tGenerateLink;
 
   /// No description provided for @tMeetLinkLabel.
   ///
@@ -1599,6 +1911,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open schedule'**
   String get tOpenSchedule;
+
+  /// No description provided for @tAddLiveClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Add live class'**
+  String get tAddLiveClass;
+
+  /// No description provided for @tEditLiveClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit live class'**
+  String get tEditLiveClass;
+
+  /// No description provided for @tAllBatches.
+  ///
+  /// In en, this message translates to:
+  /// **'All batches'**
+  String get tAllBatches;
+
+  /// No description provided for @tAllCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'All courses'**
+  String get tAllCourses;
+
+  /// No description provided for @tTopic.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic'**
+  String get tTopic;
+
+  /// No description provided for @tWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'Date and time'**
+  String get tWhen;
+
+  /// No description provided for @tDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (minutes)'**
+  String get tDuration;
+
+  /// No description provided for @tSaveClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Save class'**
+  String get tSaveClass;
+
+  /// No description provided for @tCancelClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel class'**
+  String get tCancelClass;
+
+  /// No description provided for @tCancelClassAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this class? Students will see it as cancelled.'**
+  String get tCancelClassAsk;
+
+  /// No description provided for @tKeepClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it'**
+  String get tKeepClass;
+
+  /// No description provided for @tEditClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get tEditClass;
+
+  /// No description provided for @tPickDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick date and time'**
+  String get tPickDateTime;
+
+  /// No description provided for @tClassSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Class saved'**
+  String get tClassSaved;
+
+  /// No description provided for @tClassCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Class cancelled'**
+  String get tClassCancelled;
+
+  /// No description provided for @tDurationInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 5 to 600 minutes'**
+  String get tDurationInvalid;
+
+  /// No description provided for @pushOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get pushOpen;
 }
 
 class _AppLocalizationsDelegate

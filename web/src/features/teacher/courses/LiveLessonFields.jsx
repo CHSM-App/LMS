@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../api/client';
 import { Input, Select } from '../../../components';
+import { GenerateLinkButton } from './GenerateLinkButton';
 
 // datetime-local works in the browser's time zone (IST for our users); the API gets UTC ISO.
 export const toLocalInput = (iso) => (iso ? new Date(new Date(iso).getTime() - new Date(iso).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
@@ -26,7 +27,7 @@ export function liveBody(v) {
 }
 
 // forBatch: scheduling one batch of an existing lesson (date and batch required, no "All batches").
-export function LiveLessonFields({ courseId, value, onChange, forBatch = false }) {
+export function LiveLessonFields({ courseId, topic = '', value, onChange, forBatch = false }) {
   const { t } = useTranslation();
   const batches = useQuery({ queryKey: ['teacher', 'batches', Number(courseId)], queryFn: () => api.get(`/teacher/courses/${courseId}/batches`) });
   const set = (k) => (e) => onChange({ ...value, [k]: e.target.value });
@@ -42,6 +43,7 @@ export function LiveLessonFields({ courseId, value, onChange, forBatch = false }
         options={[{ value: '', label: forBatch ? '—' : t('content.live.allBatches') }, ...options]} />
       <Input label={`${t('content.live.meetLink')} (${t('common.optional')})`} value={value.meetLink} onChange={set('meetLink')}
         placeholder="https://meet.google.com/abc-defg-hij" hint={t('content.live.meetLinkHint')} />
+      <GenerateLinkButton topic={topic} startsAt={value.startsAt} durationMin={value.durationMin} onLink={(meetLink) => onChange({ ...value, meetLink })} />
     </>
   );
 }

@@ -84,6 +84,7 @@ class FakeStudentRepo implements StudentRepository {
   AttemptResult? attemptResult;
   final lessons = <int, LessonDetail>{};
   final enrollRequests = <String>[];
+  final enrollEmails = <String?>[];
   final doubtsAsked = <String>[];
   List<StudentDoubt> doubtList = const [];
   StudentProfile? savedProfile;
@@ -97,7 +98,10 @@ class FakeStudentRepo implements StudentRepository {
   @override
   Future<LessonDetail> lesson(int contentId) async => lessons[contentId]!;
   @override
-  Future<void> requestEnrollment(String courseSlug, {String? message}) async => enrollRequests.add(courseSlug);
+  Future<void> requestEnrollment(String courseSlug, {String? message, String? email}) async {
+    enrollRequests.add(courseSlug);
+    enrollEmails.add(email);
+  }
   @override
   Future<List<StudentDoubt>> doubts() async => doubtList;
   @override

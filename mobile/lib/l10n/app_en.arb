@@ -261,6 +261,9 @@
   },
   "sViewResult": "View result",
   "sNoExams": "No exams yet",
+  "sExamsTodo": "To do",
+  "sExamsDone": "Done",
+  "sExamsLocked": "Locked",
   "sQuestionN": "Question {n}",
   "@sQuestionN": {
     "placeholders": {
@@ -299,6 +302,10 @@
   },
   "sKeepGoing": "Keep answering",
   "sSubmitNow": "Submit now",
+  "sLeaveTitle": "Leave the exam?",
+  "sLeaveBody": "The timer keeps running even if you leave. Submit now to finish, or stay and keep answering.",
+  "sStay": "Stay in the exam",
+  "sSubmitAndLeave": "Submit and leave",
   "sCorrect": "Correct",
   "sWrong": "Not correct",
   "sTimeLeft": "Time left {time}",
@@ -387,6 +394,36 @@
   "pAll": "All subjects",
   "pAllLanguages": "All languages",
   "pFreeDemo": "Free live demo",
+  "pAbout": "About this course",
+  "pSeeAll": "See all",
+  "sLatestExam": "Latest exam",
+  "sExamNotStarted": "Not started",
+  "sExamInProgress": "In progress",
+  "sExamCompleted": "Completed",
+  "sExamClosed": "Closed",
+  "sExamNotOpen": "Not open yet",
+  "sAllExams": "All exams",
+  "sAllClasses": "All classes ({n})",
+  "@sAllClasses": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sLiveNow": "Live now",
+  "sDiscover": "Explore courses",
+  "onbTitle1": "Learn from teachers you trust",
+  "onbBody1": "Live classes, recorded lessons and notes from your own teacher, in the language you like.",
+  "onbTitle2": "Practise and test yourself",
+  "onbBody2": "Unit tests and final exams with instant results, your rank and a review of every answer.",
+  "onbTitle3": "Keep learning, even offline",
+  "onbBody3": "Download lessons on Wi-Fi and watch without internet. Your progress syncs when you are back online.",
+  "onbNext": "Next",
+  "onbSkip": "Skip",
+  "onbStart": "Get started",
+  "sYourAccount": "Your account",
+  "tNeedsAttention": "Needs your attention",
   "pDemoBadge": "Free demo",
   "pResultCount": "{count, plural, =1{1 course} other{{count} courses}}",
   "@pResultCount": {
@@ -408,10 +445,63 @@
     }
   },
   "pDemoVideos": "Demo videos",
+  "pWatchDemo": "Watch free demo",
+  "pIncludes": "This course includes",
+  "pReadMore": "Read more",
+  "pReadLess": "Show less",
+  "pStatDuration": "Duration",
+  "pStatSubjects": "Subjects",
+  "pStatModules": "Modules",
+  "pStatBatches": "Batches",
+  "pIncSubjects": "{s} subjects · {m} modules",
+  "@pIncSubjects": {
+    "placeholders": {
+      "s": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "pIncBatches": "{n, plural, =1{1 batch to choose from} other{{n} batches to choose from}}",
+  "@pIncBatches": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "pIncDemo": "Free demo videos to try first",
+  "pIncDoubts": "Ask your teacher doubts any time",
   "pCurriculum": "What you'll learn",
   "pBatches": "Batches",
   "pRequestDemo": "Request a live demo",
   "pEnroll": "Enroll now",
+  "pEnrolledBadge": "Enrolled",
+  "pRequestedBadge": "Requested",
+  "pEnrolledNote": "You're enrolled in this course.",
+  "pGoToCourse": "Go to course",
+  "pPendingTitle": "Request sent",
+  "pPendingNote": "Waiting for {teacher} to approve. You'll be notified.",
+  "@pPendingNote": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
+  "pRejectedNote": "Your last request was declined: {reason}",
+  "@pRejectedNote": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "pRejectedNoReason": "Your last request was declined.",
+  "pEnrollAgain": "Send a new request",
+  "pBlockedNote": "The teacher has not allowed enrollment for you in this course.",
   "pDemoSent": "Request sent. The teacher will message you with the demo time.",
   "pPreferredTime": "Preferred time",
   "pMessage": "Message",
@@ -440,7 +530,6 @@
   "sVideoDone": "Video finished",
   "sSave": "Save",
   "sLiveUpcoming": "Upcoming",
-  "sLiveNow": "Live now",
   "sLiveEnded": "Ended",
   "sLiveRecorded": "Recorded",
   "sLiveCancelled": "Cancelled",
@@ -458,6 +547,7 @@
     }
   },
   "tAddMeetLink": "Add Meet link",
+  "tGenerateLink": "Generate link",
   "tMeetLinkLabel": "Google Meet link",
   "tMeetLinkHint": "Open meet.google.com, create a meeting and paste its link here.",
   "tSaveLink": "Save link",
@@ -472,5 +562,22 @@
   "tSetDate": "Set date",
   "tChooseCourse": "Course",
   "tChooseBatch": "Batch",
-  "tOpenSchedule": "Open schedule"
+  "tOpenSchedule": "Open schedule",
+  "tAddLiveClass": "Add live class",
+  "tEditLiveClass": "Edit live class",
+  "tAllBatches": "All batches",
+  "tAllCourses": "All courses",
+  "tTopic": "Topic",
+  "tWhen": "Date and time",
+  "tDuration": "Duration (minutes)",
+  "tSaveClass": "Save class",
+  "tCancelClass": "Cancel class",
+  "tCancelClassAsk": "Cancel this class? Students will see it as cancelled.",
+  "tKeepClass": "Keep it",
+  "tEditClass": "Edit",
+  "tPickDateTime": "Pick date and time",
+  "tClassSaved": "Class saved",
+  "tClassCancelled": "Class cancelled",
+  "tDurationInvalid": "Enter 5 to 600 minutes",
+  "pushOpen": "Open"
 }

@@ -7,6 +7,7 @@ import { formatDateTime } from '../../../utils/format';
 import { useCourseModules } from '../exams/useCourseModules';
 import { AttendanceSheet } from './AttendanceSheet';
 import { MeetLinkAction } from './MeetLinkAction';
+import { GenerateLinkButton } from '../courses/GenerateLinkButton';
 
 const toLocalInput = (iso) => (iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
 
@@ -47,7 +48,8 @@ function ClassDialog({ item, courses, onClose, onDone }) {
         <Input label={t('requests.when')} type="datetime-local" value={f.startsAt} onChange={set('startsAt')} required />
         <Input label={t('liveClasses.duration')} type="number" min="5" max="600" value={f.durationMin} onChange={set('durationMin')} />
       </div>
-      <Input label={`${t('requests.meetLink')} (${t('common.optional')})`} value={f.meetLink} onChange={set('meetLink')} placeholder="https://meet.google.com/abc-defg-hij" hint={t('requests.meetHint')} />
+      <Input label={`${t('requests.meetLink')} (${t('common.optional')})`} value={f.meetLink} onChange={set('meetLink')} placeholder="https://meet.google.com/abc-defg-hij" hint={t('liveClasses.meetHint')} />
+      <GenerateLinkButton topic={f.topic} startsAt={f.startsAt} durationMin={f.durationMin} onLink={(meetLink) => setF((x) => ({ ...x, meetLink }))} />
       {error && <p className="field__error" role="alert">{error}</p>}
     </Modal>
   );

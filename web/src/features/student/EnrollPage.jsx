@@ -4,7 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api, fileUrl } from '../../api/client';
 import { useAuth, homeFor } from '../../app/AuthProvider';
-import { BackLink, Banner, Button, EmptyState, Spinner, Textarea } from '../../components';
+import { BackLink, Banner, Button, EmptyState, Input, Spinner, Textarea } from '../../components';
 import { Icon } from '../../components/Icon';
 import { useBrowsePaths } from '../public/browsePaths';
 import { StudentRegisterForm } from './StudentRegisterForm';
@@ -17,8 +17,17 @@ export default function EnrollPage() {
   const { user } = useAuth();
   const paths = useBrowsePaths();
   const [message, setMessage] = useState('');
+  const [email, setEmail] = useState(user?.email || '');
+  const [emailError, setEmailError] = useState('');
+  // Enroll now always needs an email: the field is filled from the account and can be changed.
   const q = useQuery({ queryKey: ['public', 'course', slug], queryFn: () => api.get(`/public/courses/${slug}`) });
-  const send = useMutation({ mutationFn: () => api.post('/student/enrollments', { courseSlug: slug, message: message.trim() || null }) });
+  const send = useMutation({ mutationFn: () => api.post('/student/enrollments', { courseSlug: slug, message: message.trim() || null, email: email.trim() }) });
+  const submit = () => {
+    if (!email.trim()) return setEmailError(t('validation.required'));
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setEmailError(t('validation.email'));
+    setEmailError('');
+    return send.mutate();
+  };
 
   if (q.isLoading) return <Spinner label={t('common.loading')} />;
   if (q.error) return <EmptyState title={q.error.message} />;
@@ -63,9 +72,10 @@ export default function EnrollPage() {
           ) : (
             <div className="stack">
               <h2 className="enroll__heading">{t('enroll.sendTitle')}</h2>
-              <Textarea label={`${t('requests.message')} (${t('common.optional')})`}value={message} onChange={(e) => setMessage(e.target.value)} hint={t('enroll.messageHint')} maxLength={1000} />
+              <Input label={t('common.email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={emailError} hint={t('enroll.emailHint')} required autoComplete="email" />
+              <Textarea label={`${t('requests.message')} (${t('common.optional')})`} value={message} onChange={(e) => setMessage(e.target.value)} hint={t('enroll.messageHint')} maxLength={1000} />
               {send.error && <Banner kind="error" message={send.error.message} />}
-              <Button size="lg" block loading={send.isPending} onClick={() => send.mutate()}>{t('enroll.send')}</Button>
+              <Button size="lg" block loading={send.isPending} onClick={submit}>{t('enroll.send')}</Button>
             </div>
           ))}
         </div>

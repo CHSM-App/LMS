@@ -80,3 +80,27 @@ test('admin cannot reach teacher course routes; teacher cannot reach admin route
   expect((await teacher.get('/api/v1/admin/teachers')).status).toBe(403);
   expect((await request(app).get('/api/v1/admin/dashboard')).status).toBe(401);
 });
+
+test('teacher detail lists every course with its own student count', async () => {
+  const { teacher, readyCourse } = require('../../setup/content');
+  const { student, activeEnrollment } = require('../../setup/operations');
+  const admin = await asUser({ role: 'admin' });
+  const t = await teacher({ name: 'Suresh' });
+  const a = await readyCourse(t);
+  const b = await readyCourse(t);
+  const s1 = await student();
+  const s2 = await student();
+  const s3 = await student();
+  await activeEnrollment(a.courseId, t.user.user_id, s1.user_id, null);
+  await activeEnrollment(a.courseId, t.user.user_id, s2.user_id, null);
+  await activeEnrollment(b.courseId, t.user.user_id, s3.user_id, null);
+  await activeEnrollment(b.courseId, t.user.user_id, s1.user_id, null, { end: '2020-06-01' }); // expired: not counted
+
+  const res = await admin.get(`/api/v1/admin/teachers/${t.user.public_id}`);
+  expect(res.status).toBe(200);
+  expect(res.body.data.studentCount).toBe(3);
+  expect(res.body.data.courses).toHaveLength(2);
+  const counts = Object.fromEntries(res.body.data.courses.map((c) => [c.courseId, c.studentCount]));
+  expect(counts).toEqual({ [a.courseId]: 2, [b.courseId]: 1 });
+  expect(res.body.data.courses[0]).toMatchObject({ title: expect.any(String), status: expect.any(String) });
+});

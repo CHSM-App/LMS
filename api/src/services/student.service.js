@@ -11,7 +11,7 @@ const { forBatchSql, heldForSql } = require('./liveSlots');
 const { liveStage } = require('../domain/liveLesson');
 const { sanitize } = require('../utils/sanitize');
 const { clock } = require('../utils/clock');
-const { text } = require('../utils/validate');
+const { text, requiredEmail } = require('../utils/validate');
 const { APIError, badRequest, conflict, notFound } = require('../utils/APIError');
 
 const iso = (d) => (d ? new Date(d).toISOString().slice(0, 10) : null);
@@ -27,9 +27,12 @@ const enrollmentOut = (e) => ({
   requestedAt: e.requested_at,
 });
 
-async function requestEnrollment(student, { courseSlug, message }) {
+async function requestEnrollment(student, { courseSlug, message, email }) {
   const course = await catalog.findPublished(courseSlug);
   const msg = message ? text(message, 'message', { max: 1000 }) : null;
+  // Enroll now always needs an email (the form fills it from the account). It is kept on the account.
+  const accountEmail = requiredEmail(email, 'Enter your email address to enroll');
+  await query('UPDATE dbo.users SET email = @e, updated_at = SYSUTCDATETIME() WHERE user_id = @s AND (email IS NULL OR email <> @e)', { e: T.varchar(accountEmail, 160), s: T.int(student.id) });
   await withTransaction(async (tx) => {
     const existing = await one('SELECT * FROM dbo.enrollments WITH (UPDLOCK, HOLDLOCK) WHERE student_id = @s AND course_id = @c', {
       s: T.int(student.id), c: T.int(course.course_id),

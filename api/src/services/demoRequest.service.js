@@ -10,6 +10,7 @@ const out = (r) => ({
   course: { id: r.course_id, title: r.course_title },
   name: r.name,
   mobile: r.mobile,
+  email: r.email || null,
   education: r.education,
   classStandard: r.class_standard,
   preferredTime: r.preferred_time,
@@ -47,8 +48,8 @@ async function schedule(id, teacherId, { scheduledAt, meetLink }) {
   if (when <= clock.now()) throw badRequest('Choose a time in the future');
   let link = meetLink ? String(meetLink).trim() : null;
   if (link && !meet.isMeetLink(link)) throw badRequest('Enter a Google Meet link like https://meet.google.com/abc-defg-hij', 'INVALID_MEET_LINK');
-  if (!link) link = await meet.createLink({ title: `Demo: ${r.course_title}`, start: when, durationMin: 30 });
-  if (!link) throw badRequest('Paste a Meet link', 'MEET_LINK_REQUIRED');
+  // Saving never creates a link: the teacher uses "Generate link" (or pastes one) first.
+  if (!link) throw badRequest('Generate or paste a Meet link', 'MEET_LINK_REQUIRED');
   await query(
     "UPDATE dbo.demo_requests SET status = 'scheduled', scheduled_at = @at, meet_link = @l, whatsapp_sent_at = NULL, whatsapp_error = NULL WHERE demo_request_id = @id",
     { at: T.datetime(when), l: T.varchar(link, 300), id: T.int(r.demo_request_id) },
@@ -65,11 +66,12 @@ async function sendWhatsApp(id, teacherId) {
   const r = await owned(id, teacherId);
   if (r.status !== 'scheduled' || !r.meet_link) throw badRequest('Schedule the demo first');
   const { date, time } = istParts(r.scheduled_at);
-  const text = msg('en', 'wa.demo_scheduled', { name: r.name, course: r.course_title, date, time, link: r.meet_link });
+  const vars = { name: r.name, course: r.course_title, date, time, link: r.meet_link };
+  const text = msg('en', 'wa.demo_scheduled', vars);
   const fallbackUrl = whatsapp.fallbackUrl(r.mobile, text);
   if (!r.whatsapp_opt_in) throw new APIError(409, "This student hasn't agreed to WhatsApp messages", 'WHATSAPP_NO_OPT_IN', { fallbackUrl });
   try {
-    await whatsapp.send(r.mobile, text, { template: 'demo_scheduled' });
+    await whatsapp.send(r.mobile, text, { template: 'demo_scheduled', lang: 'en', vars });
   } catch (err) {
     await query('UPDATE dbo.demo_requests SET whatsapp_error = @e WHERE demo_request_id = @id', { e: T.nvarchar(String(err.message).slice(0, 300), 300), id: T.int(r.demo_request_id) });
     throw new APIError(502, 'WhatsApp message not sent. Try again.', 'WHATSAPP_FAILED', { fallbackUrl });

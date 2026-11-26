@@ -16,7 +16,7 @@ export function LiveSessionDialog({ courseId, lesson, onSave, onClose, saving, e
   return (
     <Modal open size="lg" title={t('content.live.addBatchTitle', { title: lesson.title })} onClose={onClose}
       footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button loading={saving} onClick={submit}>{t('common.save')}</Button></>}>
-      <LiveLessonFields courseId={courseId} value={v} onChange={setV} forBatch />
+      <LiveLessonFields courseId={courseId} topic={lesson.title} value={v} onChange={setV} forBatch />
       {(local || error) && <p className="field__error" role="alert">{local || error}</p>}
     </Modal>
   );

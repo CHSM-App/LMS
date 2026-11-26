@@ -146,10 +146,32 @@ class LiveClassesViewModel extends StateNotifier<LoadState<List<LiveClass>>> {
     }
   }
 
+  /// Cancels a class, then reloads. Returns the error message, or null on success.
+  Future<String?> cancel(int id) async {
+    try {
+      await _repo.cancelLiveClass(id);
+    } on ApiException catch (e) {
+      return e.message;
+    }
+    await load();
+    return null;
+  }
+
   /// Saves the Meet link, then reloads. Returns the error message, or null on success.
   Future<String?> setMeetLink(int liveClassId, String meetLink) async {
     try {
       await _repo.setMeetLink(liveClassId, meetLink.trim());
+    } on ApiException catch (e) {
+      return e.message;
+    }
+    await load();
+    return null;
+  }
+
+  /// "Generate link" on a class without one. Returns the error message, or null on success.
+  Future<String?> generateLink(int liveClassId) async {
+    try {
+      await _repo.generateClassLink(liveClassId);
     } on ApiException catch (e) {
       return e.message;
     }

@@ -87,7 +87,7 @@ test('teacher public page lists their published courses', async () => {
 });
 
 describe('live demo request', () => {
-  const form = (slug, mobile, otp, over = {}) => ({ courseSlug: slug, name: 'Ravi', mobile, otp, education: '10th', classStandard: '10', preferredTime: 'Evening', message: 'Please call', acceptTerms: true, whatsappOptIn: true, ...over });
+  const form = (slug, mobile, otp, over = {}) => ({ courseSlug: slug, name: 'Ravi', mobile, otp, education: '10th', email: 'Ravi@Gmail.com', classStandard: '10', preferredTime: 'Evening', message: 'Please call', acceptTerms: true, whatsappOptIn: true, ...over });
 
   test('creates a pending request for the teacher, records consent, notifies the teacher', async () => {
     const t = await teacher({ name: 'Suresh' });
@@ -97,11 +97,22 @@ describe('live demo request', () => {
     expect(res.status).toBe(201);
     expect(res.body.data).toEqual({ status: 'pending', teacherName: 'Suresh' });
     const row = await one('SELECT * FROM dbo.demo_requests');
-    expect(row).toMatchObject({ teacher_id: t.user.user_id, status: 'pending', whatsapp_opt_in: true, mobile: '+919822200001' });
+    expect(row).toMatchObject({ teacher_id: t.user.user_id, status: 'pending', whatsapp_opt_in: true, mobile: '+919822200001', email: 'ravi@gmail.com' });
     const consents = await query("SELECT consent_type FROM dbo.legal_consents WHERE mobile = '+919822200001'");
     expect(consents.map((c) => c.consent_type).sort()).toEqual(['terms_privacy', 'whatsapp']);
     const n = await one('SELECT message FROM dbo.notifications WHERE user_id = @t', { t: T.int(t.user.user_id) });
     expect(n.message).toBe('New live demo request for Class 10 Maths from Ravi.');
+  });
+
+  test('the email is required and must be valid', async () => {
+    const t = await teacher();
+    const { slug } = await published(t);
+    const otp = await sendOtp('+919822200004', 'demo_request');
+    const missing = await request(app).post('/api/v1/public/demo-requests').send(form(slug, '9822200004', otp, { email: '' }));
+    expect(missing.status).toBe(400);
+    expect(missing.body.details).toMatchObject({ field: 'email' });
+    expect((await request(app).post('/api/v1/public/demo-requests').send(form(slug, '9822200004', otp, { email: 'not-an-email' }))).status).toBe(400);
+    expect((await one('SELECT COUNT(*) n FROM dbo.demo_requests')).n).toBe(0);
   });
 
   test('wrong OTP, missing education or terms, unpublished course, duplicate pending', async () => {

@@ -353,13 +353,13 @@ async function ensureStudent(app, anon, s, course) {
   if (!user) {
     const otp = await otpFor(anon, s.mobile, 'student_register');
     const res = await fromDevice(request(app).post('/api/v1/auth/register-student')).set('X-Client', 'mobile').send({
-      name: s.name, mobile: s.mobile, otp, education: '10th', classStandard: '10', city: 'Pune', acceptTerms: true, whatsappOptIn: false,
+      name: s.name, mobile: s.mobile, otp, education: '10th', classStandard: '10', city: 'Pune', email: s.email || `demo.${s.mobile.slice(-4)}@example.com`, acceptTerms: true, whatsappOptIn: false,
     });
     if (res.status !== 201) throw new Error(`demo seed: register ${s.name} failed (${res.status}): ${JSON.stringify(res.body.error)}`);
     user = await findUser(s.mobile);
   }
   const e = await one('SELECT 1 AS y FROM dbo.enrollments WHERE student_id = @s AND course_id = @c', { s: T.int(user.user_id), c: T.int(course.id) });
-  if (!e) await (await asUser(app, user)).post('/api/v1/student/enrollments', { courseSlug: course.slug, message: s.batch ? `Please add me to the ${s.batch}.` : 'I would like to join this course.' });
+  if (!e) await (await asUser(app, user)).post('/api/v1/student/enrollments', { courseSlug: course.slug, email: s.email || `demo.${s.mobile.slice(-4)}@example.com`, message: s.batch ? `Please add me to the ${s.batch}.` : 'I would like to join this course.' });
   return user;
 }
 
@@ -464,7 +464,7 @@ async function ensureDemoRequests(anon, teacher, course, today) {
     if (!row) {
       const otp = await otpFor(anon, d.mobile, 'demo_request');
       await anon.post('/api/v1/public/demo-requests', {
-        courseSlug: course.slug, name: d.name, mobile: d.mobile, otp, education: '10th', classStandard: '10', preferredTime: d.preferredTime,
+        courseSlug: course.slug, name: d.name, mobile: d.mobile, otp, email: d.email || `demo.${d.mobile.slice(-4)}@example.com`, education: '10th', classStandard: '10', preferredTime: d.preferredTime,
         message: 'I want to see how the classes are taught before joining.', acceptTerms: true, whatsappOptIn: true,
       });
       row = await one('SELECT demo_request_id, status FROM dbo.demo_requests WHERE course_id = @c AND mobile = @m', { c: T.int(course.id), m: T.varchar(d.mobile, 20) });

@@ -5,7 +5,7 @@ const { h, page, clientIp } = require('../utils/http');
 const { badRequest } = require('../utils/APIError');
 const { paginate } = require('../utils/paginate');
 const { publicFormLimiter } = require('../middlewares/rateLimits');
-const { requireMobile, text, bool } = require('../utils/validate');
+const { requireMobile, text, bool, requiredEmail } = require('../utils/validate');
 const catalog = require('../services/publicCatalog.service');
 const demoCreate = require('../services/demoRequestCreate.service');
 
@@ -46,6 +46,7 @@ router.post('/public/demo-requests', publicFormLimiter, h((req) => {
     mobile: requireMobile(b.mobile),
     otp: text(b.otp, 'otp', { min: 6, max: 6 }),
     education: text(b.education, 'education', { max: 120 }),
+    email: requiredEmail(b.email),
     classStandard: text(b.classStandard, 'classStandard', { required: false, max: 40 }),
     preferredTime: text(b.preferredTime, 'preferredTime', { required: false, max: 80 }),
     message: text(b.message, 'message', { required: false, max: 1000 }),

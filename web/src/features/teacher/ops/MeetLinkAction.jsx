@@ -19,8 +19,26 @@ export function MeetLinkAction({ liveClass: r, onSaved, size = 'sm' }) {
   if (!r.needsMeetLink) return <span className="muted">{t('liveClasses.noLink')}</span>;
   return (
     <>
+      <GenerateButton id={r.id} size={size} onSaved={onSaved} />{' '}
       <Button variant="secondary" size={size} onClick={() => setOpen(true)}>{t('liveClasses.addLink')}</Button>
       {open && <AddLinkDialog id={r.id} onClose={() => setOpen(false)} onSaved={() => { setOpen(false); onSaved?.(); }} />}
+    </>
+  );
+}
+
+// Makes the link through the Calendar API. A failure says why (for example: paste a link instead).
+function GenerateButton({ id, size, onSaved }) {
+  const { t } = useTranslation();
+  const [error, setError] = useState('');
+  const m = useMutation({
+    mutationFn: () => api.post(`/teacher/live-classes/${id}/meet-link/generate`),
+    onSuccess: () => { setError(''); onSaved?.(); },
+    onError: (e) => setError(e.message),
+  });
+  return (
+    <>
+      <Button size={size} loading={m.isPending} onClick={() => m.mutate()}>{t('liveClasses.generateLink')}</Button>
+      {error && <p className="field__error" role="alert">{error}</p>}
     </>
   );
 }

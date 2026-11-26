@@ -64,9 +64,25 @@ export function ExamRunner({ paper }) {
   const [status, setStatus] = useState('idle');
   const [remaining, setRemaining] = useState(paper.deadlineAt ? new Date(paper.deadlineAt) - Date.now() : null);
   const [confirming, setConfirming] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const timers = useRef({});
   const unsent = useRef({});
   const submitted = useRef(false);
+  const guarded = useRef(false);
+  const isMock = paper.mode !== 'practice';
+
+  // Go to the result page. If the Back guard added a history entry, drop it first so Back from the
+  // result never lands on the exam page again.
+  const goResult = useCallback(() => {
+    const to = `/student/attempts/${paper.attemptId}/result`;
+    if (!guarded.current) { navigate(to, { replace: true }); return; }
+    guarded.current = false;
+    let went = false;
+    const go = () => { if (went) return; went = true; window.removeEventListener('popstate', go); navigate(to, { replace: true }); };
+    window.addEventListener('popstate', go);
+    setTimeout(go, 500);
+    window.history.back();
+  }, [paper.attemptId, navigate]);
 
   const send = useCallback(async (questionId, answer) => {
     setStatus('saving');
@@ -78,13 +94,13 @@ export function ExamRunner({ paper }) {
     } catch (e) {
       if (e.code === 'TIME_UP' || e.code === 'ATTEMPT_SUBMITTED') {
         submitted.current = true;
-        navigate(`/student/attempts/${paper.attemptId}/result`, { replace: true });
+        goResult();
         return;
       }
       unsent.current[questionId] = answer;
       setStatus('offline');
     }
-  }, [paper.attemptId, paper.mode, navigate]);
+  }, [paper.attemptId, paper.mode, goResult]);
 
   const onChange = (questionId, answer) => {
     setAnswers((a) => ({ ...a, [questionId]: answer }));
@@ -109,7 +125,7 @@ export function ExamRunner({ paper }) {
       Object.values(timers.current).forEach(clearTimeout);
       return api.post(`/student/attempts/${paper.attemptId}/submit`);
     },
-    onSettled: () => navigate(`/student/attempts/${paper.attemptId}/result`, { replace: true }),
+    onSettled: () => { setLeaving(false); goResult(); },
   });
 
   useEffect(() => {
@@ -122,17 +138,34 @@ export function ExamRunner({ paper }) {
     return () => clearInterval(id);
   }, [paper.deadlineAt, submit]);
 
-  // Warn before leaving the page with unsent answers.
+  // Leaving a Mock exam never pauses the timer. Closing the tab is always warned (Practice: only with unsent answers),
+  // and Back asks to stay or submit instead of silently leaving.
   useEffect(() => {
     const warn = (e) => {
-      if (Object.keys(unsent.current).length && !submitted.current) {
+      if (submitted.current) return;
+      if (isMock || Object.keys(unsent.current).length) {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, []);
+  }, [isMock]);
+
+  useEffect(() => {
+    if (!isMock) return undefined;
+    if (!guarded.current) {
+      window.history.pushState(window.history.state, '', window.location.href);
+      guarded.current = true;
+    }
+    const onBack = () => {
+      if (submitted.current) return;
+      window.history.pushState(window.history.state, '', window.location.href);
+      setLeaving(true);
+    };
+    window.addEventListener('popstate', onBack);
+    return () => window.removeEventListener('popstate', onBack);
+  }, [isMock]);
 
   const answered = paper.questions.filter((q) => answers[q.id]).length;
   return (
@@ -154,6 +187,10 @@ export function ExamRunner({ paper }) {
       <Modal open={confirming} title={t('exam.confirmTitle')} onClose={() => setConfirming(false)}
         footer={<><Button variant="secondary" onClick={() => setConfirming(false)}>{t('exam.keepGoing')}</Button><Button loading={submit.isPending} onClick={() => submit.mutate()}>{t('exam.submitNow')}</Button></>}>
         <p>{t('exam.confirmBody', { n: answered, total: paper.questions.length })}</p>
+      </Modal>
+      <Modal open={leaving} title={t('exam.leaveTitle')} onClose={() => setLeaving(false)}
+        footer={<><Button variant="secondary" onClick={() => setLeaving(false)}>{t('exam.stay')}</Button><Button loading={submit.isPending} onClick={() => submit.mutate()}>{t('exam.submitAndLeave')}</Button></>}>
+        <p>{t('exam.leaveBody')}</p>
       </Modal>
     </div>
   );

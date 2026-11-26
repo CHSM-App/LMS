@@ -5,6 +5,18 @@ import 'package:lms_app/data/repositories/teacher_repository.dart';
 import 'package:lms_app/presentation/viewModels/teacher_viewmodels.dart';
 
 class FakeTeacherRepo implements TeacherRepository {
+  @override
+  Future<void> saveLiveClass({int? id, required int courseId, int? batchId, required String topic, required DateTime startsAt, required int durationMin, String? meetLink, String status = 'scheduled'}) async {}
+
+  @override
+  Future<void> cancelLiveClass(int id) async {}
+
+  @override
+  Future<void> generateClassLink(int liveClassId) async => meetLinks[liveClassId] = 'https://meet.google.com/xyz-abcd-efg';
+
+  @override
+  Future<String> generateMeetLink({required String topic, required DateTime startsAt, required int durationMin}) async => 'https://meet.google.com/xyz-abcd-efg';
+
   final scheduled = <int, String>{};
   final approved = <int, Map<String, dynamic>>{};
   List<AttendanceRow> savedAttendance = [];
@@ -57,7 +69,7 @@ class FakeTeacherRepo implements TeacherRepository {
   Future<List<LiveScheduleRow>> liveSchedule(int courseId, int batchId) async => [];
 
   @override
-  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates) async {}
+  Future<void> saveLiveSchedule(int courseId, int batchId, Map<String, DateTime> dates, {Map<String, String> links = const {}}) async {}
 
   @override
   Future<List<LiveClass>> liveClasses() async => [
@@ -128,6 +140,15 @@ void main() {
     expect(c.meetLink, isNull);
     expect(c.needsMeetLink, isTrue);
     expect(TodayClass.fromJson({'id': 5, 'topic': 'Algebra', 'startsAt': '2099-06-15T12:30:00.000Z', 'meetLink': null, 'course': 'Maths'}).meetLink, isNull);
+  });
+
+  test('Generate link on a class without one saves a link and reloads the list', () async {
+    final repo = FakeTeacherRepo();
+    final vm = LiveClassesViewModel(repo);
+    await vm.load();
+    expect(vm.state.data!.single.needsMeetLink, isTrue);
+    expect(await vm.generateLink(5), isNull);
+    expect(vm.state.data!.single.meetLink, 'https://meet.google.com/xyz-abcd-efg');
   });
 
   test('adding a Meet link saves it and reloads the list', () async {

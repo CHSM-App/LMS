@@ -61,6 +61,39 @@ test('exam: submits automatically when the timer reaches zero', async () => {
   expect(await screen.findByText('Result page')).toBeInTheDocument();
 });
 
+test('mock exam: Back asks to stay or submit; staying keeps the exam, submitting ends it', async () => {
+  vi.spyOn(client.api, 'put').mockResolvedValue({ data: { saved: true } });
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { attemptId: 'a-1', score: 1, max: 2 } });
+  wrap(<ExamRunner paper={paper(10 * 60000)} />);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+  expect(await screen.findByText('Leave the exam?')).toBeInTheDocument();
+  expect(screen.getByText(/timer keeps running/i)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Stay in the exam' }));
+  await waitFor(() => expect(screen.queryByText('Leave the exam?')).not.toBeInTheDocument());
+  expect(post).not.toHaveBeenCalled();
+  window.dispatchEvent(new PopStateEvent('popstate'));
+  await userEvent.click(await screen.findByRole('button', { name: 'Submit and leave' }));
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/student/attempts/a-1/submit'));
+  expect(await screen.findByText('Result page')).toBeInTheDocument();
+});
+
+test('mock exam: closing the tab is warned even when every answer is saved', () => {
+  wrap(<ExamRunner paper={paper(10 * 60000)} />);
+  const ev = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(ev);
+  expect(ev.defaultPrevented).toBe(true);
+});
+
+test('practice exam: Back does not ask anything', async () => {
+  wrap(<ExamRunner paper={{ ...paper(null), mode: 'practice' }} />);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+  await new Promise((r) => setTimeout(r, 100));
+  expect(screen.queryByText('Leave the exam?')).not.toBeInTheDocument();
+  const ev = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(ev);
+  expect(ev.defaultPrevented).toBe(false);
+});
+
 test('player: Mark complete updates the progress bar', async () => {
   let done = false;
   vi.spyOn(client.api, 'get').mockImplementation(async (path) => {
@@ -166,10 +199,24 @@ test('exams: grouped by type, with a status badge, score and summary per exam', 
 test('enroll: a logged-in student sends the request; a visitor sees registration', async () => {
   vi.spyOn(client.api, 'get').mockResolvedValue({ data: { slug: 'maths-10', title: 'Class 10 Maths', teacher: { name: 'Suresh' }, demoVideos: [], curriculum: [], batches: [] } });
   const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { status: 'pending' } });
-  wrap(<EnrollPage />, { path: '/enroll/maths-10', route: '/enroll/:slug' });
-  await userEvent.click(await screen.findByRole('button', { name: 'Send enrollment request' }));
-  expect(post).toHaveBeenCalledWith('/student/enrollments', { courseSlug: 'maths-10', message: null });
+  wrap(<EnrollPage />, { path: '/enroll/maths-10', route: '/enroll/:slug', user: { role: 'student', name: 'Meera', email: 'meera@gmail.com' } });
+  expect(await screen.findByLabelText(/^email/i)).toHaveValue('meera@gmail.com');
+  await userEvent.click(screen.getByRole('button', { name: 'Send enrollment request' }));
+  expect(post).toHaveBeenCalledWith('/student/enrollments', { courseSlug: 'maths-10', message: null, email: 'meera@gmail.com' });
   expect(await screen.findByText("Request sent. You'll be notified when Suresh approves it.")).toBeInTheDocument();
+});
+
+test('enroll: the email is compulsory; an empty one stops the request', async () => {
+  vi.spyOn(client.api, 'get').mockResolvedValue({ data: { slug: 'maths-10', title: 'Class 10 Maths', teacher: { name: 'Suresh' }, demoVideos: [], curriculum: [], batches: [] } });
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { status: 'pending' } });
+  wrap(<EnrollPage />, { path: '/enroll/maths-10', route: '/enroll/:slug' });
+  expect(await screen.findByLabelText(/^email/i)).toBeRequired();
+  await userEvent.click(screen.getByRole('button', { name: 'Send enrollment request' }));
+  expect(post).not.toHaveBeenCalled();
+  expect(screen.getByText('This field is required')).toBeInTheDocument();
+  await userEvent.type(screen.getByLabelText(/^email/i), 'meera@gmail.com');
+  await userEvent.click(screen.getByRole('button', { name: 'Send enrollment request' }));
+  expect(post).toHaveBeenCalledWith('/student/enrollments', { courseSlug: 'maths-10', message: null, email: 'meera@gmail.com' });
 });
 
 test('enroll: visitor is asked to register', async () => {

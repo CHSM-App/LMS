@@ -26,7 +26,8 @@ class RegisterScreen extends ConsumerWidget {
           TextButton(onPressed: () => context.go('/login'), child: Text(l.pHaveAccount)),
           const SizedBox(height: AppTokens.spaceS3),
           OtpForm(
-            extraFields: const ['classStandard', 'city', 'email'],
+            extraFields: const ['email', 'classStandard', 'city'],
+            requiredFields: const ['email'],
             submitLabel: l.pCreate,
             sendOtp: (mobile) => ref.read(authRepositoryProvider).sendOtp(mobile, 'student_register'),
             submit: (f) async {
@@ -37,7 +38,7 @@ class RegisterScreen extends ConsumerWidget {
               await auth.registerStudent({...f, 'preferredLang': lang});
               if (slug != null) {
                 try {
-                  await student.requestEnrollment(slug!);
+                  await student.requestEnrollment(slug!, email: f['email'] as String?);
                 } on ApiException {
                   // The student can retry from the course page; registration itself succeeded.
                 }
@@ -61,13 +62,30 @@ class EnrollScreen extends ConsumerStatefulWidget {
 
 class _EnrollScreenState extends ConsumerState<EnrollScreen> {
   final _message = TextEditingController();
+  final _email = TextEditingController();
   bool _busy = false;
   bool _sent = false;
+  bool _submitted = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    // Enroll now always needs an email: fill it from the account, the student can change it.
+    Future.microtask(() async {
+      try {
+        final p = await ref.read(studentProfileProvider.future);
+        if (mounted && _email.text.isEmpty && p.email != null) setState(() => _email.text = p.email!);
+      } catch (_) {}
+    });
+  }
+
+  bool get _emailOk => RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(_email.text.trim());
 
   @override
   void dispose() {
     _message.dispose();
+    _email.dispose();
     super.dispose();
   }
 
@@ -86,6 +104,7 @@ class _EnrollScreenState extends ConsumerState<EnrollScreen> {
             const SizedBox(height: AppTokens.spaceS4),
             AppButton(label: l.dashboard, onPressed: () => context.go('/student')),
           ] else ...[
+            AppTextField(label: l.sEmail, controller: _email, keyboardType: TextInputType.emailAddress, requiredField: true, errorText: _submitted && !_emailOk ? l.requiredField : null),
             AppTextField(label: l.sOptional(l.pMessage), controller: _message, maxLines: 3),
             if (_error != null) Padding(padding: const EdgeInsets.only(bottom: AppTokens.spaceS3), child: AppBanner(kind: 'error', message: _error!)),
             AppButton(
@@ -93,12 +112,14 @@ class _EnrollScreenState extends ConsumerState<EnrollScreen> {
               expand: true,
               loading: _busy,
               onPressed: () async {
+                setState(() => _submitted = true);
+                if (!_emailOk) return;
                 setState(() {
                   _busy = true;
                   _error = null;
                 });
                 try {
-                  await ref.read(studentRepositoryProvider).requestEnrollment(widget.slug, message: _message.text);
+                  await ref.read(studentRepositoryProvider).requestEnrollment(widget.slug, message: _message.text, email: _email.text);
                   if (mounted) setState(() => _sent = true);
                 } on ApiException catch (e) {
                   if (mounted) setState(() => _error = e.message);

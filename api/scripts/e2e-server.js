@@ -117,7 +117,7 @@ function hooks(app) {
     const waiting = await createUser({ role: 'student', name: 'Kiran Joshi' });
     const { asStudent } = require('../tests/setup/student');
     const k = await asStudent(waiting);
-    const req1 = await k.post('/api/v1/student/enrollments', { courseSlug: w.slug, message: 'Morning batch please' });
+    const req1 = await k.post('/api/v1/student/enrollments', { courseSlug: w.slug, email: 'kiran@example.com', message: 'Morning batch please' });
     if (req1.status !== 201) throw new Error(`enroll: ${JSON.stringify(req1.body)}`);
     const d = await w.s.attach('/api/v1/student/doubts', { courseId: String(w.courseId), question: 'How do I solve 2x + 3 = 7?' });
     if (d.status !== 201) throw new Error(`doubt: ${JSON.stringify(d.body)}`);

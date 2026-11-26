@@ -33,7 +33,8 @@ Items marked **(assumed)** are defaults that still need the owner's confirmation
 | Mobile offline answer queue | ⏸️ Greyed out. Server autosave + in-memory retry covers network drops. |
 | Account deletion | Users can delete their account (app + web). Personal data is anonymised, while exam/attendance records stay with "Deleted user". Required by Google Play. |
 | Change mobile number | The user verifies an OTP on the **new** number while logged in. If the old SIM is lost, the **admin** changes it (audit logged). |
-| Consent | Registration and demo forms require "I agree to the Terms and Privacy Policy" plus a separate WhatsApp opt-in. Both are stored in `legal_consents` with the policy version. |
+| Consent | Registration and demo forms require "I agree to the Terms and Privacy Policy" and show a notice that continuing means consent to class updates and Meet links on WhatsApp (no separate WhatsApp checkbox; forms send `whatsappOptIn=true`; students can still turn it off in their profile). Both are stored in `legal_consents` with the policy version. |
+| Leaving an exam | Same on web and mobile. **Mock:** the timer never pauses. Back / swipe-back / closing the tab asks "Leave the exam?" with *Stay in the exam* (default) and *Submit and leave*. Leaving any other way (crash, no network, app killed) is not a submit: reopening resumes the same attempt with the server time left, and the server auto-submits at the deadline. A submitted attempt can't be reopened. **Practice:** no timer, no question, answers autosave and reopening resumes. |
 | Support | A "Contact support" link on the blocked, rejected and expired screens. |
 
 ## Batch rules (assumed; confirm)

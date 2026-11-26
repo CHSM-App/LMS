@@ -5,6 +5,7 @@ import { AuthContext } from './AuthProvider';
 import { RequireRole } from './RequireRole';
 import LoginPage from '../features/auth/LoginPage';
 import BecomeTeacherPage from '../features/auth/BecomeTeacherPage';
+import { StudentRegisterForm } from '../features/student/StudentRegisterForm';
 import * as client from '../api/client';
 
 function withAuth(ui, value) {
@@ -80,4 +81,29 @@ test('become a teacher: form is grouped into sections, with a side panel', () =>
   expect(screen.getByRole('group', { name: 'Your teaching' })).toBeInTheDocument();
   expect(screen.getByRole('group', { name: 'More details (optional)' })).toBeInTheDocument();
   expect(screen.getByText('Step 1 of 2')).toBeInTheDocument();
+});
+
+test('become a teacher: the Google email is required (it makes the teacher host of their Meet classes)', async () => {
+  render(withAuth(<MemoryRouter><BecomeTeacherPage /></MemoryRouter>, {}));
+  const email = screen.getByLabelText(/email/i);
+  expect(email).toBeRequired();
+  await userEvent.click(screen.getByRole('button', { name: 'Verify mobile number' }));
+  await userEvent.type(screen.getByLabelText(/full name|^name/i), 'Suresh');
+  await userEvent.type(screen.getByLabelText(/mobile number/i), '9876543210');
+  await userEvent.click(screen.getByRole('button', { name: 'Verify mobile number' }));
+  expect(email).toHaveAccessibleDescription(/required/i);
+});
+
+test('student registration: the email is required, and the OTP step does not start without it', async () => {
+  const post = vi.spyOn(client.api, 'post').mockResolvedValue({ data: { sent: true, resendAfterSec: 30 } });
+  render(withAuth(<MemoryRouter><StudentRegisterForm onDone={() => {}} /></MemoryRouter>, { refreshMe: vi.fn(), setUser: vi.fn() }));
+  const email = screen.getByLabelText(/^email/i);
+  expect(email).toBeRequired();
+  await userEvent.type(screen.getByLabelText(/^name/i), 'Asha');
+  await userEvent.type(screen.getByLabelText(/mobile number/i), '9876543210');
+  await userEvent.type(screen.getByLabelText(/^education/i), '10th');
+  await userEvent.click(screen.getByLabelText(/i agree to the/i));
+  await userEvent.click(screen.getByRole('button', { name: /verify mobile number|continue/i }));
+  expect(post).not.toHaveBeenCalled();
+  expect(screen.getByText('This field is required')).toBeInTheDocument();
 });

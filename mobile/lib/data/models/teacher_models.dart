@@ -145,7 +145,7 @@ class StudentRow {
 }
 
 class LiveClass {
-  const LiveClass({required this.id, required this.topic, required this.courseTitle, required this.startsAt, required this.status, this.meetLink, this.needsMeetLink = false, this.batchName});
+  const LiveClass({required this.id, required this.topic, required this.courseTitle, required this.startsAt, required this.status, this.meetLink, this.needsMeetLink = false, this.batchName, this.courseId = 0, this.batchId, this.durationMin = 60});
   final int id;
   final String topic;
   final String courseTitle;
@@ -158,6 +158,9 @@ class LiveClass {
   final bool needsMeetLink;
   final String status;
   final String? batchName;
+  final int courseId;
+  final int? batchId;
+  final int durationMin;
 
   factory LiveClass.fromJson(Map<String, dynamic> j) => LiveClass(
         id: j['id'] as int,
@@ -168,6 +171,9 @@ class LiveClass {
         needsMeetLink: j['needsMeetLink'] == true,
         status: j['status'] as String,
         batchName: (j['batch'] as Map<String, dynamic>?)?['name'] as String?,
+        courseId: ((j['course'] as Map<String, dynamic>)['id'] as num?)?.toInt() ?? 0,
+        batchId: ((j['batch'] as Map<String, dynamic>?)?['id'] as num?)?.toInt(),
+        durationMin: (j['durationMin'] as num?)?.toInt() ?? 60,
       );
 }
 

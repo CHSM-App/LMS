@@ -28,6 +28,13 @@ function int(value, field, { min = 0, max = 1e9, required = true } = {}) {
   return n;
 }
 
+// A required email: empty -> 400 with details.field, so forms can mark the field.
+function requiredEmail(value, message = 'Enter your email address', field = 'email') {
+  const v = email(value, field);
+  if (!v) throw badRequest(message, 'VALIDATION_ERROR', { field });
+  return v;
+}
+
 function email(value, field = 'email') {
   const v = text(value, field, { required: false, max: 160 });
   if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) throw badRequest('Enter a valid email address', 'VALIDATION_ERROR', { field });
@@ -47,4 +54,4 @@ function isoDate(value, field, { required = true } = {}) {
   return value;
 }
 
-module.exports = { requireMobile, text, int, email, bool, isoDate };
+module.exports = { requireMobile, text, int, email, requiredEmail, bool, isoDate };

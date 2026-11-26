@@ -36,6 +36,7 @@
   - Attendance and progress (attendance %, completed lessons, exam performance)
   - Profile and notifications
 - **Random tests:** each student gets their own questions, fixed once the attempt starts. Answers autosave. The student can **resume after a network drop with the timer still running**.
+- **Leaving a Mock exam (web + mobile, DECISIONS.md "Leaving an exam"):** Back / tab close asks *Stay in the exam* or *Submit and leave*; the timer never pauses; other exits resume.
 - **Mock mode:** timer with auto-submit, attempt limit, result shown after submit. **Practice mode:** answers shown instantly, unlimited attempts, not counted.
 - **The Final Exam unlocks after the Unit Tests.**
 - **Blocked teacher:** their students keep **read-only access to completed content**.

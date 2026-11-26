@@ -15,6 +15,7 @@ class AppButton extends StatelessWidget {
     this.loading = false,
     this.expand = false,
     this.icon,
+    this.dense = false,
   });
 
   final String label;
@@ -23,6 +24,9 @@ class AppButton extends StatelessWidget {
   final bool loading;
   final bool expand;
   final IconData? icon;
+
+  /// Shorter button for tight rows (list cards); the label size stays the same.
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +68,9 @@ class AppButton extends StatelessWidget {
           onPressed: enabled ? onPressed : null,
           style: TextButton.styleFrom(
             backgroundColor: enabled ? bg : AppTokens.disabledBg,
-            minimumSize: const Size(AppTokens.sizeTapTarget, AppTokens.sizeTapTarget),
-            padding: const EdgeInsets.symmetric(horizontal: AppTokens.spaceS5, vertical: AppTokens.spaceS2),
+            minimumSize: Size(dense ? 0 : AppTokens.sizeTapTarget, dense ? 38 : AppTokens.sizeTapTarget),
+            tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
+            padding: EdgeInsets.symmetric(horizontal: dense ? AppTokens.spaceS2 : AppTokens.spaceS5, vertical: dense ? 4 : AppTokens.spaceS2),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTokens.radiusMd), side: enabled ? side : BorderSide.none),
             overlayColor: AppTokens.actionPrimaryOverlay,
           ),
@@ -190,13 +195,16 @@ class _OtpInputState extends State<OtpInput> {
 
   @override
   Widget build(BuildContext context) {
+    // Boxes share the available width (max 48 each) so six of them never overflow a narrow phone.
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(widget.length, (i) {
-        return Padding(
+        return Flexible(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 52),
+            child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 3),
           child: SizedBox(
-            width: 44,
             height: 54,
             child: TextField(
               controller: _controllers[i],
@@ -208,6 +216,8 @@ class _OtpInputState extends State<OtpInput> {
               style: const TextStyle(fontSize: AppTokens.textLg, fontWeight: FontWeight.w700),
               decoration: const InputDecoration(counterText: '', contentPadding: EdgeInsets.zero),
               onChanged: (v) => _onChanged(i, v),
+            ),
+          ),
             ),
           ),
         );
@@ -316,12 +326,15 @@ class CoverBadge extends StatelessWidget {
 }
 
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.title, this.body, this.actionLabel, this.onAction});
+  const EmptyState({super.key, required this.title, this.body, this.actionLabel, this.onAction, this.icon = Icons.inbox_rounded});
 
   final String title;
   final String? body;
   final String? actionLabel;
   final VoidCallback? onAction;
+
+  /// Shown in a soft circle above the title, so an empty screen reads as a state, not a bug.
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -330,6 +343,13 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: const BoxDecoration(color: AppTokens.brandIce, shape: BoxShape.circle),
+            child: Icon(icon, size: 34, color: AppTokens.textSecondary),
+          ),
+          const SizedBox(height: AppTokens.spaceS4),
           Text(title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium),
           if (body != null) ...[
             const SizedBox(height: AppTokens.spaceS2),

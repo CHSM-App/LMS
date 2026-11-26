@@ -1,6 +1,7 @@
 const { query, one, T } = require('../db/query');
 const { msg } = require('../i18n/messages');
 const whatsapp = require('../providers/whatsapp');
+const push = require('../providers/push');
 const logger = require('../utils/logger');
 
 // notify(userId, { key, vars, link, whatsapp? }, tx?)
@@ -22,6 +23,23 @@ async function notify(userId, { key, vars, title, message, link, whatsapp: wa },
     { u: T.int(userId), t: T.nvarchar(t.slice(0, 160), 160), m: T.nvarchar(m.slice(0, 1000), 1000), l: T.varchar(link || null, 300) },
     tx,
   );
+
+  // Push to the user's phones. Never throws, and inside a transaction it waits for the commit.
+  if (u && u.status !== 'blocked' && !u.deleted_at) {
+    const sendPush = async () => {
+      try {
+        const tokens = await query('SELECT token FROM dbo.push_tokens WHERE user_id = @id', { id: T.int(userId) });
+        for (const { token } of tokens) {
+          const r = await push.send({ token, title: t, body: m, link: link || '' });
+          if (r.invalidToken) await query('DELETE FROM dbo.push_tokens WHERE token = @tok', { tok: T.varchar(token, 512) });
+        }
+      } catch (err) {
+        logger.warn({ event: 'push_failed', err: err.message });
+      }
+    };
+    if (tx && tx.afterCommit) tx.afterCommit(sendPush);
+    else await sendPush();
+  }
 
   if (!wa) return { whatsapp: 'skipped' };
   if (!u || !u.whatsapp_opt_in || u.status === 'blocked' || u.deleted_at) return { whatsapp: 'skipped' };

@@ -681,4 +681,5 @@ a.kpi:hover { border-color: var(--color-input-border); box-shadow: var(--shadow-
 .reg-cols--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .reg-cols .field { margin-bottom: var(--space-3); min-width: 0; }
 .reg-cols .field__label { white-space: nowrap; }
+.reg-cols__full { grid-column: 1 / -1; min-width: 0; }
 @media (max-width: 720px) { .reg-cols--3, .reg-cols--2 { grid-template-columns: 1fr; } }

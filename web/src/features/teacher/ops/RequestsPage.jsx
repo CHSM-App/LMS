@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../api/client';
+import { GenerateLinkButton } from '../courses/GenerateLinkButton';
 import { Button, Input, Modal, PageHeader, Select, StatusBadge, Table, Textarea, useToast } from '../../../components';
 import { formatDateTime, todayISO } from '../../../utils/format';
 
@@ -37,6 +38,7 @@ function ScheduleDialog({ request, onClose, onDone }) {
       footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button loading={m.isPending} onClick={submit}>{t('requests.saveSchedule')}</Button></>}>
       <Input label={t('requests.when')} type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} required />
       <Input label={`${t('requests.meetLink')} (${t('common.optional')})`} value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://meet.google.com/abc-defg-hij" hint={t('requests.meetHint')} />
+      <GenerateLinkButton topic={`Demo: ${request.course.title}`} startsAt={when} durationMin={30} onLink={setLink} />
       {error && <p className="field__error" role="alert">{error}</p>}
     </Modal>
   );

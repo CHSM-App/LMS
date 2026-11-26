@@ -7,7 +7,7 @@ const { owned } = require('./ownership');
 const { forBatchSql } = require('./liveSlots');
 const { clock } = require('../utils/clock');
 const { text } = require('../utils/validate');
-const { badRequest, notFound } = require('../utils/APIError');
+const { badRequest, notFound, conflict } = require('../utils/APIError');
 
 const istParts = (d) => {
   const x = new Date(new Date(d).getTime() + 330 * 60000).toISOString();
@@ -32,6 +32,35 @@ async function setMeetLink(id, teacherId, body) {
   const link = String((body && body.meetLink) || '').trim();
   if (!meet.isMeetLink(link)) throw badRequest('Enter a Google Meet link like https://meet.google.com/abc-defg-hij', 'INVALID_MEET_LINK');
   await query('UPDATE dbo.live_classes SET meet_link = @l WHERE live_class_id = @id', { l: T.varchar(link, 300), id: T.int(Number(id)) });
+  return out(await get(id));
+}
+
+// Asks Google for a Meet link where the teacher is co-host (joins directly, admits students). Conflict errors tell the teacher what to do.
+async function makeLink({ title, start, durationMin }, teacherId) {
+  if (!meet.createsRealLinks()) throw conflict('Automatic Meet links are not set up. Paste a link instead.', 'MEET_GENERATE_UNAVAILABLE');
+  const host = await one('SELECT email FROM dbo.users WHERE user_id = @u', { u: T.int(teacherId) });
+  if (!host || !host.email) throw conflict('Add your Google email in your profile first, or paste a link.', 'MEET_TEACHER_EMAIL_MISSING');
+  const link = await meet.createLink({ title, start, durationMin, hostEmail: host.email });
+  if (!link) throw conflict('Could not create a Meet link. Try again or paste one.', 'MEET_GENERATE_FAILED');
+  return link;
+}
+
+// "Generate link" in the schedule form: nothing is saved, the link comes back to fill the field.
+async function generateLinkPreview(b, teacherId) {
+  const topic = text(b && b.topic, 'topic', { max: 200 });
+  const start = new Date(b && b.startsAt);
+  if (!b || !b.startsAt || Number.isNaN(start.getTime())) throw badRequest('startsAt: choose a date and time');
+  const durationMin = b.durationMin ? Number(b.durationMin) : 60;
+  if (!Number.isInteger(durationMin) || durationMin < 5 || durationMin > 600) throw badRequest('durationMin: 5 to 600 minutes');
+  return { meetLink: await makeLink({ title: topic, start, durationMin }, teacherId) };
+}
+
+// "Generate link" on a saved class that has no link yet.
+async function generateMeetLink(id, teacherId) {
+  const lc = await get(id, teacherId);
+  if (lc.meet_link) throw conflict('This class already has a Meet link', 'MEET_LINK_EXISTS');
+  const link = await makeLink({ title: lc.topic, start: lc.starts_at, durationMin: lc.duration_min }, teacherId);
+  await query('UPDATE dbo.live_classes SET meet_link = @l WHERE live_class_id = @id AND meet_link IS NULL', { l: T.varchar(link, 300), id: T.int(Number(id)) });
   return out(await get(id));
 }
 
@@ -72,8 +101,7 @@ async function parse(teacherId, b) {
   let meetLink = b.meetLink ? String(b.meetLink).trim() : null;
   if (meetLink && !meet.isMeetLink(meetLink)) throw badRequest('Enter a Google Meet link like https://meet.google.com/abc-defg-hij', 'INVALID_MEET_LINK');
   const topic = text(b.topic, 'topic', { max: 200 });
-  // The link is optional: only a real Google provider fills it in; otherwise the teacher adds it later.
-  if (!meetLink && meet.createsRealLinks()) meetLink = await meet.createLink({ title: topic, start: startsAt, durationMin });
+  // The link is optional. Saving never creates one: the teacher pastes it or uses "Generate link", now or later.
   return { courseId: course.id, batchId, topic, startsAt, durationMin, meetLink, status: b.status || 'scheduled' };
 }
 
@@ -236,6 +264,6 @@ async function runLiveClassReminders() {
 }
 
 module.exports = {
-  create, update, cancel, list, get, out, setMeetLink, attendanceSheet, saveAttendance, runLiveClassReminders, targetStudents,
+  create, update, cancel, list, get, out, setMeetLink, generateMeetLink, generateLinkPreview, attendanceSheet, saveAttendance, runLiveClassReminders, targetStudents,
   parse, insertLiveClass, notifyNewClass, lessonLink,
 };

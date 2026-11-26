@@ -10,6 +10,7 @@ const AREAS = [
   ['/api/v1/uploads', ['teacher']],
   ['/api/v1/account', null],
   ['/api/v1/notifications', null],
+  ['/api/v1/push-tokens', null],
 ];
 
 function accessGate(req, res, next) {

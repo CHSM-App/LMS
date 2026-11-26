@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, setAccessToken, refreshSession, onSessionEnded } from '../api/client';
 import i18n from '../i18n';
+import { disableWebPush } from '../utils/webPush';
 import { resolveLoginLanguage, wasLanguageChosen } from '../i18n/preference';
 
 export const AuthContext = createContext({ user: null, loading: true });
@@ -50,6 +51,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
+      await disableWebPush();
       await api.post('/auth/logout');
     } finally {
       setAccessToken(null);

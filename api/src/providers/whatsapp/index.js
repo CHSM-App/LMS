@@ -2,6 +2,7 @@ const { maskMobile } = require('../../utils/mobile');
 
 // WhatsApp sender, switched by WHATSAPP_PROVIDER:
 //   console - dev/test: logs and records messages
+//   smsala  - SMSALA (WhatsApp BSP): WHATSAPP_API_TOKEN and WHATSAPP_TPL_<KEY> numeric template ids (see ./smsala.js)
 //   meta    - WhatsApp Cloud API (WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID). Business-initiated messages
 //             must use approved templates; each template's name can be overridden with
 //             WHATSAPP_TEMPLATE_<KEY> (e.g. WHATSAPP_TEMPLATE_LIVE_CLASS=lms_live_class_v2).
@@ -50,7 +51,10 @@ const metaProvider = {
 };
 
 function provider() {
-  return (process.env.WHATSAPP_PROVIDER || 'console') === 'meta' ? metaProvider : consoleProvider;
+  const name = process.env.WHATSAPP_PROVIDER || 'console';
+  if (name === 'meta') return metaProvider;
+  if (name === 'smsala') return require('./smsala');
+  return consoleProvider;
 }
 
 // wa.me link with the message typed, used as the fallback when the API is not configured or fails.

@@ -14,14 +14,18 @@ import 'package:lms_app/data/repositories/auth_repository.dart';
 import 'package:lms_app/l10n/gen/app_localizations.dart';
 import 'package:lms_app/main.dart';
 import 'package:lms_app/presentation/providers/core_providers.dart';
+import 'package:lms_app/presentation/providers/onboarding_provider.dart';
 import 'package:lms_app/presentation/providers/student_providers.dart';
+import 'package:lms_app/screens/student/student_dashboard_screen.dart';
 import 'package:lms_app/screens/public/catalog_screen.dart';
+import 'package:lms_app/screens/public/course_details_screen.dart';
 import 'package:lms_app/screens/public/demo_request_screen.dart';
 import 'package:lms_app/screens/student/course_player_screen.dart';
 import 'package:lms_app/screens/student/offline_player_screen.dart';
 import 'package:lms_app/screens/student/result_screen.dart';
 import 'package:lms_app/screens/student/widgets/common.dart';
 import 'package:lms_app/screens/student/student_exams_screen.dart';
+import 'package:lms_app/screens/student/student_more_screens.dart';
 import 'package:lms_app/widgets/app_widgets.dart';
 
 import '../offline/offline_fakes.dart';
@@ -82,6 +86,7 @@ class _FlowAuth implements AuthRepository {
 }
 
 void main() {
+  homeAndOnboardingTests();
   group('licence renewal (OfflineSync)', () {
     test('runs on app start and again every time connectivity is restored; reports removed videos', () async {
       final net = FakeNetwork(online: true);
@@ -296,6 +301,13 @@ void main() {
     await tester.enterText(field('Name *'), 'Asha');
     await tester.enterText(field('Mobile number *'), '9876543210');
     await tester.enterText(field('Education *'), '10th');
+    // The email is compulsory: without it nothing is sent.
+    await tester.ensureVisible(find.text('Continue'));
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('This field is required', skipOffstage: false), findsWidgets);
+    expect(pub.otpSent, isEmpty);
+    await tester.enterText(field('Email *'), 'asha@gmail.com');
     await tester.ensureVisible(find.text('Continue'));
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
@@ -313,6 +325,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(pub.demoBodies.single, containsPair('otp', '123456'));
     expect(pub.demoBodies.single, containsPair('courseSlug', 'maths-10'));
+    expect(pub.demoBodies.single, containsPair('email', 'asha@gmail.com'));
     expect(pub.demoBodies.single, containsPair('acceptTerms', true));
     expect(find.text('Request sent. The teacher will message you with the demo time.'), findsOneWidget);
   });
@@ -353,6 +366,12 @@ void main() {
     await tester.enterText(field('Education *'), '10th');
     await tester.ensureVisible(find.text('I accept the Terms and Privacy Policy'));
     await tester.tap(find.text('I accept the Terms and Privacy Policy'));
+    // The email is compulsory: without it the OTP is not sent.
+    await tester.ensureVisible(find.text('Continue'));
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(auth.otps, isEmpty);
+    await tester.enterText(field('Email *'), 'meera@gmail.com');
     await tester.ensureVisible(find.text('Continue'));
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
@@ -365,6 +384,7 @@ void main() {
     expect(auth.registered, containsPair('otp', '654321'));
     expect(auth.registered, containsPair('acceptTerms', true));
     expect(repo.enrollRequests, ['maths-10']);
+    expect(repo.enrollEmails, ['meera@gmail.com']);
     expect(find.text('Next up'), findsOneWidget, reason: 'lands on the student dashboard');
 
     await tester.tap(find.text('More'));
@@ -377,3 +397,220 @@ void main() {
   });
 }
 
+
+// --- Home "Explore courses" row and first-launch onboarding ---
+void homeAndOnboardingTests() {
+  testWidgets('student home shows an Explore courses row from the catalogue, and See all opens it', (tester) async {
+    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final dash = StudentDashboard.fromJson({'myCourses': [], 'upcomingLiveClasses': [], 'requests': []});
+    await tester.pumpWidget(app(const StudentDashboardScreen(), overrides: [
+      studentDashboardProvider.overrideWith((ref) async => dash),
+      publicRepositoryProvider.overrideWithValue(FakePublicRepo()),
+    ]));
+    await tester.pumpAndSettle();
+    expect(find.text('Explore courses'), findsOneWidget);
+    expect(find.text('Maths 10th'), findsOneWidget);
+    expect(find.text('See all'), findsOneWidget);
+  });
+
+  testWidgets('dashboard order matches the website: live classes, then the latest exam on its own, then my courses', (tester) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final dash = StudentDashboard.fromJson({
+      'myCourses': [
+        {'courseId': 3, 'title': 'Maths 10th', 'teacher': 'Suresh', 'progressPct': 40, 'accessStatus': 'active'},
+      ],
+      'upcomingLiveClasses': [
+        {'id': 1, 'topic': 'Fractions revision', 'course': 'Maths 10th', 'startsAt': '2099-06-15T03:30:00Z', 'durationMin': 60, 'stage': 'upcoming'},
+        {'id': 2, 'topic': 'Doubt class', 'course': 'Maths 10th', 'startsAt': '2099-06-16T03:30:00Z', 'durationMin': 60, 'stage': 'live'},
+      ],
+      'requests': [],
+      'latestExam': {'id': 9, 'title': 'Unit Test 1', 'course': 'Maths 10th', 'status': 'notStarted', 'timeLimitMin': 30, 'attemptsLeft': 2, 'closed': false, 'notOpen': false},
+    });
+    await tester.pumpWidget(app(const StudentDashboardScreen(), overrides: [
+      studentDashboardProvider.overrideWith((ref) async => dash),
+      publicRepositoryProvider.overrideWithValue(FakePublicRepo()),
+    ]));
+    await tester.pumpAndSettle();
+
+    final liveY = tester.getTopLeft(find.text('Live classes')).dy;
+    final examY = tester.getTopLeft(find.text('Latest exam')).dy;
+    final coursesY = tester.getTopLeft(find.text('My courses')).dy;
+    expect(liveY < examY && examY < coursesY, isTrue, reason: 'live < exam < courses');
+    // The class that is running now is listed first.
+    expect(tester.getTopLeft(find.text('Doubt class')).dy < tester.getTopLeft(find.text('Fractions revision')).dy, isTrue);
+    expect(find.text('Unit Test 1'), findsOneWidget);
+    expect(find.textContaining('Not started'), findsOneWidget);
+    expect(find.text('Start'), findsOneWidget);
+  });
+
+  testWidgets('doubts: answers first, Ask a doubt opens a sheet, a long course name does not overflow, and sending works', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repo = FakeStudentRepo()
+      ..doubtList = [
+        StudentDoubt(id: 1, courseTitle: 'Class 10 Maths (SSC) - Demo', question: 'Why do we cross multiply?', status: 'answered', createdAt: DateTime(2026, 11, 18), reply: 'Because both sides are fractions.'),
+        StudentDoubt(id: 2, courseTitle: 'Class 10 Maths (SSC) - Demo', question: 'What is a tangent?', status: 'open', createdAt: DateTime(2026, 11, 19)),
+      ];
+    final dash = StudentDashboard.fromJson({
+      'myCourses': [
+        {'courseId': 3, 'title': 'Class 10 Maths (SSC) - Demo with a very long name that used to overflow the drop-down', 'teacher': 'Suresh', 'progressPct': 10, 'accessStatus': 'active'},
+      ],
+      'upcomingLiveClasses': [],
+      'requests': [],
+    });
+    await tester.pumpWidget(app(const StudentDoubtsScreen(), overrides: [
+      studentRepositoryProvider.overrideWithValue(repo),
+      studentDashboardProvider.overrideWith((ref) async => dash),
+    ]));
+    await tester.pumpAndSettle();
+    expect(find.text('Because both sides are fractions.'), findsOneWidget);
+    expect(find.text("Waiting for the teacher's reply"), findsOneWidget);
+
+    await tester.tap(find.text('Ask a doubt'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull); // no "overflowed by N pixels"
+    await tester.enterText(find.descendant(of: find.byType(BottomSheet), matching: find.byType(TextField)), 'How do I factorise x² + 5x + 6?');
+    await tester.tap(find.text('Send to teacher'));
+    await tester.pumpAndSettle();
+    expect(repo.doubtsAsked, ['3:How do I factorise x² + 5x + 6?']); // the only course was already chosen
+    expect(find.text('Doubt sent to your teacher'), findsOneWidget);
+  });
+
+  testWidgets('course details: demo play button, what the course includes, and Enroll stays in the bottom bar', (tester) async {
+    tester.view.physicalSize = const Size(360, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app(const CourseDetailsScreen(slug: 'maths-10'), overrides: [publicRepositoryProvider.overrideWithValue(FakePublicRepo())]));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget); // the cover's play button (the course has a demo video)
+    expect(find.text('This course includes'), findsOneWidget);
+    expect(find.text('Free demo videos to try first'), findsOneWidget);
+    expect(find.text('Ask your teacher doubts any time'), findsOneWidget);
+    expect(find.text('Enroll now'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  group('course I already joined, like the website', () {
+    Future<void> openDetails(WidgetTester tester, Map<String, MyEnrollment> mine) async {
+      tester.view.physicalSize = const Size(360, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(app(const CourseDetailsScreen(slug: 'maths-10'), overrides: [
+        publicRepositoryProvider.overrideWithValue(FakePublicRepo()),
+        myEnrollmentsProvider.overrideWith((ref) => mine),
+      ]));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('enrolled: Go to course instead of Enroll, and no demo request', (tester) async {
+      await openDetails(tester, {'maths-10': const MyEnrollment(status: 'enrolled', courseId: 3)});
+      expect(find.text('Go to course'), findsOneWidget);
+      expect(find.text('Enroll now'), findsNothing);
+      expect(find.text('Request a live demo'), findsNothing);
+      // The bar sits at the bottom of the 900 px screen, not stretched over it (a Column once grew to full height).
+      expect(tester.getTopLeft(find.text('Go to course')).dy, greaterThan(800));
+      expect(tester.getTopLeft(find.text('Maths 10th')).dy, lessThan(500)); // the course title is still up on the page
+    });
+
+    testWidgets('requested: a waiting note and no Enroll button', (tester) async {
+      await openDetails(tester, {'maths-10': const MyEnrollment(status: 'pending', teacher: 'Suresh')});
+      expect(find.text('Request sent'), findsOneWidget);
+      expect(find.textContaining('Waiting for Suresh'), findsOneWidget);
+      expect(find.text('Enroll now'), findsNothing);
+      expect(tester.getTopLeft(find.text('Request sent')).dy, greaterThan(750)); // at the bottom, not stretched
+    });
+
+    testWidgets('declined: the reason and a way to send a new request', (tester) async {
+      await openDetails(tester, {'maths-10': const MyEnrollment(status: 'rejected', rejectReason: 'Batch is full')});
+      expect(find.textContaining('Batch is full'), findsOneWidget);
+      expect(find.text('Send a new request'), findsOneWidget);
+    });
+
+    testWidgets('not joined: the normal Enroll now', (tester) async {
+      await openDetails(tester, {});
+      expect(find.text('Enroll now'), findsOneWidget);
+      expect(find.text('Go to course'), findsNothing);
+    });
+
+    List<Override> joined() => [
+          publicRepositoryProvider.overrideWithValue(FakePublicRepo()),
+          myEnrollmentsProvider.overrideWith((ref) => {'maths-10': const MyEnrollment(status: 'enrolled', courseId: 3)}),
+        ];
+
+    testWidgets('the catalogue marks it Enrolled', (tester) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(app(const CatalogScreen(), overrides: joined()));
+      await tester.pumpAndSettle();
+      expect(find.text('Enrolled'), findsOneWidget);
+      expect(find.text('Free demo'), findsOneWidget); // the other course keeps its normal mark
+    });
+
+    testWidgets("Home's Explore row leaves it out", (tester) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final dash = StudentDashboard.fromJson({'myCourses': [], 'upcomingLiveClasses': [], 'requests': []});
+      await tester.pumpWidget(app(const StudentDashboardScreen(), overrides: [...joined(), studentDashboardProvider.overrideWith((ref) async => dash)]));
+      await tester.pumpAndSettle();
+      expect(find.text('Maths 10th'), findsNothing); // already joined, so not "new"
+      expect(find.text('Science 10th'), findsOneWidget);
+    });
+  });
+
+  testWidgets('first launch: three intro slides, Skip and Get started both end at login', (tester) async {
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        onboardingSeenProvider.overrideWith((ref) => false),
+        tokenStoreProvider.overrideWithValue(_NoStoredTokens()),
+        authRepositoryProvider.overrideWith((ref) => _LoggedOutAuthRepo(ref.read(sessionProvider.notifier))),
+      ],
+      child: const LmsApp(),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Learn from teachers you trust'), findsOneWidget);
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    expect(find.text('Practise and test yourself'), findsOneWidget);
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    expect(find.text('Get started'), findsOneWidget);
+    await tester.tap(find.text('Get started'));
+    await tester.pumpAndSettle();
+    expect(find.text('Send OTP'), findsOneWidget);
+  });
+}
+
+class _NoStoredTokens implements TokenStore {
+  @override
+  Future<void> clear() async {}
+  @override
+  Future<String?> readRefresh() async => null;
+  @override
+  Future<void> save({required String accessToken, String? refreshToken}) async {}
+}
+
+class _LoggedOutAuthRepo implements AuthRepository {
+  _LoggedOutAuthRepo(this.session);
+  final SessionController session;
+  @override
+  Future<SessionUser> login(String mobile, String otp) => throw UnimplementedError();
+  @override
+  Future<void> logout({String? deviceId}) async {}
+  @override
+  Future<SessionUser> registerStudent(Map<String, dynamic> fields) async => throw UnimplementedError();
+  @override
+  Future<SessionUser?> restore() async {
+    session.finishRestore();
+    return null;
+  }
+
+  @override
+  Future<int> sendOtp(String mobile, String purpose) async => 30;
+}

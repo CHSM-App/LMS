@@ -44,7 +44,7 @@ class ApiClient {
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) => _send('GET', path, query: query);
   Future<dynamic> post(String path, [Object? body]) => _send('POST', path, body: body ?? <String, dynamic>{});
   Future<dynamic> put(String path, [Object? body]) => _send('PUT', path, body: body ?? <String, dynamic>{});
-  Future<dynamic> delete(String path) => _send('DELETE', path);
+  Future<dynamic> delete(String path, [Object? body]) => _send('DELETE', path, body: body);
 
   /// POST with extra headers (e.g. X-Device-Id for offline download licences).
   Future<dynamic> postWith(String path, Object? body, Map<String, String> headers) async =>

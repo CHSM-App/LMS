@@ -325,7 +325,12 @@ class _CourseList extends StatelessWidget {
                     child: Text(l.pResultCount(courses.length), style: const TextStyle(color: AppTokens.textSecondary, fontSize: AppTokens.textSm, fontWeight: FontWeight.w600)),
                   ),
                 )
-              : CourseTile(course: courses[i - 1], onTap: () => context.push('/courses/${courses[i - 1].slug}')),
+              : Consumer(
+                  builder: (context, ref, _) {
+                    final c = courses[i - 1];
+                    return CourseTile(course: c, status: ref.watch(myEnrollmentsProvider)[c.slug]?.status, onTap: () => context.push('/courses/${c.slug}'));
+                  },
+                ),
         ),
       ),
     );
