@@ -1,7 +1,10 @@
 const path = require('path');
 const OpenApiValidator = require('express-openapi-validator');
 
-const apiSpec = path.join(__dirname, '../../../docs/openapi.yaml');
+const { SPEC_CANDIDATES, resolveFirst } = require('../utils/paths');
+
+// docs/openapi.yaml sits beside api/ in the monorepo, or inside the root on the deployed `backend` branch.
+const apiSpec = resolveFirst(SPEC_CANDIDATES) || SPEC_CANDIDATES[1];
 
 // Validates requests against docs/openapi.yaml. Routes are documented phase by phase;
 // tests/integration/openapi.test.js checks that every mounted route is documented.
