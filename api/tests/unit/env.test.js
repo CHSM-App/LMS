@@ -10,6 +10,11 @@ test('builds config with defaults', () => {
   expect(c.jwt.accessSecret).toBe('a');
   expect(c.webOrigin).toBe('http://w');
 });
+test('PORT: a number stays a number, an iisnode named pipe stays a string', () => {
+  expect(loadConfig({ ...base, PORT: '5000' }).port).toBe(5000);
+  const pipe = '\\\\.\\pipe\\3a1f0f64-1c4e-4a38-9b0e-1d1f1a2b3c4d';
+  expect(loadConfig({ ...base, PORT: pipe }).port).toBe(pipe);
+});
 test('fixed OTP is off by default', () => {
   expect(loadConfig(base).otpFixedCode).toBeNull();
 });

@@ -13,7 +13,8 @@ function loadConfig(env = process.env) {
     if (env.NODE_ENV === 'production') throw new Error('OTP_FIXED_CODE is not allowed in production');
   }
   return {
-    port: Number(env.PORT || 4000),
+    // iisnode (Plesk on Windows) passes a named pipe in PORT, not a number: keep it as a string.
+    port: !env.PORT ? 4000 : /^\d+$/.test(env.PORT) ? Number(env.PORT) : env.PORT,
     nodeEnv: env.NODE_ENV || 'development',
     db: {
       server: env.DB_SERVER,
