@@ -24,6 +24,7 @@ function createApp({ getPool, extraRoutes } = {}) {
   app.use('/api/v1', require('./routes'));
 
   if (extraRoutes) extraRoutes(app);
+  require('./middlewares/serveWeb').serveWeb(app);
   app.use(notFound);
   app.use(errorHandler);
   return app;

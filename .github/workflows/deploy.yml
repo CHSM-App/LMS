@@ -1,0 +1,136 @@
+name: Build & Deploy
+
+# Same shape as the hotel project's deploy.yml: test, then build, then force-push the generated
+# `backend` branch that Plesk deploys (api/ contents at the root, docs/openapi.yaml in docs/,
+# the web build in public/). Never edit the `backend` branch by hand.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  # Nothing is published until the API tests pass. A separate job, so `needs:` below is what enforces it.
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Ci_Test_Passw0rd!
+        ports:
+          - 1433:1433
+    env:
+      # Throwaway values for the CI-only database. Nothing here is a real secret.
+      DB_SERVER: localhost
+      DB_PORT: 1433
+      DB_NAME: lms_test
+      DB_TEST_NAME: lms_test
+      DB_USER: sa
+      DB_PASSWORD: Ci_Test_Passw0rd!
+      DB_ENCRYPT: 'false'
+      DB_TRUST_SERVER_CERT: 'true'
+      JWT_ACCESS_SECRET: ci-access-secret-ci-access-secret-0000
+      JWT_REFRESH_SECRET: ci-refresh-secret-ci-refresh-secret-000
+      OTP_SECRET: ci-otp-secret-ci-otp-secret-000000
+      WEB_ORIGIN: http://localhost:5173
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci
+      - name: Create empty test database
+        run: |
+          node -e "
+          const sql = require('mssql');
+          (async () => {
+            for (let i = 0; i < 30; i++) {
+              try {
+                const pool = await sql.connect({ server: 'localhost', port: 1433, user: 'sa', password: process.env.DB_PASSWORD, options: { encrypt: false, trustServerCertificate: true } });
+                await pool.request().batch(\"IF DB_ID('lms_test') IS NULL CREATE DATABASE lms_test\");
+                await pool.close();
+                return;
+              } catch (e) { await new Promise(r => setTimeout(r, 2000)); }
+            }
+            process.exit(1);
+          })();
+          "
+      - run: npm test
+      # Blocks on high or critical advisories only. Moderate ones are reported but do not stop a release.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+  publish:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so the deploy tag refers to a real commit.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build web
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify build output
+        run: |
+          # Never publish an empty site.
+          test -f web/dist/index.html \
+            || { echo "::error::web/dist/index.html missing, web build failed"; exit 1; }
+
+      - name: Assemble backend tree
+        run: |
+          mkdir -p /tmp/backend
+          # Tracked files of api/ only: no node_modules, .env, storage or secrets.
+          git archive HEAD api | tar -x -C /tmp/backend --strip-components=1
+          rm -rf /tmp/backend/tests /tmp/backend/storage-test
+          mkdir -p /tmp/backend/docs
+          cp docs/openapi.yaml /tmp/backend/docs/openapi.yaml
+          cp -r web/dist /tmp/backend/public
+          test -f /tmp/backend/package.json && test -f /tmp/backend/src/server.js
+          ls -la /tmp/backend
+
+      # The backend branch is force-pushed, so its history is gone after every release. A tag on the
+      # source commit survives that: `git checkout deploy-<time>-<sha>` gives the exact tree of a release.
+      - name: Tag this deploy
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TAG="deploy-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+          git tag -a "$TAG" -m "Deployed ${GITHUB_SHA}"
+          git push origin "$TAG"
+          echo "::notice::Tagged this deploy as $TAG. Roll back with: git checkout $TAG"
+
+      - name: Push backend branch
+        working-directory: /tmp/backend
+        run: |
+          git init -q -b backend
+          git add -A
+          git commit -q -m "deploy: ${GITHUB_SHA}"
+          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" backend
