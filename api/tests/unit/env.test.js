@@ -24,6 +24,14 @@ test('fixed OTP can be set outside production', () => {
 test('fixed OTP must be 6 digits', () => {
   expect(() => loadConfig({ ...base, OTP_FIXED_CODE: '1234' })).toThrow('OTP_FIXED_CODE must be 6 digits');
 });
+test('fixed OTP in production needs the explicit ALLOW_FIXED_OTP_IN_PRODUCTION=true opt-in', () => {
+  const prod = { ...base, NODE_ENV: 'production', OTP_FIXED_CODE: '123456' };
+  expect(() => loadConfig({ ...prod, ALLOW_FIXED_OTP_IN_PRODUCTION: 'yes' })).toThrow('not allowed in production');
+  expect(() => loadConfig({ ...prod, ALLOW_FIXED_OTP_IN_PRODUCTION: 'false' })).toThrow('not allowed in production');
+  const c = loadConfig({ ...prod, ALLOW_FIXED_OTP_IN_PRODUCTION: 'true' });
+  expect(c.otpFixedCode).toBe('123456');
+  expect(c.fixedOtpInProduction).toBe(true);
+});
 test('fixed OTP is refused in production', () => {
   expect(() => loadConfig({ ...base, NODE_ENV: 'production', OTP_FIXED_CODE: '123456' })).toThrow('OTP_FIXED_CODE is not allowed in production');
 });

@@ -76,6 +76,10 @@ describe('SMSALA OTP', () => {
     process.env.OTP_PROVIDER = 'console';
     process.env.NODE_ENV = 'production';
     expect(() => require('../../src/providers/otp').otpSender()).toThrow('not allowed in production');
+    // Only the explicit opt-in lets the console provider run in production.
+    process.env.ALLOW_FIXED_OTP_IN_PRODUCTION = 'true';
+    expect(require('../../src/providers/otp').otpSender().name).toBe('console');
+    delete process.env.ALLOW_FIXED_OTP_IN_PRODUCTION;
   });
 });
 

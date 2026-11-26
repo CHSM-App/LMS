@@ -5,6 +5,9 @@ const { getPool } = require('./db/pool');
 const jobs = require('./jobs');
 
 const cfg = config();
+if (cfg.fixedOtpInProduction) {
+  console.warn('WARNING: OTP_FIXED_CODE is active in production (ALLOW_FIXED_OTP_IN_PRODUCTION=true). Anyone can log in as any user. Test servers only: remove both settings before real use.');
+}
 const app = createApp();
 const host = process.env.HOST || '0.0.0.0'; // reachable from other devices on the network
 if (typeof cfg.port === 'string') {

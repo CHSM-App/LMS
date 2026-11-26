@@ -8,14 +8,17 @@ function loadConfig(env = process.env) {
   }
   // Dev/demo only: every OTP becomes this code. Never allowed in production.
   const otpFixedCode = env.OTP_FIXED_CODE || null;
+  // Deliberate, temporary opt-in for testing a deployed server. Must be exactly "true". server.js logs a warning.
+  const fixedOtpInProduction = env.NODE_ENV === 'production' && env.ALLOW_FIXED_OTP_IN_PRODUCTION === 'true' && !!otpFixedCode;
   if (otpFixedCode) {
     if (!/^\d{6}$/.test(otpFixedCode)) throw new Error('OTP_FIXED_CODE must be 6 digits');
-    if (env.NODE_ENV === 'production') throw new Error('OTP_FIXED_CODE is not allowed in production');
+    if (env.NODE_ENV === 'production' && !fixedOtpInProduction) throw new Error('OTP_FIXED_CODE is not allowed in production');
   }
   return {
     // iisnode (Plesk on Windows) passes a named pipe in PORT, not a number: keep it as a string.
     port: !env.PORT ? 4000 : /^\d+$/.test(env.PORT) ? Number(env.PORT) : env.PORT,
     nodeEnv: env.NODE_ENV || 'development',
+    fixedOtpInProduction,
     db: {
       server: env.DB_SERVER,
       instanceName: env.DB_INSTANCE || undefined,
