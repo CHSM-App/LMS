@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main, build/v1]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Ci_Test_Passw0rd!
+        ports:
+          - 1433:1433
+    env:
+      # Throwaway values for the CI-only database. Nothing here is a real secret.
+      DB_SERVER: localhost
+      DB_PORT: 1433
+      DB_NAME: lms_test
+      DB_TEST_NAME: lms_test
+      DB_USER: sa
+      DB_PASSWORD: Ci_Test_Passw0rd!
+      DB_ENCRYPT: 'false'
+      DB_TRUST_SERVER_CERT: 'true'
+      JWT_ACCESS_SECRET: ci-access-secret-ci-access-secret-0000
+      JWT_REFRESH_SECRET: ci-refresh-secret-ci-refresh-secret-000
+      OTP_SECRET: ci-otp-secret-ci-otp-secret-000000
+      WEB_ORIGIN: http://localhost:5173
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci
+      - name: Create empty test database
+        run: |
+          node -e "
+          const sql = require('mssql');
+          (async () => {
+            for (let i = 0; i < 30; i++) {
+              try {
+                const pool = await sql.connect({ server: 'localhost', port: 1433, user: 'sa', password: process.env.DB_PASSWORD, options: { encrypt: false, trustServerCertificate: true } });
+                await pool.request().batch(\"IF DB_ID('lms_test') IS NULL CREATE DATABASE lms_test\");
+                await pool.close();
+                return;
+              } catch (e) { await new Promise(r => setTimeout(r, 2000)); }
+            }
+            process.exit(1);
+          })();
+          "
+      - run: npm test
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.41.6
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter test
