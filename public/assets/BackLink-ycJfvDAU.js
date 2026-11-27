@@ -1,0 +1,1 @@
+import{j as s,L as r,m as e}from"./index-B5s-jEv-.js";function o({to:a,children:n}){return s.jsxs(r,{to:a,className:"back-link",children:[s.jsx(e,{name:"arrowLeft",size:16}),s.jsx("span",{children:n})]})}export{o as B};

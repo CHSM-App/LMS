@@ -1,0 +1,1 @@
+const o=e=>e?e.source==="upload"?{source:"upload",fileKey:e.fileKey}:{source:e.source,url:e.url}:null;function u(e){return{title:e.title,subject:e.subject,language:e.language,description:e.description,durationText:e.durationText||null,feeDisplay:e.feeDisplay||null,thumbnailKey:e.thumbnailKey||null,demoVideo1:o(e.demoVideo1),demoVideo2:o(e.demoVideo2)}}export{u as t};

@@ -1,0 +1,1 @@
+import{u as a,j as t}from"./index-B5s-jEv-.js";const r={unscheduled:"neutral",upcoming:"info",live:"pending",recorded:"approved",ended:"neutral",cancelled:"neutral"};function d({stage:e}){const{t:n}=a();return t.jsx("span",{className:`badge badge--${r[e]||"neutral"}`,children:n(`content.live.stage.${e}`)})}export{d as L};

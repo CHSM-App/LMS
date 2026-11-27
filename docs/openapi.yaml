@@ -1,0 +1,1748 @@
+openapi: 3.0.3
+info:
+  title: LMS API
+  version: 1.0.0
+  description: |
+    Contract for the LMS web (React) and mobile (Flutter) apps.
+    Every response is `{ success: true, data, pagination? }` or `{ success: false, error, code? }`.
+servers:
+  - url: /api/v1
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    Mobile:
+      type: string
+      description: Indian mobile number; the API normalizes to +91XXXXXXXXXX
+      minLength: 10
+      maxLength: 16
+    Otp: { type: string, pattern: '^\d{6}$' }
+    Status: { type: string, enum: [pending, approved, rejected, blocked] }
+    ErrorEnvelope:
+      type: object
+      required: [success, error]
+      properties:
+        success: { type: boolean, enum: [false] }
+        error: { type: string }
+        code: { type: string }
+    VideoInput:
+      type: object
+      properties:
+        source: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        url: { type: string, maxLength: 500 }
+        fileKey: { type: string, maxLength: 200 }
+    CourseInput:
+      type: object
+      required: [title, description, subject, language]
+      properties:
+        title: { type: string, maxLength: 200 }
+        description: { type: string }
+        subject: { type: string, maxLength: 120 }
+        language: { type: string }
+        thumbnailKey: { type: string, nullable: true }
+        durationText: { type: string, nullable: true }
+        feeDisplay: { type: string, nullable: true, description: Display only. No payments. }
+        demoVideo1: { type: object, nullable: true }
+        demoVideo2: { type: object, nullable: true }
+    NamedInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+    ContentInput:
+      type: object
+      required: [title, type]
+      properties:
+        title: { type: string, maxLength: 200 }
+        type: { type: string, enum: [video, pdf, link, live] }
+        videoSource: { type: string, nullable: true }
+        fileKey: { type: string, nullable: true }
+        url: { type: string, nullable: true }
+        isFreePreview: { type: boolean, description: Always false for live lessons }
+        startsAt: { type: string, format: date-time, description: 'Live lessons only. Leave out (with batchId) to add the lesson without a date; batches are scheduled later through sessions or the live schedule' }
+        durationMin: { type: integer, minimum: 5, maximum: 600, description: Live lessons only (default 60) }
+        meetLink: { type: string, nullable: true, description: Live lessons only. Empty means create one automatically }
+        batchId: { type: integer, nullable: true, description: Live lessons only. Empty means every batch }
+    BatchInput:
+      type: object
+      required: [name, startDate]
+      properties:
+        name: { type: string, maxLength: 80 }
+        startDate: { type: string }
+        endDate: { type: string, nullable: true }
+        timingText: { type: string, nullable: true }
+        maxStudents: { type: integer, minimum: 1, nullable: true }
+        status: { type: string, enum: [active, closed] }
+    QuestionInput:
+      type: object
+      required: [type, text]
+      properties:
+        type: { type: string, enum: [mcq, true_false, fill_blank, multi_correct] }
+        text: { type: string }
+        difficulty: { type: string, enum: [easy, medium, hard] }
+        marks: { type: number }
+        negativeMarks: { type: number }
+        explanation: { type: string, nullable: true }
+        explanationImageKey: { type: string, nullable: true, description: "Photo of the worked solution. Upload first with POST /uploads kind=solution, then pass the returned key. Responses also carry explanationImageUrl (signed)." }
+        options:
+          type: array
+          items: { type: object, properties: { text: { type: string }, isCorrect: { type: boolean } } }
+        acceptedAnswers: { type: array, items: { type: string } }
+    ExamInput:
+      type: object
+      required: [title, scope, mode, selection, category]
+      properties:
+        title: { type: string, maxLength: 200 }
+        scope: { type: string, enum: [module, modules, course] }
+        moduleIds: { type: array, items: { type: integer } }
+        mode: { type: string, enum: [practice, mock] }
+        selection: { type: string, enum: [manual, random] }
+        questionIds: { type: array, items: { type: integer } }
+        randomMix:
+          type: array
+          items: { type: object, properties: { moduleId: { type: integer }, easy: { type: integer }, medium: { type: integer }, hard: { type: integer } } }
+        category: { type: string, enum: [unit_test_1, unit_test_2, final, practice] }
+        weightage: { type: number }
+        totalMarks: { type: number, nullable: true }
+        negativeMarking: { type: boolean }
+        timeLimitMin: { type: integer, nullable: true }
+        passingPct: { type: number, nullable: true }
+        shuffleQuestions: { type: boolean }
+        shuffleOptions: { type: boolean }
+        attemptLimit: { type: integer, nullable: true }
+        startsAt: { type: string, nullable: true }
+        endsAt: { type: string, nullable: true }
+        allowLate: { type: boolean, default: true, description: 'When false, a new attempt is refused after endsAt (EXAM_CLOSED). When true the attempt is allowed and marked late.' }
+        batchIds: { type: array, items: { type: integer } }
+    LiveClassInput:
+      type: object
+      required: [courseId, topic, startsAt]
+      properties:
+        courseId: { type: integer }
+        batchId: { type: integer, nullable: true, description: Empty means every batch }
+        topic: { type: string, maxLength: 200 }
+        startsAt: { type: string }
+        durationMin: { type: integer, minimum: 5, maximum: 600 }
+        meetLink: { type: string, nullable: true }
+        status: { type: string, enum: [scheduled, live, completed, cancelled] }
+    ProgramInput:
+      type: object
+      required: [title, startsAt]
+      properties:
+        title: { type: string, maxLength: 200 }
+        startsAt: { type: string }
+        courseId: { type: integer, nullable: true }
+        batchId: { type: integer, nullable: true }
+    RecordingInput:
+      type: object
+      required: [videoSource]
+      properties:
+        videoSource: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        fileKey: { type: string, nullable: true, description: Required when videoSource is upload }
+        url: { type: string, nullable: true, description: Required for youtube / vimeo / bunny }
+    LiveLessonInfo:
+      type: object
+      description: Present on contents of type live
+      properties:
+        liveClassId: { type: integer }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer }
+        batch: { type: object, nullable: true, properties: { id: { type: integer }, name: { type: string } } }
+        stage: { type: string, enum: [unscheduled, upcoming, live, ended, recorded, cancelled] }
+        meetLink: { type: string, nullable: true, description: Teacher always; student only while upcoming or live }
+        slotId: { type: string, description: Same value on every batch's session of one live lesson }
+        sessions: { type: array, description: Teacher curriculum only; one entry per batch, items: { $ref: '#/components/schemas/LiveSession' } }
+    RecordingInfo:
+      type: object
+      nullable: true
+      properties:
+        videoSource: { type: string, enum: [upload, youtube, vimeo, bunny] }
+        url: { type: string, nullable: true }
+    LiveSessionInput:
+      type: object
+      required: [batchId, startsAt]
+      properties:
+        batchId: { type: integer }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer, minimum: 5, maximum: 600, default: 60 }
+        meetLink: { type: string, nullable: true, description: Optional; created automatically when a Meet provider is configured }
+    LiveSession:
+      type: object
+      properties:
+        contentId: { type: integer }
+        liveClassId: { type: integer }
+        batch: { type: object, nullable: true, properties: { id: { type: integer }, name: { type: string } } }
+        startsAt: { type: string, format: date-time }
+        durationMin: { type: integer }
+        stage: { type: string, enum: [unscheduled, upcoming, live, ended, recorded, cancelled] }
+        meetLink: { type: string, nullable: true }
+        recording: { $ref: '#/components/schemas/RecordingInfo' }
+    LiveScheduleInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [slotId, startsAt]
+            properties:
+              slotId: { type: string, description: The live lesson's slotId }
+              startsAt: { type: string, format: date-time }
+              durationMin: { type: integer }
+              meetLink: { type: string, nullable: true }
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+  parameters:
+    CourseId: { name: courseId, in: path, required: true, schema: { type: integer } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1 } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+paths:
+  /health:
+    get:
+      tags: [system]
+      summary: Health check (API + database)
+      responses:
+        '200': { description: OK }
+        '503': { description: Database unavailable }
+  /auth/otp/send:
+    post:
+      tags: [auth]
+      summary: Send a one-time password (same response for known and unknown numbers)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mobile, purpose]
+              properties:
+                mobile: { $ref: '#/components/schemas/Mobile' }
+                purpose: { type: string, enum: [login, teacher_register, student_register, demo_request, delete_account] }
+      responses:
+        '200': { description: '{ sent, resendAfterSec }' }
+        '429': { description: Too many OTP requests }
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Log in with mobile + OTP. Web gets an HttpOnly refresh cookie; X-Client mobile gets refreshToken in the body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mobile, otp]
+              properties:
+                mobile: { $ref: '#/components/schemas/Mobile' }
+                otp: { $ref: '#/components/schemas/Otp' }
+                deviceId: { type: string, maxLength: 64 }
+      responses:
+        '200': { description: '{ accessToken, user, refreshToken? }' }
+        '403': { description: Blocked / request pending / request rejected }
+        '404': { description: No account for this mobile }
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Rotate the refresh token (HttpOnly cookie, or JSON body { refreshToken } from the mobile app). Reuse of a rotated token logs out every session.
+      responses:
+        '200': { description: '{ accessToken, refreshToken? }' }
+        '401': { description: Session ended }
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Revoke the session (cookie, or JSON body { refreshToken } from the mobile app)
+      responses:
+        '200': { description: Logged out }
+  /auth/me:
+    get:
+      tags: [auth]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The signed-in user and their profile }
+  /teacher-requests:
+    post:
+      tags: [public]
+      summary: Become a Teacher (multipart; validated in the route). Auto-approved - the teacher account is created at once.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name, mobile, otp, courseName, subject, experienceYears, email, acceptTerms]
+              properties:
+                name: { type: string, maxLength: 120 }
+                mobile: { type: string }
+                otp: { type: string }
+                courseName: { type: string, maxLength: 200 }
+                subject: { type: string, maxLength: 120 }
+                experienceYears: { type: integer, minimum: 0, maximum: 60 }
+                email: { type: string, description: "The teacher's Google email. Required: it makes the teacher co-host of their Meet classes." }
+                city: { type: string }
+                qualification: { type: string }
+                acceptTerms: { type: boolean }
+                whatsappOptIn: { type: boolean }
+                photo: { type: string, format: binary }
+                idDocument: { type: string, format: binary }
+      responses:
+        '201': { description: '{ requestId, status: approved } - teacher can log in straight away' }
+        '409': { description: Mobile already registered }
+  /account/change-mobile/start:
+    post:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [newMobile], properties: { newMobile: { $ref: '#/components/schemas/Mobile' } } }
+      responses:
+        '200': { description: OTP sent to the new number }
+        '409': { description: Number already registered }
+  /account/change-mobile/confirm:
+    post:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newMobile, otp]
+              properties:
+                newMobile: { $ref: '#/components/schemas/Mobile' }
+                otp: { $ref: '#/components/schemas/Otp' }
+                refreshToken: { type: string }
+      responses:
+        '200': { description: Mobile changed; other sessions revoked }
+  /account/language:
+    put:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      summary: Save the signed-in user's language (used for the UI, notifications and WhatsApp).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [preferredLang], properties: { preferredLang: { type: string, enum: [en, mr, hi] } } }
+      responses:
+        '200': { description: '{ preferredLang }' }
+        '400': { description: Unknown language }
+  /account/delete:
+    post:
+      tags: [account]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [otp], properties: { otp: { $ref: '#/components/schemas/Otp' } } }
+      responses:
+        '200': { description: Account anonymised and closed }
+        '409': { description: Teacher with students / admin account }
+  /public/legal/{doc}:
+    get:
+      tags: [public]
+      parameters:
+        - { name: doc, in: path, required: true, schema: { type: string } }
+        - { name: lang, in: query, schema: { type: string, enum: [en, mr, hi] } }
+      responses:
+        '200': { description: '{ doc, version, markdown, support }' }
+  /public/config:
+    get:
+      tags: [public]
+      responses:
+        '200': { description: '{ supportContact, policyVersion }' }
+  /admin/teacher-requests:
+    get:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: Paginated teacher requests }
+  /admin/teacher-requests/{id}/accept:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Accepted; teacher account created (only older pending requests - new ones are auto-approved) }
+        '409': { description: Not pending }
+  /admin/teacher-requests/{id}/reject:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string } } }
+      responses:
+        '200': { description: Rejected }
+  /admin/users/{publicId}/change-mobile:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: publicId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newMobile]
+              properties:
+                newMobile: { $ref: '#/components/schemas/Mobile' }
+                reason: { type: string }
+      responses:
+        '200': { description: Mobile changed (audited) }
+  /admin/dashboard:
+    get:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ pendingRequests, activeTeachers, blockedTeachers, totalStudents, expiringSubscriptions7d }' }
+  /admin/teachers:
+    get:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [approved, blocked] } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: 'Rows of { publicId, name, mobile, subject, status, joinedAt, studentCount }' }
+  /admin/teachers/{publicId}:
+    get:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: publicId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: 'Teacher detail with subscriptions and courses: [{ courseId, title, status, studentCount }]. A course studentCount is its active students, by the same rule as the teacher total.' }
+        '404': { description: Not found }
+  /admin/teachers/{publicId}/block:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: publicId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string, maxLength: 500 } } }
+      responses:
+        '200': { description: Blocked; sessions revoked; audited }
+        '409': { description: Already blocked }
+  /admin/teachers/{publicId}/activate:
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: publicId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Activated; audited }
+  /admin/subscriptions:
+    get:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: teacher, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string, enum: [active, upcoming, expired, blocked] } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: Subscriptions with computed status and student count }
+    post:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [teacherPublicId, planType, startDate]
+              properties:
+                teacherPublicId: { type: string, format: uuid }
+                planType: { type: string, enum: [monthly, quarterly, half_yearly, yearly, custom] }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date, description: Required for custom }
+      responses:
+        '201': { description: Created }
+        '409': { description: Overlaps another subscription }
+  /admin/subscriptions/{id}:
+    put:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [planType, startDate]
+              properties:
+                planType: { type: string, enum: [monthly, quarterly, half_yearly, yearly, custom] }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date }
+                blocked: { type: boolean }
+      responses:
+        '200': { description: Updated; audited }
+  /admin/audit-log:
+    get:
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: action, in: query, schema: { type: string, maxLength: 40 } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: 'Audit rows, newest first' }
+  /notifications:
+    get:
+      tags: [notifications]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: unread, in: query, schema: { type: string, enum: ['true', 'false'] } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: The caller's notifications }
+  /push-tokens:
+    post:
+      tags: [notifications]
+      summary: Register this device for push notifications (Firebase token). Same token again just refreshes it.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, platform]
+              properties:
+                token: { type: string, minLength: 20, maxLength: 512 }
+                platform: { type: string, enum: [android, ios, web] }
+      responses:
+        '200': { description: Registered }
+        '400': { description: Invalid token or platform }
+    delete:
+      tags: [notifications]
+      summary: Stop push notifications on this device (call on logout).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token: { type: string, minLength: 20, maxLength: 512 }
+      responses:
+        '200': { description: Removed }
+  /notifications/read-all:
+    post:
+      tags: [notifications]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: All marked read }
+  /notifications/{id}/read:
+    post:
+      tags: [notifications]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Marked read }
+        '404': { description: Not the caller's notification }
+  /teacher/courses:
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: "The teacher's own courses" }
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      summary: Create a draft course. Demo video 1 can be added later; publishing needs it. Demo video 2 and the thumbnail are optional.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseInput' }
+      responses:
+        '201': { description: Draft created }
+  /teacher/courses/{courseId}:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Course + readiness { ready, missing[] }' }
+        '404': { description: "Not found or not the teacher's" }
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted (drafts only) }
+        '409': { description: Published or has students }
+  /teacher/courses/{courseId}/status:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [status], properties: { status: { type: string } } }
+      responses:
+        '200': { description: Status changed }
+        '403': { description: Teacher subscription expired (limited mode) }
+        '422': { description: 'Not ready; details.missing lists what to finish' }
+  /teacher/courses/{courseId}/curriculum:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Subjects, modules and contents (own files as signed URLs)' }
+  /teacher/courses/{courseId}/subjects:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '201': { description: Subject created }
+  /teacher/courses/{courseId}/subjects/order:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [subjectIds], properties: { subjectIds: { type: array, items: { type: integer } } } }
+      responses:
+        '200': { description: Reordered }
+  /teacher/subjects/{subjectId}:
+    parameters: [{ name: subjectId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+        '409': { description: Has modules }
+  /teacher/subjects/{subjectId}/modules:
+    parameters: [{ name: subjectId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '201': { description: Module created with the next order number }
+  /teacher/subjects/{subjectId}/modules/order:
+    parameters: [{ name: subjectId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [moduleIds], properties: { moduleIds: { type: array, items: { type: integer } } } }
+      responses:
+        '200': { description: Reordered }
+        '400': { description: "The list is not exactly the subject's modules" }
+  /teacher/modules/{moduleId}:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NamedInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+        '409': { description: Has content or questions }
+  /teacher/modules/{moduleId}/contents:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContentInput' }
+      responses:
+        '201': { description: Content created }
+  /teacher/modules/{moduleId}/contents/order:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [contentIds], properties: { contentIds: { type: array, items: { type: integer } } } }
+      responses:
+        '200': { description: Reordered }
+  /teacher/contents/{contentId}:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContentInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+  /teacher/courses/{courseId}/batches:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Batches of the course with student counts }
+    post:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BatchInput' }
+      responses:
+        '201': { description: Batch created }
+        '409': { description: Name already used in this course }
+  /teacher/batches/{batchId}:
+    parameters: [{ name: batchId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BatchInput' }
+      responses:
+        '200': { description: Updated (status active or closed) }
+  /uploads:
+    post:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: 'Small files (thumbnail, photo, solution, pdf). Type is checked by content. Multipart fields: kind, file.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [kind, file]
+              properties:
+                kind: { type: string, enum: [thumbnail, photo, solution, pdf] }
+                file: { type: string, format: binary }
+      responses:
+        '201': { description: '{ key, url }' }
+  /uploads/sessions:
+    post:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: Start a resumable video upload (up to 500 MB, 5 MB chunks)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, fileName, totalBytes]
+              properties:
+                kind: { type: string, enum: [video, demo_video] }
+                fileName: { type: string }
+                totalBytes: { type: integer }
+      responses:
+        '201': { description: '{ uploadId, chunkSize, receivedBytes }' }
+        '413': { description: Too large }
+  /uploads/sessions/{uploadId}:
+    parameters: [{ name: uploadId, in: path, required: true, schema: { type: string, format: uuid } }]
+    get:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: Where to resume
+      responses:
+        '200': { description: '{ receivedBytes, totalBytes, status }' }
+    put:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      summary: 'Append a chunk: application/octet-stream body plus Content-Range bytes start-end/total'
+      responses:
+        '200': { description: '{ receivedBytes }' }
+        '409': { description: 'Wrong offset; details.receivedBytes says where to resume' }
+  /uploads/sessions/{uploadId}/complete:
+    parameters: [{ name: uploadId, in: path, required: true, schema: { type: string, format: uuid } }]
+    post:
+      tags: [uploads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ key, url }' }
+        '400': { description: File type not allowed }
+  /files/{kind}/{file}:
+    get:
+      tags: [files]
+      summary: 'Serve a stored file. thumbnail, photo and demo_video are public; others need exp and sig (10-minute signed URL). Supports Range.'
+      parameters:
+        - { name: kind, in: path, required: true, schema: { type: string } }
+        - { name: file, in: path, required: true, schema: { type: string } }
+        - { name: exp, in: query, schema: { type: integer } }
+        - { name: sig, in: query, schema: { type: string } }
+      responses:
+        '200': { description: File }
+        '206': { description: Partial content }
+        '403': { description: Missing or expired signature }
+  /teacher/modules/{moduleId}/questions:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: type, in: query, schema: { type: string, enum: [mcq, true_false, fill_blank, multi_correct] } }
+        - { name: difficulty, in: query, schema: { type: string, enum: [easy, medium, hard] } }
+        - { name: archived, in: query, schema: { type: string, enum: ['true', 'false'] } }
+      responses:
+        '200': { description: Questions of the module's bank with options }
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuestionInput' }
+      responses:
+        '201': { description: Question created }
+        '400': { description: 'details.errors lists every problem' }
+  /teacher/modules/{moduleId}/question-counts:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Active questions per difficulty { easy, medium, hard }' }
+  /teacher/questions/{questionId}:
+    parameters: [{ name: questionId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      summary: Edit. If the question was already used, a new version is created and the old one archived.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuestionInput' }
+      responses:
+        '200': { description: The current version }
+    delete:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ deleted: true } or { archived: true } when it was used' }
+  /teacher/questions/import-template:
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Excel template (.xlsx) }
+  /teacher/modules/{moduleId}/questions/import:
+    parameters: [{ name: moduleId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      summary: 'Bulk import from the template. Valid rows are imported; invalid rows are reported per row.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { type: object, required: [file], properties: { file: { type: string, format: binary } } }
+      responses:
+        '200': { description: '{ imported, errors: [{ row, field, message }], errorFileUrl }' }
+        '400': { description: More than 2000 rows or not an xlsx file }
+  /teacher/courses/{courseId}/exams:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Exams of the course }
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExamInput' }
+      responses:
+        '201': { description: Draft exam created }
+  /teacher/exams/{examId}:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Exam with modules, random mix, questions and batches' }
+    put:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExamInput' }
+      responses:
+        '200': { description: Updated }
+        '409': { description: Students already took it }
+    delete:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted (drafts without attempts) }
+  /teacher/exams/{examId}/validate:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ ok, problems[] }' }
+  /teacher/exams/{examId}/publish:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Published; targeted students notified }
+        '422': { description: 'details.problems lists what to fix' }
+  /teacher/exams/{examId}/unpublish:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Back to draft (only before any attempt) }
+  /teacher/exams/{examId}/results:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: batch, in: query, schema: { type: integer } }]
+      responses:
+        '200': { description: 'Best attempt per student with rank and late flag' }
+  /teacher/courses/{courseId}/final-results:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [teacher-exams]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Weighted final result per student }
+  /teacher/dashboard:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'pendingDemoRequests, pendingEnrollments, openDoubts, activeStudents, todaysClasses' }
+  /teacher/demo-requests:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, scheduled, completed, rejected] } }
+        - { name: course, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Live demo requests for the teacher's courses }
+  /teacher/demo-requests/{id}/schedule:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Set date and time with a Meet link (generated with the Generate link button or pasted). Saving never creates one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scheduledAt]
+              properties:
+                scheduledAt: { type: string }
+                meetLink: { type: string, nullable: true }
+      responses:
+        '200': { description: Scheduled }
+        '400': { description: Past time or invalid link or a link is required }
+  /teacher/demo-requests/{id}/send-whatsapp:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Sent. With WHATSAPP_PROVIDER=link nothing is sent: data.manual is true and data.fallbackUrl opens WhatsApp with the message typed' }
+        '409': { description: 'No WhatsApp opt-in; details.fallbackUrl opens WhatsApp with the message typed' }
+        '502': { description: 'Provider failed; details.fallbackUrl' }
+  /teacher/demo-requests/{id}/reject:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Rejected }
+  /teacher/demo-requests/{id}/complete:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Marked completed }
+  /teacher/enrollments:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected, blocked] } }
+        - { name: course, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Enrollment requests }
+  /teacher/enrollments/{id}/approve:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                batchId: { type: integer }
+                startDate: { type: string }
+                endDate: { type: string }
+      responses:
+        '200': { description: Approved with batch and access period }
+        '403': { description: Teacher subscription expired (limited mode) }
+        '409': { description: Already decided or batch closed or batch full }
+  /teacher/enrollments/{id}/reject:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string } } }
+      responses:
+        '200': { description: Rejected }
+  /teacher/enrollments/{id}/batch:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [batchId], properties: { batchId: { type: integer } } }
+      responses:
+        '200': { description: Moved to another batch }
+  /teacher/students:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: course, in: query, schema: { type: integer } }
+        - { name: batch, in: query, schema: { type: integer } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+      responses:
+        '200': { description: 'Enrolled students (one row per course enrollment) with batch, access status and attendance { held, attended, pct } for that course' }
+  /teacher/students/{studentPublicId}/attendance:
+    parameters:
+      - { name: studentPublicId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [teacher-ops]
+      summary: Attendance calendar of one student across all their courses with this teacher
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: month, in: query, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }, description: 'IST month, YYYY-MM' }
+      responses:
+        '200': { description: 'student, month, courses [{id,title}] and days [{date, classes [{liveClassId, course, topic, time, present}]}]; only classes where attendance was taken' }
+        '400': { description: Bad month }
+        '404': { description: Not this teacher's student }
+  /teacher/students/{studentPublicId}/access/{courseId}:
+    parameters:
+      - { name: studentPublicId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: courseId, in: path, required: true, schema: { type: integer } }
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [startDate, endDate]
+              properties:
+                startDate: { type: string }
+                endDate: { type: string }
+                accessEnabled: { type: boolean }
+      responses:
+        '200': { description: Access period saved }
+  /teacher/live-classes:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: course, in: query, schema: { type: integer } }
+        - { name: from, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Live classes }
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveClassInput' }
+      responses:
+        '201': { description: Created; students of the batch notified }
+  /teacher/live-classes/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveClassInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Cancelled }
+  /teacher/live-classes/{id}/meet-link:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Add or change the Google Meet link of a class (standalone or live lesson)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [meetLink]
+              properties:
+                meetLink: { type: string, example: 'https://meet.google.com/abc-defg-hij' }
+      responses:
+        '200': { description: 'The class, with meetLink and needsMeetLink: false' }
+        '400': { description: 'INVALID_MEET_LINK: not a Google Meet link' }
+        '404': { description: Not your class }
+  /teacher/live-classes/meet-link/generate:
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Generate a Google Meet link before the class is saved (the "Generate link" button in the schedule form)
+      description: Nothing is saved. The link is returned so the form can fill its Meet link field. Saving a class never creates a link by itself.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [topic, startsAt]
+              properties:
+                topic: { type: string }
+                startsAt: { type: string, format: date-time }
+                durationMin: { type: integer, minimum: 5, maximum: 600, default: 60 }
+      responses:
+        '200': { description: 'data: { meetLink }' }
+        '400': { description: Topic or start time missing or invalid }
+        '409': { description: 'MEET_TEACHER_EMAIL_MISSING (add your Google email in your profile), MEET_GENERATE_UNAVAILABLE (automatic links are not set up) or MEET_GENERATE_FAILED (Google gave no link)' }
+  /teacher/live-classes/{id}/meet-link/generate:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      summary: Generate a Google Meet link for a class that has none (the "Generate link" button)
+      description: Works only when MEET_PROVIDER=google. The link is a Meet space where the teacher (their profile email) is co-host and only invited people join without asking, so the teacher joins directly and admits students. Needs the teacher's email.
+      responses:
+        '200': { description: 'The class, with meetLink and needsMeetLink: false' }
+        '404': { description: Not your class }
+        '409': { description: 'MEET_TEACHER_EMAIL_MISSING (add your Google email in your profile), MEET_LINK_EXISTS (the class already has a link), MEET_GENERATE_UNAVAILABLE (automatic links are not set up, paste a link instead) or MEET_GENERATE_FAILED (Google gave no link, try again or paste one)' }
+  /teacher/live-classes/{id}/attendance:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Students of the class with present or absent or null }
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [records]
+              properties:
+                records:
+                  type: array
+                  items: { type: object, properties: { studentPublicId: { type: string }, present: { type: boolean } } }
+      responses:
+        '200': { description: Saved (upsert) }
+        '400': { description: A student is not in this class }
+  /teacher/doubts:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [open, answered, closed] } }
+        - { name: course, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Doubts from students of the teacher's courses }
+  /teacher/doubts/{id}/reply:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reply], properties: { reply: { type: string } } }
+      responses:
+        '200': { description: Answered; student notified }
+  /teacher/doubts/{id}/close:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Closed }
+  /teacher/programs:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Class programs }
+    post:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProgramInput' }
+      responses:
+        '201': { description: Created }
+  /teacher/programs/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProgramInput' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+  /teacher/profile:
+    get:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Public profile fields }
+    put:
+      tags: [teacher-ops]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [name], properties: { name: { type: string } } }
+      responses:
+        '200': { description: Saved (bio sanitized) }
+        '409': { description: Profile address taken }
+  /public/courses:
+    get:
+      tags: [public]
+      summary: Published courses of active teachers (no login)
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: language, in: query, schema: { type: string } }
+        - { name: subject, in: query, schema: { type: string } }
+        - { name: teacher, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200': { description: Course cards }
+  /public/filters:
+    get:
+      tags: [public]
+      responses:
+        '200': { description: "Languages and subjects that have published courses. `subjects` is ordered most-courses first; `subjectCounts` is [{ subject, count }] in the same order." }
+  /public/courses/{slug}:
+    parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [public]
+      summary: Course details with 1 or 2 demo videos; lesson titles only, preview links only for free lessons
+      responses:
+        '200': { description: Course details }
+        '404': { description: Not found or not published }
+  /public/teachers/{slug}:
+    parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [public]
+      responses:
+        '200': { description: Teacher public profile with published courses }
+        '404': { description: Not found }
+  /public/demo-requests:
+    post:
+      tags: [public]
+      summary: Book a live demo (OTP purpose demo_request)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [courseSlug, name, mobile, otp, email, education, acceptTerms]
+              properties:
+                courseSlug: { type: string }
+                name: { type: string }
+                mobile: { type: string }
+                otp: { type: string }
+                email: { type: string, description: Required }
+                education: { type: string }
+                classStandard: { type: string, nullable: true }
+                preferredTime: { type: string, nullable: true }
+                message: { type: string, nullable: true }
+                acceptTerms: { type: boolean }
+                whatsappOptIn: { type: boolean }
+      responses:
+        '201': { description: Request sent to the teacher }
+        '409': { description: A pending request already exists }
+  /auth/register-student:
+    post:
+      tags: [auth]
+      summary: Student registration with OTP (purpose student_register); logs the student in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, mobile, otp, education, email, acceptTerms]
+              properties:
+                name: { type: string }
+                mobile: { type: string }
+                otp: { type: string }
+                education: { type: string }
+                classStandard: { type: string, nullable: true }
+                city: { type: string, nullable: true }
+                email: { type: string, description: Required }
+                preferredLang: { type: string, nullable: true }
+                acceptTerms: { type: boolean }
+                whatsappOptIn: { type: boolean }
+                deviceId: { type: string, nullable: true }
+      responses:
+        '201': { description: Registered and logged in }
+        '409': { description: Number already registered or is a teacher }
+  /student/dashboard:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: >-
+            myCourses (progress, end date, batch, readOnly, lastStudiedAt: date-time|null,
+            nextLesson: { id, title }|null), upcomingLiveClasses, requests.
+            myCourses is ordered: courses studied most recently first, then never-started courses by title,
+            finished (100%) courses last.
+            latestExam: the newest published, unlocked exam of my active courses, with my status
+            (notStarted / inProgress / completed), or null.
+  /student/enrollments:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Enrollment requests sent }
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [courseSlug, email], properties: { courseSlug: { type: string }, email: { type: string, description: 'Required. Kept on the account.' }, message: { type: string, nullable: true } } }
+      responses:
+        '201': { description: Request sent to the teacher }
+        '400': { description: 'VALIDATION_ERROR with details.field = email when the email is missing or invalid' }
+        '409': { description: Already pending or enrolled }
+  /student/courses/{courseId}:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Curriculum with completion and lock flags }
+        '403': { description: Not enrolled or access ended or paused }
+  /student/contents/{contentId}:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Lesson with signed URL, last position and canComplete (false for a live lesson until it has ended or has a recording)' }
+  /student/contents/{contentId}/progress:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { positionSec: { type: integer }, completed: { type: boolean } } }
+      responses:
+        '200': { description: Saved }
+        '409': { description: 'LIVE_NOT_FINISHED: a live lesson can be completed only after it has ended or has a recording' }
+  /student/progress/sync:
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: Offline progress batch from the app; completion is never undone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items: { type: array, items: { type: object, properties: { contentId: { type: integer }, positionSec: { type: integer }, completedAt: { type: string } } } }
+      responses:
+        '200': { description: Applied count }
+  /student/live-classes:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Upcoming classes for my courses and batch, each with stage and canJoin; meetLink only while canJoin (10 min before start until the end and the teacher has added it); waitingForLink when it is class time but no link yet' }
+  /student/live-classes/{id}/join:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [student]
+      summary: Join a live class or live lesson; attendance is marked present automatically
+      description: The Join button calls this before opening Meet. Allowed only in the join window (10 min before start until the end) when the Meet link exists. Idempotent; the teacher can still correct the sheet.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: '{ meetLink, present: true }' }
+        '404': { description: 'Not a class for my course and batch' }
+        '409': { description: 'NOT_JOINABLE: outside the join window, cancelled, or no Meet link yet' }
+  /student/progress:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Per course lessons, attendance percent and exam performance' }
+  /student/attendance:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: 'Attendance history per enrolled course: classesHeld, classesAttended, attendancePct and classes[{ id, topic, startsAt, present }] newest first'
+      responses:
+        '200': { description: 'Only classes where the teacher took attendance, for my batch or all batches; no record means absent' }
+  /student/courses/{courseId}/exams:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Exams for my batch with locked, notOpen (before Start date), overdue (past End date and not yet submitted), closed (past End date and allowLate is false), allowLate, lastAttemptLate, attemptsLeft and best result' }
+  /student/exams/{examId}/attempts:
+    parameters: [{ name: examId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: Start a new attempt or resume the open one (server deadline)
+      responses:
+        '201': { description: Started }
+        '200': { description: Resumed }
+        '403': { description: 'Locked, not opened yet (Start date) or no attempts left. The End date is a due date: a later attempt is allowed and marked late, unless the exam has allowLate false (then 403 EXAM_CLOSED).' }
+  /student/attempts/{attemptId}/answers/{questionId}:
+    parameters:
+      - { name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: questionId, in: path, required: true, schema: { type: integer } }
+    put:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: 'Autosave. Body: { optionId } or { optionIds } or { text }. Practice returns correctness.'
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: Saved }
+        '409': { description: Time is up or already submitted }
+  /student/attempts/{attemptId}/submit:
+    parameters: [{ name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }]
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Score and pass or fail }
+  /student/attempts/{attemptId}/result:
+    parameters: [{ name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'Marks and rank with per-question review; late is true when the attempt started after the End date' }
+        '403': { description: Not submitted yet }
+  /student/courses/{courseId}/final-result:
+    parameters: [{ $ref: '#/components/parameters/CourseId' }]
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Weighted final result }
+  /student/doubts:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: My doubts with teacher replies }
+    post:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      summary: 'Multipart or JSON: courseId, question, optional attachment (image or pdf up to 5 MB)'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                courseId: { type: integer }
+                question: { type: string }
+                attachment: { type: string, format: binary }
+      responses:
+        '201': { description: Doubt sent }
+  /student/profile:
+    get:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: My profile }
+    put:
+      tags: [student]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [name], properties: { name: { type: string } } }
+      responses:
+        '200': { description: Saved }
+  /student/devices:
+    get:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Registered devices (max 2) }
+    post:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [deviceId], properties: { deviceId: { type: string }, deviceName: { type: string }, platform: { type: string } } }
+      responses:
+        '201': { description: Registered }
+        '409': { description: DEVICE_LIMIT }
+  /student/devices/{deviceId}:
+    parameters: [{ name: deviceId, in: path, required: true, schema: { type: string } }]
+    delete:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Removed; its downloads are revoked }
+  /student/contents/{contentId}/download:
+    parameters:
+      - { name: contentId, in: path, required: true, schema: { type: integer } }
+      - { name: X-Device-Id, in: header, required: true, schema: { type: string } }
+    post:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: 'downloadUrl (10 min), keyId, key (base64), licenseExpiresAt, sizeBytes' }
+        '409': { description: Linked video (online only) }
+  /student/downloads/renew:
+    post:
+      tags: [student-downloads]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId, contentIds]
+              properties:
+                deviceId: { type: string }
+                contentIds: { type: array, items: { type: integer } }
+      responses:
+        '200': { description: 'Per lesson: new licenseExpiresAt, or revoked with reason' }
+  /teacher/contents/{contentId}/recording:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    put:
+      tags: [teacher-content]
+      summary: Add or replace the recording of a live lesson
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordingInput' }
+      responses:
+        '200': { description: The live lesson with its recording }
+        '400': { description: 'Invalid source, file key or link' }
+        '404': { description: Not your content }
+        '409': { description: NOT_LIVE_LESSON }
+    delete:
+      tags: [teacher-content]
+      summary: Remove the recording of a live lesson
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The live lesson without a recording }
+        '404': { description: Not your content }
+        '409': { description: NOT_LIVE_LESSON }
+  /teacher/contents/{contentId}/sessions:
+    parameters: [{ name: contentId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      summary: Schedule one more batch on an existing live lesson (a new session of the same lesson)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveSessionInput' }
+      responses:
+        '201': { description: The new session, content: { application/json: { schema: { $ref: '#/components/schemas/LiveSession' } } } }
+        '400': { description: 'Invalid time, batch or Meet link' }
+        '404': { description: Not your content }
+        '409': { description: SESSION_EXISTS or BATCH_CLOSED or NOT_LIVE_LESSON }
+  /teacher/courses/{courseId}/batches/{batchId}/live-schedule:
+    parameters:
+      - { name: courseId, in: path, required: true, schema: { type: integer } }
+      - { name: batchId, in: path, required: true, schema: { type: integer } }
+    get:
+      tags: [teacher-content]
+      summary: Every live lesson of the course with this batch's session, or null when not scheduled yet
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: The live lessons with this batch's session and any all-batches session (allBatches) it replaces }
+        '404': { description: Not your course or batch }
+    post:
+      tags: [teacher-content]
+      summary: Schedule many live lessons for one batch in one go (all or nothing)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LiveScheduleInput' }
+      responses:
+        '201': { description: The created sessions }
+        '400': { description: Invalid item }
+        '404': { description: Not your course or batch }
+        '409': { description: SESSION_EXISTS or BATCH_CLOSED }
+  /teacher/courses/{courseId}/duplicate:
+    parameters: [{ name: courseId, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [teacher-content]
+      summary: Copy the course as a new draft (subjects, modules, lessons; live lessons without dates; no batches or students)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201': { description: The new draft course }
+        '404': { description: Not your course }
