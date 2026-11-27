@@ -167,3 +167,14 @@ test('student dashboard: continue where you left off, with the next lesson; each
   expect(within(courses).getByText('Last studied 3 days ago')).toBeInTheDocument();
   expect(within(courses).getByRole('link', { name: 'Continue Class 10 Maths' })).toHaveAttribute('href', '/student/courses/5?lesson=51');
 });
+
+test('student dashboard: a student with no courses sees real courses to explore; an enrolled one does not', async () => {
+  const course = { slug: 'maths-10', title: 'Class 10 Maths', subject: 'Maths', language: 'en', thumbnailUrl: null, feeDisplay: '', teacher: { name: 'Priya', photoUrl: null } };
+  vi.spyOn(client.api, 'get').mockImplementation(async (url) => (url === '/public/courses'
+    ? { data: [course], pagination: { total: 1, page: 1, limit: 6 } }
+    : { data: { myCourses: [], upcomingLiveClasses: [], requests: [] } }));
+  wrap(<StudentDashboard />, { path: '/student', user: { role: 'student', name: 'Rohan' } });
+  const explore = await screen.findByRole('region', { name: 'Courses to explore' });
+  expect(within(explore).getByRole('link', { name: /Class 10 Maths/ })).toHaveAttribute('href', '/student/browse/maths-10');
+  expect(within(explore).getByRole('link', { name: 'View all courses →' })).toHaveAttribute('href', '/student/browse');
+});

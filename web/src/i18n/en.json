@@ -930,6 +930,8 @@
     "statClasses": "Upcoming live classes",
     "allClasses": "All live classes ({{n}})",
     "allCourses": "All my courses ({{n}})",
+    "exploreTitle": "Courses to explore",
+    "exploreAll": "View all courses →",
     "leftOff": "Continue where you left off",
     "nextLesson": "Next: {{title}}",
     "lastStudied": "Last studied {{when}}",

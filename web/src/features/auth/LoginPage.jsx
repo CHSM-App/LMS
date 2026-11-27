@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input, OtpInput, Banner } from '../../components';
 import { AuthLayout, StepIndicator } from './AuthLayout';
 import { useAuth, homeFor } from '../../app/AuthProvider';
-import { isValidMobile } from '../../utils/format';
+import { cleanMobileInput, isValidMobile } from '../../utils/format';
 import { useOtp } from './useOtp';
 import { SupportLink } from './SupportLink';
 
@@ -71,7 +71,7 @@ export default function LoginPage() {
               autoComplete="tel"
               prefix="+91"
               value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
+              onChange={(e) => setMobile(cleanMobileInput(e.target.value))}
               error={fieldError || otp.error}
               hint={t('auth.mobileHint')}
               required

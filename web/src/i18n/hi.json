@@ -930,6 +930,8 @@
     "statClasses": "आने वाली लाइव क्लास",
     "allClasses": "सभी लाइव क्लास ({{n}})",
     "allCourses": "मेरे सभी कोर्स ({{n}})",
+    "exploreTitle": "एक्सप्लोर करने के लिए कोर्स",
+    "exploreAll": "सभी कोर्स देखें →",
     "leftOff": "जहाँ रुके थे वहीं से जारी रखें",
     "nextLesson": "अगला: {{title}}",
     "lastStudied": "आख़िरी पढ़ाई {{when}}",

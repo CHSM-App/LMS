@@ -37,6 +37,7 @@ export const TEACHER_NAV = [
 export const STUDENT_NAV = [
   { group: null, items: [
     { to: '/student', label: 'common.dashboard', icon: 'dashboard', end: true },
+    { to: '/student/browse', label: 'nav.browse', icon: 'compass' },
   ] },
   { group: 'nav.groupLearning', items: [
     { to: '/student/courses', label: 'nav.myCourses', icon: 'book' },
@@ -46,8 +47,7 @@ export const STUDENT_NAV = [
     { to: '/student/attendance', label: 'nav.attendance', icon: 'check' },
     { to: '/student/doubts', label: 'nav.doubts', icon: 'help' },
   ] },
-  { group: 'nav.groupDiscover', items: [
-    { to: '/student/browse', label: 'nav.browse', icon: 'compass' },
+  { group: 'nav.groupProfile', items: [
     { to: '/student/profile', label: 'nav.profile', icon: 'user' },
   ] },
 ];

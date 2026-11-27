@@ -6,7 +6,15 @@ export function isValidMobile(input) {
   return /^[6-9]\d{9}$/.test(d);
 }
 
-const locale = (lang) => (lang === 'en' || !lang ? 'en-IN' : `${lang}-IN`);
+// For controlled mobile inputs: digits only, max 10 (a pasted +91 / 0 prefix is dropped).
+export function cleanMobileInput(input) {
+  let d = String(input || '').replace(/\D/g, '');
+  if (d.length === 12 && d.startsWith('91')) d = d.slice(2);
+  else if (d.length === 11 && d.startsWith('0')) d = d.slice(1);
+  return d.slice(0, 10);
+}
+
+const locale =(lang) => (lang === 'en' || !lang ? 'en-IN' : `${lang}-IN`);
 
 export function formatDate(value, lang = 'en') {
   if (!value) return '';

@@ -1042,7 +1042,7 @@ paths:
       tags: [teacher-ops]
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Sent }
+        '200': { description: 'Sent. With WHATSAPP_PROVIDER=link nothing is sent: data.manual is true and data.fallbackUrl opens WhatsApp with the message typed' }
         '409': { description: 'No WhatsApp opt-in; details.fallbackUrl opens WhatsApp with the message typed' }
         '502': { description: 'Provider failed; details.fallbackUrl' }
   /teacher/demo-requests/{id}/reject:

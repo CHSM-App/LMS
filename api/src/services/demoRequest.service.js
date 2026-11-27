@@ -71,7 +71,9 @@ async function sendWhatsApp(id, teacherId) {
   const fallbackUrl = whatsapp.fallbackUrl(r.mobile, text);
   if (!r.whatsapp_opt_in) throw new APIError(409, "This student hasn't agreed to WhatsApp messages", 'WHATSAPP_NO_OPT_IN', { fallbackUrl });
   try {
-    await whatsapp.send(r.mobile, text, { template: 'demo_scheduled', lang: 'en', vars });
+    const res = await whatsapp.send(r.mobile, text, { template: 'demo_scheduled', lang: 'en', vars });
+    // Link mode: nothing was sent, so don't mark it sent; the teacher opens fallbackUrl and presses Send.
+    if (res && res.manual) return { ...out(r), fallbackUrl, manual: true };
   } catch (err) {
     await query('UPDATE dbo.demo_requests SET whatsapp_error = @e WHERE demo_request_id = @id', { e: T.nvarchar(String(err.message).slice(0, 300), 300), id: T.int(r.demo_request_id) });
     throw new APIError(502, 'WhatsApp message not sent. Try again.', 'WHATSAPP_FAILED', { fallbackUrl });

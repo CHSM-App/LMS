@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input, OtpInput, FileUpload, Banner } from '../../components';
 import { AuthLayout, StepIndicator } from './AuthLayout';
 import { api } from '../../api/client';
-import { isValidMobile } from '../../utils/format';
+import { cleanMobileInput, isValidMobile } from '../../utils/format';
 import { useOtp } from './useOtp';
 import { ConsentFields } from './ConsentFields';
 
@@ -88,7 +88,7 @@ export default function BecomeTeacherPage() {
               <legend className="form-group__title">{t('teacherReg.groupAbout')}</legend>
               <div className="grid reg-cols reg-cols--2">
                 <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
-                <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
+                <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={(e) => setF((x) => ({ ...x, mobile: cleanMobileInput(e.target.value) }))} error={errors.mobile} required />
                 <div className="reg-cols__full">
                 <Input label={t('teacherReg.googleEmail')} hint={t('teacherReg.googleEmailHint')} type="email" value={f.email} onChange={set('email')} error={errors.email} required autoComplete="email" />
                 </div>

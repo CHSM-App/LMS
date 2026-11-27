@@ -49,7 +49,14 @@ function WhatsAppCell({ request, onSent }) {
   const [state, setState] = useState(request.whatsappSentAt ? { sent: true } : null);
   const m = useMutation({
     mutationFn: () => api.post(`/teacher/demo-requests/${request.id}/send-whatsapp`),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      const d = res && res.data;
+      // Link mode (temporary): nothing was sent by the server. Open WhatsApp with the message typed; the teacher presses Send.
+      if (d && d.manual) {
+        window.open(d.fallbackUrl, '_blank', 'noopener');
+        setState({ sent: false, manual: true, fallbackUrl: d.fallbackUrl });
+        return;
+      }
       setState({ sent: true });
       onSent();
     },
@@ -57,6 +64,9 @@ function WhatsAppCell({ request, onSent }) {
   });
   if (request.status !== 'scheduled') return '—';
   if (state && state.sent) return <span className="badge badge--approved">{t('requests.sent')}</span>;
+  if (state && state.manual) {
+    return <a href={state.fallbackUrl} target="_blank" rel="noreferrer">{t('requests.openWhatsApp')}</a>;
+  }
   if (state && !state.sent) {
     return (
       <div className="stack" style={{ gap: 'var(--space-1)' }}>

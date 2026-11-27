@@ -82,6 +82,25 @@ describe('demo requests', () => {
     expect((await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/send-whatsapp`)).status).toBe(200);
   });
 
+  test('WHATSAPP_PROVIDER=link sends nothing and hands back a wa.me link for the teacher to open', async () => {
+    const { t, courseId } = await setup();
+    const d = await demoRequest(courseId, t.user.user_id, { name: 'Asha' });
+    await query('UPDATE dbo.demo_requests SET whatsapp_opt_in = 1 WHERE demo_request_id = @id', { id: T.int(d.demo_request_id) });
+    await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/schedule`, { scheduledAt: '2099-05-01T04:30:00Z', meetLink: 'https://meet.google.com/abc-defg-hij' });
+    process.env.WHATSAPP_PROVIDER = 'link';
+    try {
+      const w = await t.post(`/api/v1/teacher/demo-requests/${d.demo_request_id}/send-whatsapp`);
+      expect(w.status).toBe(200);
+      expect(w.body.data.manual).toBe(true);
+      expect(w.body.data.fallbackUrl).toMatch(/^https:\/\/wa\.me\/919811100001\?text=/);
+      expect(decodeURIComponent(w.body.data.fallbackUrl)).toContain('https://meet.google.com/abc-defg-hij');
+      expect(whatsapp.sentMessages()).toHaveLength(0);
+      expect((await one('SELECT whatsapp_sent_at FROM dbo.demo_requests WHERE demo_request_id = @id', { id: T.int(d.demo_request_id) })).whatsapp_sent_at).toBeNull();
+    } finally {
+      delete process.env.WHATSAPP_PROVIDER;
+    }
+  });
+
   test('list, reject, complete and ownership', async () => {
     const { t, courseId } = await setup();
     const d = await demoRequest(courseId, t.user.user_id);

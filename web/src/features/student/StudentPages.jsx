@@ -9,6 +9,7 @@ import { formatDate, formatDateTime, formatLongDay, formatRelativeDay } from '..
 import { LiveStageBadge } from '../../components/LiveStageBadge';
 import { markLanguageChosen } from '../../i18n/preference';
 import { Icon } from '../../components/Icon';
+import { CourseCard } from '../public/CourseCard';
 
 // Marks the student present when they click Join (POST /student/live-classes/:id/join).
 function markJoined(liveClassId) {
@@ -98,6 +99,27 @@ export function StudentMyCoursesPage() {
   );
 }
 
+const EXPLORE_COUNT = 6;
+
+// New student, nothing enrolled yet: a few real courses right on the dashboard, the rest one click away.
+function ExploreCourses() {
+  const { t } = useTranslation();
+  const q = useQuery({ queryKey: ['public', 'courses', 'explore'], queryFn: () => api.get('/public/courses', { page: 1, limit: EXPLORE_COUNT }), staleTime: 60000 });
+  const courses = q.data ? q.data.data : [];
+  if (q.isLoading || q.error || courses.length === 0) return null;
+  return (
+    <section className="stack" aria-labelledby="dash-explore">
+      <div className="row row--between">
+        <h2 id="dash-explore" className="card__title">{t('studentDash.exploreTitle')}</h2>
+        <Link to="/student/browse" className="dash-side__all">{t('studentDash.exploreAll')}</Link>
+      </div>
+      <div className="course-grid">
+        {courses.map((c) => <CourseCard key={c.slug} course={c} />)}
+      </div>
+    </section>
+  );
+}
+
 // How many items the dashboard shows before pointing to the full page.
 const COURSES_ON_DASH = 3;
 const LIVE_ON_DASH = 4;
@@ -150,6 +172,26 @@ export function StudentDashboard() {
     { label: t('studentDash.statProgress'), value: `${avg}%`, icon: 'chart' },
     { label: t('studentDash.statClasses'), value: d.upcomingLiveClasses.length, icon: 'video' },
   ];
+  const requestsCard = d.requests.length > 0 && (
+        <Card title={t('studentDash.requests')}>
+          <Table rowKey={(r) => r.id} rows={d.requests} columns={[
+            { key: 'course', header: t('nav.courses'), render: (r) => r.course.title },
+            { key: 'requestedAt', header: t('common.date'), render: (r) => formatDate(r.requestedAt, i18n.language) },
+            { key: 'status', header: t('common.status'), render: (r) => <StatusBadge status={r.status} /> },
+            { key: 'reason', header: t('common.reason'), render: (r) => r.rejectReason || '—' },
+          ]} />
+        </Card>
+  );
+  // Nothing enrolled yet: no empty stat/class/course panels, just the courses to pick from.
+  if (d.myCourses.length === 0 && d.upcomingLiveClasses.length === 0 && !d.latestExam) {
+    return (
+      <div className="stack">
+        <PageHeader title={t('teacherDash.hello', { name: user ? user.name : '' })} subtitle={formatLongDay(new Date(), i18n.language)} />
+        {requestsCard}
+        <ExploreCourses />
+      </div>
+    );
+  }
   return (
     <div className="stack">
       <PageHeader title={t('teacherDash.hello', { name: user ? user.name : '' })} subtitle={formatLongDay(new Date(), i18n.language)} />
@@ -211,16 +253,7 @@ export function StudentDashboard() {
           <MyCourseCards courses={d.myCourses.slice(0, COURSES_ON_DASH)} compact />
         </section>
       </div>
-      {d.requests.length > 0 && (
-        <Card title={t('studentDash.requests')}>
-          <Table rowKey={(r) => r.id} rows={d.requests} columns={[
-            { key: 'course', header: t('nav.courses'), render: (r) => r.course.title },
-            { key: 'requestedAt', header: t('common.date'), render: (r) => formatDate(r.requestedAt, i18n.language) },
-            { key: 'status', header: t('common.status'), render: (r) => <StatusBadge status={r.status} /> },
-            { key: 'reason', header: t('common.reason'), render: (r) => r.rejectReason || '—' },
-          ]} />
-        </Card>
-      )}
+      {requestsCard}
     </div>
   );
 }

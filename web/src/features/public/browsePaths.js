@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 // for a signed-in student, inside the student area (/student/browse) so the sidebar stays.
 export function useBrowsePaths() {
   const { pathname } = useLocation();
-  const inStudent = pathname.startsWith('/student/');
+  const inStudent = pathname === '/student' || pathname.startsWith('/student/');
   return inStudent
     ? {
       inStudent,

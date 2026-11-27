@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { api, setAccessToken } from '../../api/client';
 import { useAuth } from '../../app/AuthProvider';
 import { Banner, Button, Input, OtpInput } from '../../components';
-import { isValidMobile } from '../../utils/format';
+import { cleanMobileInput, isValidMobile } from '../../utils/format';
 import { useOtp } from '../auth/useOtp';
 import { ConsentFields } from '../auth/ConsentFields';
 import { StepIndicator } from '../auth/AuthLayout';
@@ -62,7 +62,7 @@ export function StudentRegisterForm({ onDone, heading = null, intro = null, foot
     <form onSubmit={onContinue} noValidate>
       <div className="grid reg-cols reg-cols--3">
         <Input label={t('common.name')} value={f.name} onChange={set('name')} error={errors.name} required autoComplete="name" />
-        <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={set('mobile')} error={errors.mobile} required />
+        <Input label={t('common.mobile')} type="tel" inputMode="numeric" prefix="+91" value={f.mobile} onChange={(e) => setF((x) => ({ ...x, mobile: cleanMobileInput(e.target.value) }))} error={errors.mobile} required />
         <Input label={t('requests.education')} value={f.education} onChange={set('education')} error={errors.education} placeholder={t('demoForm.educationPlaceholder')} required />
         <Input label={t('demoForm.classStandard')} placeholder={t('common.optional')} value={f.classStandard} onChange={set('classStandard')} />
         <Input label={t('common.city')} placeholder={t('common.optional')} value={f.city} onChange={set('city')} />

@@ -2,6 +2,7 @@ const { maskMobile } = require('../../utils/mobile');
 
 // WhatsApp sender, switched by WHATSAPP_PROVIDER:
 //   console - dev/test: logs and records messages
+//   link    - temporary: sends nothing; the demo endpoint returns a wa.me link for the teacher to open
 //   smsala  - SMSALA (WhatsApp BSP): WHATSAPP_API_TOKEN and WHATSAPP_TPL_<KEY> numeric template ids (see ./smsala.js)
 //   meta    - WhatsApp Cloud API (WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID). Business-initiated messages
 //             must use approved templates; each template's name can be overridden with
@@ -50,8 +51,17 @@ const metaProvider = {
   },
 };
 
+// Temporary, no-API mode: nothing is sent. The caller returns a wa.me link and the teacher presses Send in WhatsApp.
+const linkProvider = {
+  name: 'link',
+  async send() {
+    return { ok: true, manual: true };
+  },
+};
+
 function provider() {
   const name = process.env.WHATSAPP_PROVIDER || 'console';
+  if (name === 'link') return linkProvider;
   if (name === 'meta') return metaProvider;
   if (name === 'smsala') return require('./smsala');
   return consoleProvider;
